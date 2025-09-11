@@ -1,16 +1,18 @@
 /**
  * Register Page
- * Example implementation with reverse authentication protection
- * Redirects authenticated users to dashboard
+ * User registration form with validation
+ * Middleware handles redirecting authenticated users to dashboard
  */
 
 "use client";
 
-import { withRedirectIfAuthenticated } from "@/lib/auth/redirect-if-authenticated";
 import { useState } from "react";
 
-// Define the component without default export first
-function RegisterPageComponent() {
+/**
+ * User registration page component
+ * Provides a form for new users to create an account
+ */
+export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -181,19 +183,3 @@ function RegisterPageComponent() {
     </div>
   );
 }
-
-// Export the component wrapped with redirect protection
-export default withRedirectIfAuthenticated(RegisterPageComponent, {
-  redirectTo: "/dashboard",
-  loadingComponent: ({ message }) => (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-        <p className="mt-4 text-gray-700 font-medium">{message}</p>
-        <p className="mt-2 text-sm text-gray-500">
-          You already have an account!
-        </p>
-      </div>
-    </div>
-  ),
-});
