@@ -128,9 +128,10 @@ export function middleware(request: NextRequest) {
     return RedirectService.createLoginRedirect(request, pathname);
   }
 
-  // Note: Auth routes (login/register) are handled by client-side redirect logic
-  // This allows for better UX with loading states and smooth transitions
-  // The client-side withRedirectIfAuthenticated HOC will handle authenticated users
+  // Handle auth routes - redirect authenticated users away from login/register
+  if (isAuthRoute && isAuthenticated) {
+    return RedirectService.createDashboardRedirect(request);
+  }
 
   // Allow access to public routes and authenticated access to protected routes
   console.log(`✅ [MIDDLEWARE] Access granted for: ${pathname}`);
