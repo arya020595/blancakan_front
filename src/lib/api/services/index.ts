@@ -4,6 +4,7 @@
  */
 
 export { authApiService } from './auth-service';
+export { categoriesApiService } from './categories-service';
 export { customersApiService } from './customers-service';
 export { dashboardApiService } from './dashboard-service';
 export { ordersApiService } from './orders-service';

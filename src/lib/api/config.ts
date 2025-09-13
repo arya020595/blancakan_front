@@ -16,6 +16,13 @@ interface ApiEndpoints {
     STATS: string;
     RECENT_ORDERS: string;
   };
+  CATEGORIES: {
+    LIST: string;
+    DETAIL: string;
+    CREATE: string;
+    UPDATE: string;
+    DELETE: string;
+  };
   PRODUCTS: {
     LIST: string;
     DETAIL: string;
@@ -82,6 +89,14 @@ export const API_CONFIG: ApiConfig = {
     DASHBOARD: {
       STATS: "/dashboard/stats",
       RECENT_ORDERS: "/dashboard/recent-orders",
+    },
+    // Categories
+    CATEGORIES: {
+      LIST: "/api/v1/admin/categories",
+      DETAIL: "/api/v1/admin/categories/:id",
+      CREATE: "/api/v1/admin/categories",
+      UPDATE: "/api/v1/admin/categories/:id",
+      DELETE: "/api/v1/admin/categories/:id",
     },
     // Products
     PRODUCTS: {

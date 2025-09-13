@@ -23,10 +23,10 @@ export interface LegacyApiResponse<T = any> {
 export interface PaginationMeta {
   current_page: number;
   per_page: number;
-  total: number;
+  total_count: number;
   total_pages: number;
-  has_next_page: boolean;
-  has_prev_page: boolean;
+  next_page: number | null;
+  prev_page: number | null;
 }
 
 export interface PaginatedResponse<T> {
@@ -117,12 +117,39 @@ export interface Product {
 }
 
 export interface Category {
-  id: number;
+  _id: string;
   name: string;
   description?: string;
-  parent_id?: number;
+  is_active: boolean;
+  parent_id?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface CreateCategoryRequest {
+  category: {
+    name: string;
+    description?: string;
+    is_active: boolean;
+    parent_id?: string | null;
+  };
+}
+
+export interface UpdateCategoryRequest {
+  category: {
+    name: string;
+    description?: string;
+    status: boolean;
+    parent_id?: string | null;
+  };
+}
+
+export interface CategoriesQueryParams extends ListQueryParams {
+  query?: string;
+  filter?: {
+    is_active?: boolean;
+  };
+  sort?: string;
 }
 
 export interface ProductImage {
