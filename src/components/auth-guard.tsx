@@ -6,16 +6,19 @@
 "use client";
 
 import { setupAuthDebug } from "@/lib/auth/debug";
+import { createLogger } from "@/lib/utils/logger";
 import { useAuthStore } from "@/store";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
+const logger = createLogger("AUTH GUARD");
 
 export default function AuthGuard() {
   const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
   const router = useRouter();
   const [hasChecked, setHasChecked] = useState(false);
 
-  console.log("🚀 [AUTH GUARD] Component rendered with state:", {
+  logger.debug("Component rendered with state", {
     isAuthenticated,
     isLoading,
     hasChecked,
@@ -29,25 +32,21 @@ export default function AuthGuard() {
   }, []);
 
   useEffect(() => {
-    console.log(
-      "🔄 [AUTH GUARD] First useEffect triggered - performing auth check"
-    );
+    logger.debug("First useEffect triggered - performing auth check");
 
     // Check authentication status on component mount
     const performAuthCheck = async () => {
-      console.log("⏳ [AUTH GUARD] Starting authentication check...");
+      logger.info("Starting authentication check...");
       checkAuth();
       setHasChecked(true);
-      console.log(
-        "✅ [AUTH GUARD] Authentication check completed, hasChecked set to true"
-      );
+      logger.info("Authentication check completed, hasChecked set to true");
     };
 
     performAuthCheck();
   }, [checkAuth]);
 
   useEffect(() => {
-    console.log("🔄 [AUTH GUARD] Second useEffect triggered with values:", {
+    logger.debug("Second useEffect triggered with values", {
       hasChecked,
       isLoading,
       isAuthenticated,
@@ -57,19 +56,15 @@ export default function AuthGuard() {
     if (hasChecked && !isLoading) {
       if (isAuthenticated) {
         // User is logged in, redirect to dashboard
-        console.log(
-          "✅ [AUTH GUARD] User authenticated, redirecting to dashboard"
-        );
+        logger.info("User authenticated, redirecting to dashboard");
         router.push("/dashboard");
       } else {
         // User is not logged in, redirect to login
-        console.log(
-          "❌ [AUTH GUARD] User not authenticated, redirecting to login"
-        );
+        logger.info("User not authenticated, redirecting to login");
         router.push("/login");
       }
     } else {
-      console.log("⏳ [AUTH GUARD] Not ready to redirect yet:", {
+      logger.debug("Not ready to redirect yet", {
         reason: !hasChecked
           ? "Authentication not checked yet"
           : "Still loading",
