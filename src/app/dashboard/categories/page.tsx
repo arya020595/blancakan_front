@@ -16,9 +16,6 @@ import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from "@/l
 import { createLogger } from "@/lib/utils/logger";
 import { useEffect, useState } from "react";
 
-// Import debug helper for development
-import "@/lib/debug/categories-debug";
-
 const logger = createLogger("CATEGORIES PAGE");
 
 export default function CategoriesPage() {

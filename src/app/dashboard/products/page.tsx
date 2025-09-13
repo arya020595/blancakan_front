@@ -271,13 +271,13 @@ export default function ProductsPage() {
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-700">
             Showing {((meta.current_page - 1) * meta.per_page) + 1} to{' '}
-            {Math.min(meta.current_page * meta.per_page, meta.total)} of{' '}
-            {meta.total} results
+            {Math.min(meta.current_page * meta.per_page, meta.total_count)} of{' '}
+            {meta.total_count} results
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => goToPage(meta.current_page - 1)}
-              disabled={!meta.has_prev_page}
+              disabled={meta.prev_page === null}
               className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50"
             >
               Previous
@@ -287,7 +287,7 @@ export default function ProductsPage() {
             </span>
             <button
               onClick={() => goToPage(meta.current_page + 1)}
-              disabled={!meta.has_next_page}
+              disabled={meta.next_page === null}
               className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50"
             >
               Next

@@ -8,7 +8,7 @@
 
 import { useDashboardStats, useRecentOrders } from "@/hooks/dashboard-hooks";
 import { DashboardStats, RecentOrder } from "@/lib/api/types";
-import { withClientAuth } from "@/lib/auth/client-auth-guard";
+import { withClientAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
 
 interface DashboardClientProps {

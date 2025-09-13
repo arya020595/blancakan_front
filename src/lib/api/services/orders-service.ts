@@ -6,11 +6,11 @@
 import { BaseApiService } from '../base-service';
 import { API_CONFIG } from '../config';
 import {
-    ApiResponse,
-    ListQueryParams,
-    Order,
-    OrderStatus,
-    PaginatedResponse
+  ApiResponse,
+  ListQueryParams,
+  Order,
+  OrderStatus,
+  PaginatedResponse
 } from '../types';
 
 class OrdersApiService extends BaseApiService {
@@ -54,7 +54,7 @@ class OrdersApiService extends BaseApiService {
   async cancelOrder(id: string | number): Promise<ApiResponse<Order>> {
     return this.customAction<Order>(
       'POST',
-      API_CONFIG.ENDPOINTS.ORDERS.CANCEL,
+      API_CONFIG.ENDPOINTS.ORDERS.CANCEL || '/orders/:id/cancel',
       undefined,
       { id: String(id) }
     );
