@@ -7,8 +7,11 @@
 
 import { HeaderLogoutButton } from "@/components/logout-button";
 import { useProfile } from "@/hooks/auth-hooks";
+import { createLogger } from "@/lib/utils/logger";
 import { useAuthStore } from "@/store";
 import { useEffect } from "react";
+
+const logger = createLogger("DASHBOARD");
 
 export default function DashboardLayout({
   children,
@@ -88,12 +91,8 @@ export default function DashboardLayout({
                   )}
                   <HeaderLogoutButton
                     className="ml-4"
-                    onLogoutStart={() =>
-                      console.log("🔒 [DASHBOARD] User initiated logout")
-                    }
-                    onLogoutComplete={() =>
-                      console.log("✅ [DASHBOARD] Logout completed")
-                    }
+                    onLogoutStart={() => logger.info("User initiated logout")}
+                    onLogoutComplete={() => logger.info("Logout completed")}
                   />
                 </div>
               </div>

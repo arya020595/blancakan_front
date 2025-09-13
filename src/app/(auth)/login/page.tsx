@@ -7,8 +7,11 @@
 "use client";
 
 import { useLogin } from "@/hooks/auth-hooks";
+import { createLogger } from "@/lib/utils/logger";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+const logger = createLogger("LOGIN PAGE");
 
 // Main Login Page Component
 export default function LoginPage() {
@@ -23,22 +26,22 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("🚀 [LOGIN PAGE] Form submitted with credentials:", {
+    logger.info("Form submitted with credentials", {
       email: credentials.email,
       hasPassword: !!credentials.password,
     });
 
     const success = await login(credentials);
     if (success) {
-      console.log("✅ [LOGIN PAGE] Login successful, handling redirect...");
+      logger.info("Login successful, handling redirect...");
       // Redirect to dashboard or the intended page
       const redirectUrl =
         new URLSearchParams(window.location.search).get("redirect") ||
         "/dashboard";
-      console.log("🔄 [LOGIN PAGE] Redirecting to:", redirectUrl);
+      logger.info("Redirecting to:", redirectUrl);
       router.push(redirectUrl);
     } else {
-      console.log("❌ [LOGIN PAGE] Login failed");
+      logger.warn("Login failed");
     }
   };
 
@@ -164,6 +167,17 @@ export default function LoginPage() {
                 "Sign in"
               )}
             </button>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{" "}
+              <a
+                href="/register"
+                className="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:underline">
+                Sign up here
+              </a>
+            </p>
           </div>
         </form>
       </div>
