@@ -10,6 +10,7 @@ interface ApiEndpoints {
     LOGOUT: string;
     REFRESH: string;
     PROFILE: string;
+    REGISTER: string;
   };
   DASHBOARD: {
     STATS: string;
@@ -75,6 +76,7 @@ export const API_CONFIG: ApiConfig = {
       LOGOUT: "/auth/logout",
       REFRESH: "/auth/refresh",
       PROFILE: "/auth/profile",
+      REGISTER: "/auth/register",
     },
     // Dashboard
     DASHBOARD: {

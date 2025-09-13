@@ -5,7 +5,7 @@
  */
 
 import { authApiService } from "@/lib/api/services";
-import { ApiError, LoginRequest, User } from "@/lib/api/types";
+import { ApiError, LoginRequest, RegisterRequest, User } from "@/lib/api/types";
 import { createLogger } from "@/lib/utils/logger";
 import { useAuthStore } from "@/store";
 import { useCallback, useState } from "react";
@@ -64,6 +64,64 @@ export const useLogin = () => {
 
   return {
     login,
+    isLoading,
+    error,
+    clearError,
+  };
+};
+
+// Custom hook for registration functionality
+export const useRegister = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<ApiError | null>(null);
+  const { setUser, setIsAuthenticated } = useAuthStore();
+
+  const register = useCallback(
+    async (userData: RegisterRequest): Promise<boolean> => {
+      try {
+        logger.info("Starting registration process", {
+          email: userData.user.email,
+          name: userData.user.name,
+        });
+
+        setIsLoading(true);
+        setError(null);
+
+        const success = await authApiService.register(userData);
+
+        if (success) {
+          // Fetch user profile after successful registration
+          const user = await authApiService.getCurrentUser();
+          if (user) {
+            logger.info("Registration successful, setting user", user);
+            setUser(user);
+            setIsAuthenticated(true);
+            return true;
+          }
+        }
+
+        logger.warn("Registration failed");
+        setIsAuthenticated(false);
+        return false;
+      } catch (err) {
+        logger.error("Registration error occurred", err);
+        const apiError = err as ApiError;
+        setError(apiError);
+        setIsAuthenticated(false);
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [setUser, setIsAuthenticated]
+  );
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  return {
+    register,
     isLoading,
     error,
     clearError,

@@ -1,12 +1,17 @@
 /**
  * Register Page
- * User registration form with validation
+ * User registration form with API integration
  * Middleware handles redirecting authenticated users to dashboard
  */
 
 "use client";
 
+import { useRegister } from "@/hooks/auth-hooks";
+import { createLogger } from "@/lib/utils/logger";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+
+const logger = createLogger("REGISTER PAGE");
 
 /**
  * User registration page component
@@ -20,13 +25,20 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
+  const { register, isLoading, error } = useRegister();
+  const router = useRouter();
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setErrors([]);
+    setValidationErrors([]);
+
+    logger.info("Form submitted with data", {
+      name: formData.name,
+      email: formData.email,
+      hasPassword: !!formData.password,
+      hasConfirmPassword: !!formData.confirmPassword,
+    });
 
     // Basic validation
     const newErrors: string[] = [];
@@ -36,22 +48,33 @@ export default function RegisterPage() {
     if (formData.password !== formData.confirmPassword) {
       newErrors.push("Passwords don't match");
     }
+    if (formData.password.length < 6) {
+      newErrors.push("Password must be at least 6 characters");
+    }
 
     if (newErrors.length > 0) {
-      setErrors(newErrors);
-      setIsLoading(false);
+      setValidationErrors(newErrors);
+      logger.warn("Validation errors found", newErrors);
       return;
     }
 
-    // Simulate registration API call
-    setTimeout(() => {
-      console.log("🚀 [REGISTER PAGE] Registration attempted:", {
+    // Prepare data for API call
+    const registerData = {
+      user: {
         name: formData.name,
         email: formData.email,
-      });
-      setIsLoading(false);
-      // In a real app, you would handle the registration result here
-    }, 2000);
+        password: formData.password,
+        password_confirmation: formData.confirmPassword,
+      },
+    };
+
+    const success = await register(registerData);
+    if (success) {
+      logger.info("Registration successful, redirecting to dashboard");
+      router.push("/dashboard");
+    } else {
+      logger.warn("Registration failed");
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +84,13 @@ export default function RegisterPage() {
       [name]: value,
     }));
   };
+
+  // Combine validation errors and API errors
+  const allErrors = [
+    ...validationErrors,
+    ...(error ? [error.message] : []),
+    ...(error?.errors ? Object.values(error.errors).flat() : []),
+  ];
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -80,14 +110,35 @@ export default function RegisterPage() {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {errors.length > 0 && (
+          {allErrors.length > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
-              <div className="text-sm text-red-600">
-                <ul className="list-disc list-inside space-y-1">
-                  {errors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-5 w-5 text-red-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">
+                    Registration Failed
+                  </h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <ul className="list-disc list-inside space-y-1">
+                      {allErrors.map((errorMsg, index) => (
+                        <li key={index}>{errorMsg}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -143,7 +194,7 @@ export default function RegisterPage() {
                 type="password"
                 required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Create a password"
+                placeholder="Create a password (min. 6 characters)"
                 value={formData.password}
                 onChange={handleInputChange}
                 disabled={isLoading}
@@ -175,7 +226,30 @@ export default function RegisterPage() {
               type="submit"
               disabled={isLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
-              {isLoading ? "Creating account..." : "Create Account"}
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Creating account...
+                </span>
+              ) : (
+                "Create Account"
+              )}
             </button>
           </div>
         </form>

@@ -5,10 +5,10 @@
 
 import { BaseApiService } from "@/lib/api/base-service";
 import { API_CONFIG } from "@/lib/api/config";
-import { ApiResponse, LoginRequest, LoginResponse, User } from "../types";
-import { IAuthenticationService, ITokenManager } from "@/lib/interfaces/auth.interfaces";
 import { tokenManager as defaultTokenManager } from "@/lib/auth/token-manager";
+import { IAuthenticationService, ITokenManager } from "@/lib/interfaces/auth.interfaces";
 import { createLogger, ILogger } from "@/lib/utils/logger";
+import { ApiResponse, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, User } from "../types";
 
 export class AuthApiService extends BaseApiService implements IAuthenticationService {
   private readonly logger: ILogger;
@@ -44,6 +44,33 @@ export class AuthApiService extends BaseApiService implements IAuthenticationSer
       return false;
     } catch (error) {
       this.logger.error("Login error occurred", error);
+      throw error;
+    }
+  }
+
+  async register(userData: RegisterRequest): Promise<boolean> {
+    try {
+      this.logger.info("Starting registration process", {
+        email: userData.user.email,
+        name: userData.user.name,
+      });
+
+      const response = await this.performRegister(userData);
+
+      if (response.status === "success" && response.data) {
+        this.logger.info("Registration successful", { 
+          userId: response.data.id, 
+          email: response.data.email 
+        });
+        
+        await this.handleSuccessfulRegistration(response.data);
+        return true;
+      }
+
+      this.logger.warn("Registration failed", { status: response.status });
+      return false;
+    } catch (error) {
+      this.logger.error("Registration error occurred", error);
       throw error;
     }
   }
@@ -131,6 +158,14 @@ export class AuthApiService extends BaseApiService implements IAuthenticationSer
     return this.customAction<void>("POST", API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
   }
 
+  private async performRegister(userData: RegisterRequest): Promise<ApiResponse<RegisterResponse>> {
+    return this.customAction<RegisterResponse, RegisterRequest>(
+      "POST",
+      API_CONFIG.ENDPOINTS.AUTH.REGISTER,
+      userData
+    );
+  }
+
   private async handleSuccessfulLogin(loginData: LoginResponse): Promise<void> {
     const token = this.tokenManager.extractToken(loginData.authorization);
     this.logger.debug("Storing authentication token", {
@@ -142,6 +177,20 @@ export class AuthApiService extends BaseApiService implements IAuthenticationSer
     // Store refresh token if provided
     if (loginData.refresh_token) {
       this.tokenManager.setRefreshToken(loginData.refresh_token);
+    }
+  }
+
+  private async handleSuccessfulRegistration(registerData: RegisterResponse): Promise<void> {
+    const token = this.tokenManager.extractToken(registerData.authorization);
+    this.logger.debug("Storing authentication token after registration", {
+      tokenPreview: `${token.substring(0, 20)}...`
+    });
+    
+    this.tokenManager.setToken(token);
+    
+    // Store refresh token if provided
+    if (registerData.refresh_token) {
+      this.tokenManager.setRefreshToken(registerData.refresh_token);
     }
   }
 }

@@ -42,7 +42,24 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  user: {
+    name: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+  };
+}
+
 export interface LoginResponse {
+  id: string;
+  email: string;
+  name: string;
+  authorization: string; // Contains "Bearer ..." token
+  refresh_token?: string; // Optional refresh token
+}
+
+export interface RegisterResponse {
   id: string;
   email: string;
   name: string;
