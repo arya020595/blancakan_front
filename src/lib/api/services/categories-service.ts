@@ -86,7 +86,12 @@ export class CategoriesApiService extends BaseApiService {
    */
   async updateCategory(id: string, categoryData: UpdateCategoryRequest): Promise<Category> {
     try {
-      logger.info("Updating category", { id, name: categoryData.category.name });
+      logger.info("Updating category", { 
+        id, 
+        name: categoryData.category.name,
+        requestPayload: categoryData,
+        endpoint: `${this.basePath}/:id`
+      });
 
       const response = await this.update<Category>("/:id", id, categoryData);
 
@@ -97,7 +102,15 @@ export class CategoriesApiService extends BaseApiService {
 
       return response.data;
     } catch (error) {
-      logger.error("Failed to update category", { id, categoryData, error });
+      logger.error("Failed to update category", { 
+        id, 
+        categoryData, 
+        error,
+        errorDetails: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack
+        } : error
+      });
       throw error;
     }
   }

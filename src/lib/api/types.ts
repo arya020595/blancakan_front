@@ -8,7 +8,14 @@ export interface ApiResponse<T = any> {
   status: string;
   message: string;
   data: T;
-  errors?: Record<string, string[]>;
+  errors?: Record<string, string[]> | null;
+}
+
+// API Error Response structure
+export interface ApiErrorResponse {
+  status: "error";
+  message: string;
+  errors?: Record<string, string[]> | null;
 }
 
 // Legacy response check helper
@@ -249,6 +256,7 @@ export interface ListQueryParams {
 // Error Types
 export interface ApiError {
   message: string;
-  status: number;
-  errors?: Record<string, string[]>;
+  status: number | string;
+  errors?: Record<string, string[]> | null;
+  statusCode?: number; // HTTP status code
 }

@@ -16,6 +16,9 @@ import type { Category, CreateCategoryRequest, UpdateCategoryRequest } from "@/l
 import { createLogger } from "@/lib/utils/logger";
 import { useEffect, useState } from "react";
 
+// Import debug helper for development
+import "@/lib/debug/categories-debug";
+
 const logger = createLogger("CATEGORIES PAGE");
 
 export default function CategoriesPage() {
@@ -136,9 +139,36 @@ export default function CategoriesPage() {
       {/* Error Display */}
       {(error || createError || updateError || deleteError) && (
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">
-            {error?.message || createError?.message || updateError?.message || deleteError?.message}
-          </p>
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Operation Failed
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>{error?.message || createError?.message || updateError?.message || deleteError?.message}</p>
+                {/* Show additional error details if available */}
+                {(error?.errors || createError?.errors || updateError?.errors || deleteError?.errors) && (
+                  <div className="mt-2">
+                    <p className="font-medium">Details:</p>
+                    <ul className="list-disc list-inside mt-1">
+                      {Object.entries(
+                        error?.errors || createError?.errors || updateError?.errors || deleteError?.errors || {}
+                      ).map(([field, messages]) => (
+                        <li key={field}>
+                          {field}: {Array.isArray(messages) ? messages.join(", ") : messages}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

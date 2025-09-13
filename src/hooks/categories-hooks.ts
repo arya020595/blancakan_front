@@ -162,7 +162,11 @@ export const useUpdateCategory = () => {
   const updateCategory = useCallback(
     async (id: string, categoryData: UpdateCategoryRequest): Promise<Category> => {
       try {
-        logger.info("Starting category update", { id, name: categoryData.category.name });
+        logger.info("Starting category update", { 
+          id, 
+          name: categoryData.category.name,
+          requestData: categoryData 
+        });
         setIsLoading(true);
         setError(null);
 
@@ -176,7 +180,14 @@ export const useUpdateCategory = () => {
         return response;
       } catch (err) {
         const apiError = err as ApiError;
-        logger.error("Category update failed", { id, categoryData, error: apiError });
+        logger.error("Category update failed", { 
+          id, 
+          categoryData, 
+          error: apiError,
+          errorMessage: apiError.message,
+          errorStatus: apiError.status,
+          errorDetails: apiError.errors 
+        });
         setError(apiError);
         throw apiError;
       } finally {

@@ -106,7 +106,8 @@ class HttpClient {
             responseData?.message ||
             error.message ||
             "An unexpected error occurred",
-          status: error.response?.status || 500,
+          status: responseData?.status || error.response?.status || 500,
+          statusCode: error.response?.status || 500,
           errors: responseData?.errors,
         };
 
