@@ -88,14 +88,14 @@ export class ServerAuthService {
 }
 
 // High-Order Component for server-side auth protection
-export function withServerAuth<T = {}>(
+export function withServerAuth<T = Record<string, unknown>>(
   WrappedComponent: React.ComponentType<T>
 ): React.ComponentType<T> {
   const AuthenticatedServerComponent = async (props: T) => {
     // Require authentication before rendering
     await ServerAuthService.requireAuthentication();
 
-    // @ts-ignore - Next.js server component
+    // @ts-expect-error - Next.js server component type mismatch is expected here
     return React.createElement(WrappedComponent, props);
   };
 
