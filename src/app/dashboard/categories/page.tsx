@@ -91,8 +91,8 @@ export default function CategoriesPage() {
       page: currentPage,
       per_page: 10,
       query: searchQuery || "*",
-      filter: { is_active: true },
-      sort: "created_at:asc",
+      // filter: { is_active: true },
+      // sort: "created_at:asc",
     };
 
     fetchCategories(params);
