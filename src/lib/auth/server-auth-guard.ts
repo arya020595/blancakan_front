@@ -24,7 +24,7 @@ export class ServerAuthService {
    */
   static async validateAuthentication(): Promise<AuthenticationResult> {
     try {
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       const cookieHeader = cookieStore.toString();
 
       const token = getTokenFromCookies(cookieHeader);
