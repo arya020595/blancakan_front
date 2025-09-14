@@ -1,3 +1,4 @@
+import { ToastProvider } from "@/components/toast/toast-provider";
 import { AuthProvider } from "@/providers/auth-provider";
 import "./globals.css";
 
@@ -9,7 +10,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <ToastProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );
