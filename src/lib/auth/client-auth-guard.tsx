@@ -139,13 +139,14 @@ export function withClientAuth<P extends object>(
     useEffect(() => {
       if (!requireAuth || !authChecked) return;
 
+      // Periodic authentication check
       const interval = setInterval(() => {
         logger.debug("Performing periodic authentication check");
         checkAuth();
       }, checkInterval);
 
       return () => clearInterval(interval);
-    }, [checkAuth, requireAuth, authChecked, checkInterval]);
+    }, [authChecked, checkAuth]);
 
     // Handle authentication state changes
     useEffect(() => {
@@ -161,14 +162,7 @@ export function withClientAuth<P extends object>(
         )}`;
         router.push(loginUrl);
       }
-    }, [
-      isAuthenticated,
-      authChecked,
-      isInitializing,
-      requireAuth,
-      router,
-      redirectUrl,
-    ]);
+    }, [isAuthenticated, authChecked, isInitializing, router]);
 
     // Show loading during initialization or auth check
     if (isInitializing || isLoading) {

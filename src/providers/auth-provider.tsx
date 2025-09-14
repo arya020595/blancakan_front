@@ -31,13 +31,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 // Optional: Loading wrapper for authentication checks
 interface AuthLoadingWrapperProps {
   children: ReactNode;
-  fallback?: ReactNode;
 }
 
-export function AuthLoadingWrapper({
-  children,
-  fallback,
-}: AuthLoadingWrapperProps) {
+export function AuthLoadingWrapper({ children }: AuthLoadingWrapperProps) {
   const { isLoading } = useAuthStore();
 
   if (isLoading) {

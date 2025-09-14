@@ -10,6 +10,7 @@ import type {
   CategoriesQueryParams,
   Category,
   CreateCategoryRequest,
+  PaginationMeta,
   UpdateCategoryRequest,
 } from "@/lib/api/types";
 import { createLogger } from "@/lib/utils/logger";
@@ -20,7 +21,7 @@ const logger = createLogger("CATEGORIES HOOKS");
 // Hook for fetching categories list with optimistic updates
 export const useCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [meta, setMeta] = useState<any>(null);
+  const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
 
@@ -58,7 +59,7 @@ export const useCategories = () => {
   // Optimistic update functions
   const addCategoryOptimistic = useCallback((category: Category) => {
     setCategories((prev) => [category, ...prev]);
-    setMeta((prev: any) =>
+    setMeta((prev) =>
       prev ? { ...prev, total_count: prev.total_count + 1 } : null
     );
   }, []);
@@ -73,7 +74,7 @@ export const useCategories = () => {
 
   const removeCategoryOptimistic = useCallback((categoryId: string) => {
     setCategories((prev) => prev.filter((cat) => cat._id !== categoryId));
-    setMeta((prev: any) =>
+    setMeta((prev) =>
       prev ? { ...prev, total_count: prev.total_count - 1 } : null
     );
   }, []);

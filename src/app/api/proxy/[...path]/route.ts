@@ -60,7 +60,7 @@ async function handleProxyRequest(request: NextRequest, method: string) {
         if (body) {
           requestOptions.body = body;
         }
-      } catch (error) {
+      } catch {
         console.log("📝 [PROXY] No body to parse");
       }
     }
@@ -111,7 +111,7 @@ async function handleProxyRequest(request: NextRequest, method: string) {
 }
 
 // Handle preflight requests
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {

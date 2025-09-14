@@ -9,12 +9,12 @@ import {
   ListQueryParams,
   PaginatedResponse,
 } from "@/lib/api/types";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 // Generic fetch hook
 export const useFetch = <T>(
   fetchFn: () => Promise<ApiResponse<T>>,
-  deps: any[] = []
+  deps: unknown[] = []
 ) => {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,11 +35,12 @@ export const useFetch = <T>(
     } finally {
       setIsLoading(false);
     }
-  }, deps);
+  }, [fetchFn]);
 
+  const depsKey = useMemo(() => JSON.stringify(deps), [deps]);
   useEffect(() => {
     fetch();
-  }, [fetch]);
+  }, [fetch, depsKey]);
 
   return {
     data,

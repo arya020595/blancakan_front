@@ -47,29 +47,32 @@ export const useToast = () => {
 export const useToastProvider = () => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useCallback((toast: Omit<Toast, "id">) => {
-    const id = `toast-${Date.now()}-${Math.random()}`;
-    const newToast: Toast = {
-      id,
-      duration: 5000, // 5 seconds default
-      ...toast,
-    };
-
-    setToasts((prev) => [...prev, newToast]);
-
-    // Auto-remove after duration
-    if (newToast.duration && newToast.duration > 0) {
-      setTimeout(() => {
-        removeToast(id);
-      }, newToast.duration);
-    }
-
-    return id;
-  }, []);
-
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
+
+  const addToast = useCallback(
+    (toast: Omit<Toast, "id">) => {
+      const id = `toast-${Date.now()}-${Math.random()}`;
+      const newToast: Toast = {
+        id,
+        duration: 5000, // 5 seconds default
+        ...toast,
+      };
+
+      setToasts((prev) => [...prev, newToast]);
+
+      // Auto-remove after duration
+      if (newToast.duration && newToast.duration > 0) {
+        setTimeout(() => {
+          removeToast(id);
+        }, newToast.duration);
+      }
+
+      return id;
+    },
+    [removeToast]
+  );
 
   const clearAllToasts = useCallback(() => {
     setToasts([]);

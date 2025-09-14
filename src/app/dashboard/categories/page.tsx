@@ -12,7 +12,6 @@ import {
   useDeleteCategory,
   useUpdateCategory,
 } from "@/hooks/categories-hooks";
-import { useTemporaryItems } from "@/hooks/use-temporary-items";
 import type {
   Category,
   CreateCategoryRequest,
@@ -53,10 +52,8 @@ export default function CategoriesPage() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Temporary items manager
-  const { isTemporary, addTemporary, removeTemporary } = useTemporaryItems(
-    30000 // 30 seconds cleanup delay
-  );
+  // Simple temporary ID helper (avoid over-engineering)
+  const isTempId = (id: string) => id.startsWith("temp-");
 
   // Hooks
   const {
@@ -112,7 +109,7 @@ export default function CategoriesPage() {
       },
     };
 
-    // Create optimistic category object
+    // Create optimistic category object (Next.js: Client Components + Optimistic UI)
     const tempId = `temp-${Date.now()}`;
     const optimisticCategory: Category = {
       _id: tempId, // Temporary ID
@@ -125,22 +122,12 @@ export default function CategoriesPage() {
     };
 
     try {
-      // Track as temporary item
-      addTemporary(tempId, (id) => {
-        // Auto-cleanup function - remove from UI if still temporary after timeout
-        removeCategoryOptimistic(id);
-        logger.warn("Temporary category cleanup", { id });
-      });
-
       // Optimistic update
       addCategoryOptimistic(optimisticCategory);
       setShowCreateModal(false);
 
       // Make API call
       const response = await createCategory(categoryData);
-
-      // Remove from temporary tracking FIRST
-      removeTemporary(tempId);
 
       // Replace the temporary category with the real one
       replaceTempCategoryOptimistic(tempId, response);
@@ -150,7 +137,6 @@ export default function CategoriesPage() {
       logger.info("Category created successfully");
     } catch (error) {
       // Rollback optimistic update on error
-      removeTemporary(tempId);
       removeCategoryOptimistic(tempId);
       setShowCreateModal(true); // Show modal again for retry
       addToast("error", "Failed to create category. Please try again.");
@@ -162,8 +148,8 @@ export default function CategoriesPage() {
   const handleUpdate = async (formData: FormData) => {
     if (!editingCategory) return;
 
-    // Prevent editing temporary categories
-    if (isTemporary(editingCategory._id)) {
+    // Prevent editing temporary categories (UI-only guard)
+    if (isTempId(editingCategory._id)) {
       logger.warn("Attempted to edit temporary category", {
         id: editingCategory._id,
       });
@@ -216,7 +202,7 @@ export default function CategoriesPage() {
   // Delete category handler with optimistic update
   const handleDelete = async (id: string) => {
     // Prevent deleting temporary categories
-    if (isTemporary(id)) {
+    if (isTempId(id)) {
       logger.warn("Attempted to delete temporary category", { id });
       return;
     }

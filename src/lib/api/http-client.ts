@@ -51,8 +51,8 @@ class HttpClient {
 
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
+      (_error) => {
+        return Promise.reject(_error);
       }
     );
 
@@ -91,11 +91,11 @@ class HttpClient {
             if (refreshed && originalRequest) {
               return this.client(originalRequest);
             }
-          } catch (refreshError) {
+          } catch (_refreshError) {
             // Refresh failed, redirect to login
             removeAuthToken();
             window.location.href = "/login";
-            return Promise.reject(refreshError);
+            return Promise.reject(_refreshError);
           }
         }
 
@@ -121,7 +121,7 @@ class HttpClient {
       // This should be implemented based on your refresh token logic
       // For now, return false to indicate refresh failed
       return false;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
