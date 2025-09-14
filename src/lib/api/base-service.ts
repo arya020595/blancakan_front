@@ -3,8 +3,8 @@
  * Abstract base class for all API services with common functionality
  */
 
-import { httpClient } from './http-client';
-import { ApiResponse, ListQueryParams, PaginatedResponse } from './types';
+import { httpClient } from "./http-client";
+import { ApiResponse, ListQueryParams, PaginatedResponse } from "./types";
 
 export abstract class BaseApiService {
   protected basePath: string;
@@ -14,27 +14,30 @@ export abstract class BaseApiService {
   }
 
   // Helper method to build URL with path parameters
-  protected buildUrl(endpoint: string, params?: Record<string, string | number>): string {
+  protected buildUrl(
+    endpoint: string,
+    params?: Record<string, string | number>
+  ): string {
     let url = `${this.basePath}${endpoint}`;
-    
+
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         url = url.replace(`:${key}`, String(value));
       });
     }
-    
+
     return url;
   }
 
   // Helper method to build query string
   protected buildQueryString(params?: ListQueryParams): string {
-    if (!params) return '';
-    
+    if (!params) return "";
+
     const searchParams = new URLSearchParams();
-    
+
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        if (typeof value === 'object') {
+        if (typeof value === "object") {
           // Handle filters object
           Object.entries(value).forEach(([filterKey, filterValue]) => {
             if (filterValue !== undefined && filterValue !== null) {
@@ -46,23 +49,23 @@ export abstract class BaseApiService {
         }
       }
     });
-    
+
     const queryString = searchParams.toString();
-    return queryString ? `?${queryString}` : '';
+    return queryString ? `?${queryString}` : "";
   }
 
   // Generic CRUD operations
   protected async getList<T>(
-    endpoint: string, 
+    endpoint: string,
     params?: ListQueryParams
   ): Promise<PaginatedResponse<T>> {
     const url = `${this.buildUrl(endpoint)}${this.buildQueryString(params)}`;
     const response = await httpClient.get(url);
-    return response.data as PaginatedResponse<T>;
+    return response as PaginatedResponse<T>;
   }
 
   protected async getById<T>(
-    endpoint: string, 
+    endpoint: string,
     id: string | number,
     pathParams?: Record<string, string | number>
   ): Promise<ApiResponse<T>> {
@@ -71,7 +74,7 @@ export abstract class BaseApiService {
   }
 
   protected async create<T, K = any>(
-    endpoint: string, 
+    endpoint: string,
     data: K,
     pathParams?: Record<string, string | number>
   ): Promise<ApiResponse<T>> {
@@ -80,8 +83,8 @@ export abstract class BaseApiService {
   }
 
   protected async update<T, K = any>(
-    endpoint: string, 
-    id: string | number, 
+    endpoint: string,
+    id: string | number,
     data: K,
     pathParams?: Record<string, string | number>
   ): Promise<ApiResponse<T>> {
@@ -90,8 +93,8 @@ export abstract class BaseApiService {
   }
 
   protected async partialUpdate<T, K = any>(
-    endpoint: string, 
-    id: string | number, 
+    endpoint: string,
+    id: string | number,
     data: K,
     pathParams?: Record<string, string | number>
   ): Promise<ApiResponse<T>> {
@@ -100,7 +103,7 @@ export abstract class BaseApiService {
   }
 
   protected async delete<T = any>(
-    endpoint: string, 
+    endpoint: string,
     id: string | number,
     pathParams?: Record<string, string | number>
   ): Promise<ApiResponse<T>> {
@@ -110,7 +113,7 @@ export abstract class BaseApiService {
 
   // File upload helper
   protected async uploadFile<T>(
-    endpoint: string, 
+    endpoint: string,
     file: File,
     pathParams?: Record<string, string | number>
   ): Promise<ApiResponse<T>> {
@@ -120,24 +123,26 @@ export abstract class BaseApiService {
 
   // Custom action helper
   protected async customAction<T, K = any>(
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
+    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
     endpoint: string,
     data?: K,
     pathParams?: Record<string, string | number>,
     queryParams?: ListQueryParams
   ): Promise<ApiResponse<T>> {
-    const url = `${this.buildUrl(endpoint, pathParams)}${this.buildQueryString(queryParams)}`;
-    
+    const url = `${this.buildUrl(endpoint, pathParams)}${this.buildQueryString(
+      queryParams
+    )}`;
+
     switch (method) {
-      case 'GET':
+      case "GET":
         return httpClient.get<T>(url);
-      case 'POST':
+      case "POST":
         return httpClient.post<T>(url, data);
-      case 'PUT':
+      case "PUT":
         return httpClient.put<T>(url, data);
-      case 'PATCH':
+      case "PATCH":
         return httpClient.patch<T>(url, data);
-      case 'DELETE':
+      case "DELETE":
         return httpClient.delete<T>(url);
       default:
         throw new Error(`Unsupported HTTP method: ${method}`);

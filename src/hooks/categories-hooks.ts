@@ -6,11 +6,11 @@
 
 import { categoriesApiService } from "@/lib/api/services/categories-service";
 import type {
-    ApiError,
-    CategoriesQueryParams,
-    Category,
-    CreateCategoryRequest,
-    UpdateCategoryRequest
+  ApiError,
+  CategoriesQueryParams,
+  Category,
+  CreateCategoryRequest,
+  UpdateCategoryRequest,
 } from "@/lib/api/types";
 import { createLogger } from "@/lib/utils/logger";
 import { useCallback, useState } from "react";
@@ -32,7 +32,7 @@ export const useCategories = () => {
         setError(null);
 
         const response = await categoriesApiService.getCategories(params);
-        
+
         logger.info("Categories fetch successful", {
           count: response.data.length,
           total: response.meta.total_count,
@@ -82,7 +82,7 @@ export const useCategory = () => {
       setError(null);
 
       const response = await categoriesApiService.getCategory(id);
-      
+
       logger.info("Category fetch successful", { id, name: response.name });
       setCategory(response);
       return response;
@@ -118,12 +118,16 @@ export const useCreateCategory = () => {
   const createCategory = useCallback(
     async (categoryData: CreateCategoryRequest): Promise<Category> => {
       try {
-        logger.info("Starting category creation", { name: categoryData.category.name });
+        logger.info("Starting category creation", {
+          name: categoryData.category.name,
+        });
         setIsLoading(true);
         setError(null);
 
-        const response = await categoriesApiService.createCategory(categoryData);
-        
+        const response = await categoriesApiService.createCategory(
+          categoryData
+        );
+
         logger.info("Category creation successful", {
           id: response._id,
           name: response.name,
@@ -132,7 +136,10 @@ export const useCreateCategory = () => {
         return response;
       } catch (err) {
         const apiError = err as ApiError;
-        logger.error("Category creation failed", { categoryData, error: apiError });
+        logger.error("Category creation failed", {
+          categoryData,
+          error: apiError,
+        });
         setError(apiError);
         throw apiError;
       } finally {
@@ -160,18 +167,24 @@ export const useUpdateCategory = () => {
   const [error, setError] = useState<ApiError | null>(null);
 
   const updateCategory = useCallback(
-    async (id: string, categoryData: UpdateCategoryRequest): Promise<Category> => {
+    async (
+      id: string,
+      categoryData: UpdateCategoryRequest
+    ): Promise<Category> => {
       try {
-        logger.info("Starting category update", { 
-          id, 
+        logger.info("Starting category update", {
+          id,
           name: categoryData.category.name,
-          requestData: categoryData 
+          requestData: categoryData,
         });
         setIsLoading(true);
         setError(null);
 
-        const response = await categoriesApiService.updateCategory(id, categoryData);
-        
+        const response = await categoriesApiService.updateCategory(
+          id,
+          categoryData
+        );
+
         logger.info("Category update successful", {
           id: response._id,
           name: response.name,
@@ -180,13 +193,13 @@ export const useUpdateCategory = () => {
         return response;
       } catch (err) {
         const apiError = err as ApiError;
-        logger.error("Category update failed", { 
-          id, 
-          categoryData, 
+        logger.error("Category update failed", {
+          id,
+          categoryData,
           error: apiError,
           errorMessage: apiError.message,
           errorStatus: apiError.status,
-          errorDetails: apiError.errors 
+          errorDetails: apiError.errors,
         });
         setError(apiError);
         throw apiError;
@@ -221,7 +234,7 @@ export const useDeleteCategory = () => {
       setError(null);
 
       const response = await categoriesApiService.deleteCategory(id);
-      
+
       logger.info("Category deletion successful", {
         id: response._id,
         name: response.name,
