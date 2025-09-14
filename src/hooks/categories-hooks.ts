@@ -17,7 +17,7 @@ import { useCallback, useState } from "react";
 
 const logger = createLogger("CATEGORIES HOOKS");
 
-// Hook for fetching categories list
+// Hook for fetching categories list with optimistic updates
 export const useCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [meta, setMeta] = useState<any>(null);
@@ -55,6 +55,38 @@ export const useCategories = () => {
     []
   );
 
+  // Optimistic update functions
+  const addCategoryOptimistic = useCallback((category: Category) => {
+    setCategories((prev) => [category, ...prev]);
+    setMeta((prev: any) =>
+      prev ? { ...prev, total_count: prev.total_count + 1 } : null
+    );
+  }, []);
+
+  const updateCategoryOptimistic = useCallback((updatedCategory: Category) => {
+    setCategories((prev) =>
+      prev.map((cat) =>
+        cat._id === updatedCategory._id ? updatedCategory : cat
+      )
+    );
+  }, []);
+
+  const removeCategoryOptimistic = useCallback((categoryId: string) => {
+    setCategories((prev) => prev.filter((cat) => cat._id !== categoryId));
+    setMeta((prev: any) =>
+      prev ? { ...prev, total_count: prev.total_count - 1 } : null
+    );
+  }, []);
+
+  const replaceTempCategoryOptimistic = useCallback(
+    (tempId: string, realCategory: Category) => {
+      setCategories((prev) =>
+        prev.map((cat) => (cat._id === tempId ? realCategory : cat))
+      );
+    },
+    []
+  );
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -65,6 +97,10 @@ export const useCategories = () => {
     isLoading,
     error,
     fetchCategories,
+    addCategoryOptimistic,
+    updateCategoryOptimistic,
+    removeCategoryOptimistic,
+    replaceTempCategoryOptimistic,
     clearError,
   };
 };
