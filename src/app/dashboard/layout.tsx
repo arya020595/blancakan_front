@@ -69,6 +69,11 @@ export default function DashboardLayout({
                 className="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                 Customers
               </a>
+              <a
+                href="/dashboard/categories"
+                className="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                Categories
+              </a>
             </div>
           </nav>
         </div>
