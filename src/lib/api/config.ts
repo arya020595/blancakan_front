@@ -22,6 +22,20 @@ interface ApiEndpoints {
     UPDATE: string;
     DELETE: string;
   };
+  EVENT_TYPES: {
+    LIST: string;
+    DETAIL: string;
+    CREATE: string;
+    UPDATE: string;
+    DELETE: string;
+  };
+  ROLES: {
+    LIST: string;
+    DETAIL: string;
+    CREATE: string;
+    UPDATE: string;
+    DELETE: string;
+  };
 }
 
 interface ApiConfig {
@@ -71,6 +85,22 @@ export const API_CONFIG: ApiConfig = {
       CREATE: "/api/v1/admin/categories",
       UPDATE: "/api/v1/admin/categories/:id",
       DELETE: "/api/v1/admin/categories/:id",
+    },
+    // Event Types
+    EVENT_TYPES: {
+      LIST: "/api/v1/admin/event_types",
+      DETAIL: "/api/v1/admin/event_types/:id",
+      CREATE: "/api/v1/admin/event_types",
+      UPDATE: "/api/v1/admin/event_types/:id",
+      DELETE: "/api/v1/admin/event_types/:id",
+    },
+    // Roles
+    ROLES: {
+      LIST: "/api/v1/admin/roles",
+      DETAIL: "/api/v1/admin/roles/:id",
+      CREATE: "/api/v1/admin/roles",
+      UPDATE: "/api/v1/admin/roles/:id",
+      DELETE: "/api/v1/admin/roles/:id",
     },
   },
 } as const;

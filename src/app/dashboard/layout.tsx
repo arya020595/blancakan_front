@@ -73,6 +73,12 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
                 className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                 Event Types
               </NavLink>
+
+              <NavLink
+                href="/dashboard/roles"
+                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                Roles
+              </NavLink>
             </div>
           </nav>
         </div>

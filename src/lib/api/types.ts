@@ -170,6 +170,34 @@ export interface EventTypesQueryParams extends ListQueryParams {
   sort?: string;
 }
 
+// Role Types
+export interface Role {
+  _id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateRoleRequest {
+  role: {
+    name: string;
+    description?: string;
+  };
+}
+
+export interface UpdateRoleRequest {
+  role: {
+    name: string;
+    description?: string;
+  };
+}
+
+export interface RolesQueryParams extends ListQueryParams {
+  query?: string;
+  sort?: string;
+}
+
 // Query Parameters
 export interface ListQueryParams {
   page?: number;
@@ -184,4 +212,6 @@ export interface ListQueryParams {
 export interface ApiError {
   message: string;
   status: number | string;
+  errors?: Record<string, string[]> | null;
+  statusCode?: number; // HTTP status code
 }

@@ -1,0 +1,121 @@
+/**
+ * Role Table Row Component
+ *
+ * Follows React best practices:
+ * - Memoized for performance optimization
+ * - Single responsibility principle
+ * - Proper TypeScript interfaces
+ * - Accessibility considerations
+ * - Clear prop interfaces
+ *
+ * @see https://react.dev/reference/react/memo
+ * @see https://react.dev/learn/passing-props-to-a-component
+ */
+
+"use client";
+
+import type { Role } from "@/lib/api/types";
+import React, { useCallback } from "react";
+
+interface RoleTableRowProps {
+  /** Role data to display */
+  role: Role;
+  /** Handler for edit action */
+  onEdit: (role: Role) => void;
+  /** Handler for delete action */
+  onDelete: (id: string) => void;
+}
+
+/**
+ * RoleTableRow - Displays a single role in table format
+ *
+ * Features:
+ * - Optimistic UI feedback for temporary roles
+ * - Proper accessibility with titles and disabled states
+ * - Consistent styling with Tailwind CSS
+ * - Memoized to prevent unnecessary re-renders
+ */
+export const RoleTableRow = React.memo<RoleTableRowProps>(
+  ({ role, onEdit, onDelete }) => {
+    // Check if this is a temporary role (optimistic update)
+    const isTempRole = role._id.startsWith("temp-");
+
+    // Memoized handlers to prevent child re-renders
+    const handleEdit = useCallback(() => {
+      onEdit(role);
+    }, [role, onEdit]);
+
+    const handleDelete = useCallback(() => {
+      onDelete(role._id);
+    }, [role._id, onDelete]);
+
+    return (
+      <tr
+        className={`hover:bg-gray-50 transition-colors ${
+          isTempRole ? "opacity-70" : ""
+        }`}
+        role="row">
+        {/* Name Column */}
+        <td className="px-6 py-4 whitespace-nowrap" role="gridcell">
+          <div className="flex items-center">
+            <div className="text-sm font-medium text-gray-900">{role.name}</div>
+            {isTempRole && (
+              <span className="ml-2 inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                Saving...
+              </span>
+            )}
+          </div>
+        </td>
+
+        {/* Description Column */}
+        <td className="px-6 py-4" role="gridcell">
+          <div className="text-sm text-gray-500 max-w-xs truncate">
+            {role.description || "No description"}
+          </div>
+        </td>
+
+        {/* Created Date Column */}
+        <td
+          className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+          role="gridcell">
+          {new Date(role.created_at).toLocaleDateString()}
+        </td>
+
+        {/* Updated Date Column */}
+        <td
+          className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+          role="gridcell">
+          {new Date(role.updated_at).toLocaleDateString()}
+        </td>
+
+        {/* Actions Column */}
+        <td
+          className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+          role="gridcell">
+          <div className="flex justify-end space-x-2">
+            <button
+              onClick={handleEdit}
+              disabled={isTempRole}
+              className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title={isTempRole ? "Cannot edit while saving..." : "Edit role"}
+              aria-label={`Edit ${role.name}`}>
+              Edit
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isTempRole}
+              className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title={
+                isTempRole ? "Cannot delete while saving..." : "Delete role"
+              }
+              aria-label={`Delete ${role.name}`}>
+              Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+    );
+  }
+);
+
+RoleTableRow.displayName = "RoleTableRow";
