@@ -10,7 +10,8 @@ import { NavLink } from "@/components/nav/nav-link";
 import { useProfile } from "@/hooks/auth-hooks";
 import { createLogger } from "@/lib/utils/logger";
 import { useAuthStore } from "@/store";
-import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const logger = createLogger("DASHBOARD");
 
@@ -20,24 +21,79 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   // NavLink handles active logic (exact vs prefix) centrally
-  const { isAuthenticated, checkAuth, setUser } = useAuthStore();
+  const { isAuthenticated, checkAuth, setUser, isLoading, hasHydrated } =
+    useAuthStore();
   const { profile, fetchProfile } = useProfile();
+  const router = useRouter();
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
-    // Check authentication status
-    checkAuth();
+    // Only check auth after store has hydrated
+    if (hasHydrated) {
+      logger.info(
+        "Dashboard layout mounted and store hydrated, checking authentication"
+      );
+      checkAuth();
+      setHasInitialized(true);
+    }
+  }, [checkAuth, hasHydrated]);
 
+  useEffect(() => {
     // Fetch user profile if authenticated
     if (isAuthenticated) {
       fetchProfile();
     }
-  }, [isAuthenticated, checkAuth, fetchProfile]);
+  }, [isAuthenticated, fetchProfile]);
 
   useEffect(() => {
     if (profile) {
       setUser(profile);
     }
   }, [profile, setUser]);
+
+  // Redirect to login if not authenticated and not loading
+  useEffect(() => {
+    logger.debug("Auth redirect check", {
+      hasInitialized,
+      isLoading,
+      isAuthenticated,
+      hasHydrated,
+    });
+
+    if (hasInitialized && !isLoading && !isAuthenticated) {
+      logger.info("User not authenticated, redirecting to login");
+      router.push("/login");
+    }
+  }, [isAuthenticated, isLoading, hasInitialized, router]);
+
+  // Show loading while checking authentication or before initialization or hydration
+  if (!hasHydrated || !hasInitialized || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">
+            {!hasHydrated ? "Loading..." : "Checking authentication..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while redirecting unauthenticated users
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-pulse space-y-2">
+            <div className="h-4 bg-gray-300 rounded w-32 mx-auto"></div>
+            <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
+          </div>
+          <p className="mt-4 text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

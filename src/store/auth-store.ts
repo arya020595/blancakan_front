@@ -20,6 +20,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  hasHydrated: boolean;
 }
 
 interface AuthActions {
@@ -36,14 +37,18 @@ type AuthStore = AuthState & AuthActions;
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
-      // Initial state
+      // Initial state - always start with false, check token on demand
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      hasHydrated: false,
 
       // Actions
       setUser: (user: User) => {
-        logger.debug("Setting user", { userId: user.id, userEmail: user.email });
+        logger.debug("Setting user", {
+          userId: user.id,
+          userEmail: user.email,
+        });
         set({ user });
       },
 
@@ -82,6 +87,7 @@ export const useAuthStore = create<AuthStore>()(
         if (!isValid) {
           logger.warn("Token invalid/expired, clearing auth");
           get().clearAuth();
+          return;
         } else {
           logger.info("Token valid, setting authenticated to true");
           set({ isAuthenticated: true });
@@ -108,8 +114,15 @@ export const useAuthStore = create<AuthStore>()(
       name: "auth-storage",
       partialize: (state) => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
+        // Don't persist isAuthenticated or hasHydrated - always determine from token
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.hasHydrated = true;
+          // Force auth check after hydration
+          state.checkAuth();
+        }
+      },
     }
   )
 );
