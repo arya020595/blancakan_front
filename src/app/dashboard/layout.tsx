@@ -6,6 +6,7 @@
 "use client";
 
 import { HeaderLogoutButton } from "@/components/logout-button";
+import { NavLink } from "@/components/nav/nav-link";
 import { useProfile } from "@/hooks/auth-hooks";
 import { createLogger } from "@/lib/utils/logger";
 import { useAuthStore } from "@/store";
@@ -18,6 +19,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // NavLink handles active logic (exact vs prefix) centrally
   const { isAuthenticated, checkAuth, setUser } = useAuthStore();
   const { profile, fetchProfile } = useProfile();
 
@@ -49,31 +51,42 @@ export default function DashboardLayout({
           </div>
           <nav className="mt-8">
             <div className="px-3 space-y-1">
-              <a
+              <NavLink
                 href="/dashboard"
-                className="bg-gray-100 text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                exact
+                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                 Dashboard
-              </a>
-              <a
+              </NavLink>
+
+              <NavLink
                 href="/dashboard/products"
-                className="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                 Products
-              </a>
-              <a
+              </NavLink>
+
+              <NavLink
                 href="/dashboard/orders"
-                className="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                 Orders
-              </a>
-              <a
+              </NavLink>
+
+              <NavLink
                 href="/dashboard/customers"
-                className="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                 Customers
-              </a>
-              <a
+              </NavLink>
+
+              <NavLink
                 href="/dashboard/categories"
-                className="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                 Categories
-              </a>
+              </NavLink>
+
+              <NavLink
+                href="/dashboard/event-types"
+                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                Event Types
+              </NavLink>
             </div>
           </nav>
         </div>

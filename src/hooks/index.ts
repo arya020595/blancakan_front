@@ -4,12 +4,13 @@
  */
 
 // API Hooks
-export * from './api-hooks';
+export * from "./api-hooks";
 
 // Authentication Hooks
-export * from './auth-hooks';
+export * from "./auth-hooks";
 
 // Feature-specific Hooks
-export * from './dashboard-hooks';
-export * from './products-hooks';
-
+export * from "./categories-hooks";
+export * from "./dashboard-hooks";
+export * from "./event-types-hooks";
+export * from "./products-hooks";

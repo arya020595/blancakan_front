@@ -159,6 +159,47 @@ export interface CategoriesQueryParams extends ListQueryParams {
   sort?: string;
 }
 
+// Event Type Types
+export interface EventType {
+  _id: string;
+  name: string;
+  description?: string;
+  icon_url?: string | null;
+  is_active: boolean;
+  slug: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateEventTypeRequest {
+  event_type: {
+    name: string;
+    description?: string;
+    icon_url?: string;
+    is_active: boolean;
+    sort_order: number;
+  };
+}
+
+export interface UpdateEventTypeRequest {
+  event_type: {
+    name: string;
+    description?: string;
+    icon_url?: string;
+    is_active: boolean;
+    sort_order: number;
+  };
+}
+
+export interface EventTypesQueryParams extends ListQueryParams {
+  query?: string;
+  filter?: {
+    is_active?: boolean;
+  };
+  sort?: string;
+}
+
 export interface ProductImage {
   id: number;
   url: string;

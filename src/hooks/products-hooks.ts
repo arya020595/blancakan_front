@@ -9,6 +9,7 @@ import {
   ListQueryParams,
   Product,
 } from "@/lib/api/types";
+import { useState } from "react";
 import { useFetch, useMutation, usePaginatedFetch } from "./api-hooks";
 
 // Products list hook
@@ -25,8 +26,9 @@ export const useProduct = (id: string | number) => {
 };
 
 // Categories hook
-export const useCategories = () => {
-  return useFetch(() => productsApiService.getCategories(), []);
+export const useProductCategories = () => {
+  const [categories, setCategories] = useState([]);
+  return { categories, setCategories };
 };
 
 // Create product hook
