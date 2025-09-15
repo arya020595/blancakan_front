@@ -7,6 +7,7 @@ import React from "react";
 type NavLinkProps = {
   href: string;
   exact?: boolean;
+  prefetch?: boolean;
   className?: string;
   activeClassName?: string;
   children: React.ReactNode;
@@ -15,6 +16,7 @@ type NavLinkProps = {
 export function NavLink({
   href,
   exact = false,
+  prefetch,
   className = "",
   activeClassName = "bg-gray-100 text-gray-900",
   children,
@@ -43,6 +45,7 @@ export function NavLink({
   return (
     <Link
       href={href}
+      prefetch={prefetch}
       aria-current={active ? "page" : undefined}
       className={combined}>
       {children}
