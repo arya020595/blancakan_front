@@ -63,24 +63,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               </NavLink>
 
               <NavLink
-                href="/dashboard/products"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                Products
-              </NavLink>
-
-              <NavLink
-                href="/dashboard/orders"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                Orders
-              </NavLink>
-
-              <NavLink
-                href="/dashboard/customers"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                Customers
-              </NavLink>
-
-              <NavLink
                 href="/dashboard/categories"
                 className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                 Categories

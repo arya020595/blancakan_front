@@ -85,11 +85,8 @@ export const isTempItem = <T>(item: T | OptimisticItem<T>): boolean => {
 export type OptimisticCategoryItem = OptimisticItem<
   import("@/lib/api/types").Category
 >;
-export type OptimisticProductItem = OptimisticItem<
-  import("@/lib/api/types").Product
->;
-export type OptimisticOrderItem = OptimisticItem<
-  import("@/lib/api/types").Order
+export type OptimisticEventTypeItem = OptimisticItem<
+  import("@/lib/api/types").EventType
 >;
 
 // Hook return types for consistency

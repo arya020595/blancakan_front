@@ -5,34 +5,29 @@
 
 export { authApiService } from "./auth-service";
 export { categoriesApiService } from "./categories-service";
-export { customersApiService } from "./customers-service";
 export { dashboardApiService } from "./dashboard-service";
 export { eventTypesApiService } from "./event-types-service";
-export { ordersApiService } from "./orders-service";
-export { productsApiService } from "./products-service";
 
 // Re-export types for convenience
 export type {
-  Address,
   ApiError,
   ApiResponse,
+  CategoriesQueryParams,
   Category,
-  CreateProductRequest,
-  // Customer types
-  Customer,
+  CreateCategoryRequest,
+  CreateEventTypeRequest,
   // Dashboard types
   DashboardStats,
+  EventType,
+  EventTypesQueryParams,
   ListQueryParams,
   // Auth types
   LoginRequest,
   LoginResponse,
-  // Order types
-  Order,
-  OrderItem,
-  OrderStatus,
   PaginatedResponse,
-  // Product types
-  Product,
-  RecentOrder,
+  RegisterRequest,
+  RegisterResponse,
+  UpdateCategoryRequest,
+  UpdateEventTypeRequest,
   User,
 } from "../types";

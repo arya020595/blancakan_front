@@ -14,7 +14,6 @@ interface ApiEndpoints {
   };
   DASHBOARD: {
     STATS: string;
-    RECENT_ORDERS: string;
   };
   CATEGORIES: {
     LIST: string;
@@ -22,30 +21,6 @@ interface ApiEndpoints {
     CREATE: string;
     UPDATE: string;
     DELETE: string;
-  };
-  PRODUCTS: {
-    LIST: string;
-    DETAIL: string;
-    CREATE: string;
-    UPDATE: string;
-    DELETE: string;
-    CATEGORIES: string;
-  };
-  ORDERS: {
-    LIST: string;
-    DETAIL: string;
-    CREATE: string;
-    UPDATE: string;
-    DELETE: string;
-    STATUSES?: string;
-    CANCEL?: string;
-  };
-  CUSTOMERS: {
-    LIST: string;
-    DETAIL: string;
-    CREATE: string;
-    UPDATE: string;
-    DELETE?: string;
   };
 }
 
@@ -88,7 +63,6 @@ export const API_CONFIG: ApiConfig = {
     // Dashboard
     DASHBOARD: {
       STATS: "/dashboard/stats",
-      RECENT_ORDERS: "/dashboard/recent-orders",
     },
     // Categories
     CATEGORIES: {
@@ -97,32 +71,6 @@ export const API_CONFIG: ApiConfig = {
       CREATE: "/api/v1/admin/categories",
       UPDATE: "/api/v1/admin/categories/:id",
       DELETE: "/api/v1/admin/categories/:id",
-    },
-    // Products
-    PRODUCTS: {
-      LIST: "/products",
-      DETAIL: "/products/:id",
-      CREATE: "/products",
-      UPDATE: "/products/:id",
-      DELETE: "/products/:id",
-      CATEGORIES: "/products/categories",
-    },
-    // Orders
-    ORDERS: {
-      LIST: "/orders",
-      DETAIL: "/orders/:id",
-      CREATE: "/orders",
-      UPDATE: "/orders/:id",
-      DELETE: "/orders/:id",
-      CANCEL: "/orders/:id/cancel",
-    },
-    // Customers
-    CUSTOMERS: {
-      LIST: "/customers",
-      DETAIL: "/customers/:id",
-      CREATE: "/customers",
-      UPDATE: "/customers/:id",
-      DELETE: "/customers/:id",
     },
   },
 } as const;

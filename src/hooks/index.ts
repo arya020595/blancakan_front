@@ -14,4 +14,3 @@ export * from "./use-auth-protection";
 export * from "./categories-hooks";
 export * from "./dashboard-hooks";
 export * from "./event-types-hooks";
-export * from "./products-hooks";

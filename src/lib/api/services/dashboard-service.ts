@@ -3,34 +3,19 @@
  * Handles dashboard-related API calls
  */
 
-import { BaseApiService } from '../base-service';
-import { API_CONFIG } from '../config';
-import {
-    ApiResponse,
-    DashboardStats,
-    ListQueryParams,
-    RecentOrder
-} from '../types';
+import { BaseApiService } from "../base-service";
+import { API_CONFIG } from "../config";
+import { ApiResponse, DashboardStats } from "../types";
 
 class DashboardApiService extends BaseApiService {
   constructor() {
-    super('');
+    super("");
   }
 
   async getStats(): Promise<ApiResponse<DashboardStats>> {
     return this.customAction<DashboardStats>(
-      'GET',
+      "GET",
       API_CONFIG.ENDPOINTS.DASHBOARD.STATS
-    );
-  }
-
-  async getRecentOrders(params?: ListQueryParams): Promise<ApiResponse<RecentOrder[]>> {
-    return this.customAction<RecentOrder[]>(
-      'GET',
-      API_CONFIG.ENDPOINTS.DASHBOARD.RECENT_ORDERS,
-      undefined,
-      undefined,
-      params
     );
   }
 }
