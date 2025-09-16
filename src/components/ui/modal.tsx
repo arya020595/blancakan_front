@@ -7,6 +7,7 @@ export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: React.ReactNode;
+  description?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   size?: "sm" | "md" | "lg";
@@ -19,6 +20,7 @@ export function Modal({
   isOpen,
   onClose,
   title,
+  description,
   children,
   footer,
   size = "md",
@@ -61,6 +63,11 @@ export function Modal({
                 </button>
               </Dialog.Close>
             </div>
+          )}
+          {description && (
+            <Dialog.Description className="mb-3 text-sm text-gray-600">
+              {description}
+            </Dialog.Description>
           )}
           <div className="modal-body">{children}</div>
           {footer && <div className="mt-6">{footer}</div>}
