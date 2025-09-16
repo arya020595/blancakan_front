@@ -57,9 +57,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         {/* Sidebar */}
         <div className="w-64 bg-white shadow-sm">
           <div className="p-6">
-            <h1 className="text-xl font-semibold text-gray-900">
-              E-commerce Dashboard
-            </h1>
+            <h1 className="text-xl font-semibold text-gray-900">Cari Acara</h1>
           </div>
           <nav className="mt-8">
             <div className="px-3 space-y-1">
