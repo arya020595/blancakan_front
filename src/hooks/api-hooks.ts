@@ -11,6 +11,9 @@ import {
 } from "@/lib/api/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+// Simple in-flight request cache to prevent duplicate network calls
+const inFlightRequests = new Map<string, Promise<any>>();
+
 // Generic fetch hook
 export const useFetch = <T>(
   fetchFn: () => Promise<ApiResponse<T>>,
@@ -63,23 +66,41 @@ export const usePaginatedFetch = <T>(
 
   const fetch = useCallback(
     async (newParams?: ListQueryParams) => {
-      try {
-        setIsLoading(true);
-        setError(null);
+      const queryParams = newParams || params;
+      const cacheKey = `paginated-${fetchFn.toString()}-${JSON.stringify(
+        queryParams
+      )}`;
 
-        const queryParams = newParams || params;
-        const response = await fetchFn(queryParams);
-
-        if (response.status === "success") {
-          setData(response.data);
-          setMeta(response.meta);
-        }
-      } catch (err) {
-        const apiError = err as ApiError;
-        setError(apiError);
-      } finally {
-        setIsLoading(false);
+      // Return existing promise if request is already in flight
+      if (inFlightRequests.has(cacheKey)) {
+        return inFlightRequests.get(cacheKey);
       }
+
+      // Create new request promise
+      const requestPromise = (async () => {
+        try {
+          setIsLoading(true);
+          setError(null);
+
+          const response = await fetchFn(queryParams);
+
+          if (response.status === "success") {
+            setData(response.data);
+            setMeta(response.meta);
+          }
+        } catch (err) {
+          const apiError = err as ApiError;
+          setError(apiError);
+        } finally {
+          setIsLoading(false);
+          // Clean up cache entry when request completes
+          inFlightRequests.delete(cacheKey);
+        }
+      })();
+
+      // Cache the promise
+      inFlightRequests.set(cacheKey, requestPromise);
+      return requestPromise;
     },
     [fetchFn, params]
   );

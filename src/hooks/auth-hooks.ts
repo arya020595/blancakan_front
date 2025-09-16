@@ -12,11 +12,14 @@ import { useCallback, useState } from "react";
 
 const logger = createLogger("AUTH HOOKS");
 
+// Simple in-flight request cache to prevent duplicate network calls
+const inFlightRequests = new Map<string, Promise<any>>();
+
 // Custom hook for login functionality
 export const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
-  const { setUser, setIsAuthenticated } = useAuthStore();
+  const { setIsAuthenticated } = useAuthStore();
 
   const login = useCallback(
     async (credentials: LoginRequest): Promise<boolean> => {
@@ -32,14 +35,10 @@ export const useLogin = () => {
         const success = await authApiService.login(credentials);
 
         if (success) {
-          // Fetch user profile after successful login
-          const user = await authApiService.getCurrentUser();
-          if (user) {
-            logger.info("Login successful, setting user", user);
-            setUser(user);
-            setIsAuthenticated(true);
-            return true;
-          }
+          // Just set authentication state - profile will be fetched by dashboard layout
+          logger.info("Login successful");
+          setIsAuthenticated(true);
+          return true;
         }
 
         logger.warn("Login failed");
@@ -55,7 +54,7 @@ export const useLogin = () => {
         setIsLoading(false);
       }
     },
-    [setUser, setIsAuthenticated]
+    [setIsAuthenticated]
   );
 
   const clearError = useCallback(() => {
@@ -74,7 +73,7 @@ export const useLogin = () => {
 export const useRegister = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
-  const { setUser, setIsAuthenticated } = useAuthStore();
+  const { setIsAuthenticated } = useAuthStore();
 
   const register = useCallback(
     async (userData: RegisterRequest): Promise<boolean> => {
@@ -90,14 +89,10 @@ export const useRegister = () => {
         const success = await authApiService.register(userData);
 
         if (success) {
-          // Fetch user profile after successful registration
-          const user = await authApiService.getCurrentUser();
-          if (user) {
-            logger.info("Registration successful, setting user", user);
-            setUser(user);
-            setIsAuthenticated(true);
-            return true;
-          }
+          // Just set authentication state - profile will be fetched by dashboard layout
+          logger.info("Registration successful");
+          setIsAuthenticated(true);
+          return true;
         }
 
         logger.warn("Registration failed");
@@ -113,7 +108,7 @@ export const useRegister = () => {
         setIsLoading(false);
       }
     },
-    [setUser, setIsAuthenticated]
+    [setIsAuthenticated]
   );
 
   const clearError = useCallback(() => {
@@ -161,25 +156,42 @@ export const useProfile = () => {
   const [error, setError] = useState<ApiError | null>(null);
 
   const fetchProfile = useCallback(async (): Promise<void> => {
-    try {
-      logger.info("Fetching user profile");
-      setIsLoading(true);
-      setError(null);
+    const cacheKey = "user-profile";
 
-      const user = await authApiService.getCurrentUser();
-      if (user) {
-        setProfile(user);
-        logger.info("User profile fetched successfully");
-      } else {
-        logger.warn("Failed to fetch user profile");
-      }
-    } catch (err) {
-      logger.error("Error fetching user profile", err);
-      const apiError = err as ApiError;
-      setError(apiError);
-    } finally {
-      setIsLoading(false);
+    // Return existing promise if request is already in flight
+    if (inFlightRequests.has(cacheKey)) {
+      logger.info("Reusing in-flight profile fetch");
+      return inFlightRequests.get(cacheKey);
     }
+
+    // Create new request promise
+    const requestPromise = (async () => {
+      try {
+        logger.info("Fetching user profile");
+        setIsLoading(true);
+        setError(null);
+
+        const user = await authApiService.getCurrentUser();
+        if (user) {
+          setProfile(user);
+          logger.info("User profile fetched successfully");
+        } else {
+          logger.warn("Failed to fetch user profile");
+        }
+      } catch (err) {
+        logger.error("Error fetching user profile", err);
+        const apiError = err as ApiError;
+        setError(apiError);
+      } finally {
+        setIsLoading(false);
+        // Clean up cache entry when request completes
+        inFlightRequests.delete(cacheKey);
+      }
+    })();
+
+    // Cache the promise
+    inFlightRequests.set(cacheKey, requestPromise);
+    return requestPromise;
   }, []);
 
   const clearError = useCallback(() => {
