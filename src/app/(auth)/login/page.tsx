@@ -8,7 +8,6 @@
 
 import { useLogin } from "@/hooks/auth-hooks";
 import { createLogger } from "@/lib/utils/logger";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const logger = createLogger("LOGIN PAGE");
@@ -21,7 +20,6 @@ export default function LoginPage() {
   });
 
   const { login, isLoading, error } = useLogin();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
