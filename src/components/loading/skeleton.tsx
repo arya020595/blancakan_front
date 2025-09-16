@@ -77,65 +77,6 @@ export const TableSkeleton: React.FC<{ rows?: number; columns?: number }> = ({
   </div>
 );
 
-// Category specific skeletons
-export const CategoryRowSkeleton: React.FC = () => (
-  <tr>
-    <td className="px-6 py-4 whitespace-nowrap">
-      <div className="flex items-center">
-        <Skeleton width="8rem" height="1rem" />
-      </div>
-    </td>
-    <td className="px-6 py-4">
-      <Skeleton width="12rem" height="1rem" />
-    </td>
-    <td className="px-6 py-4 whitespace-nowrap">
-      <Skeleton width="4rem" height="1.5rem" rounded="full" />
-    </td>
-    <td className="px-6 py-4 whitespace-nowrap">
-      <Skeleton width="6rem" height="1rem" />
-    </td>
-    <td className="px-6 py-4 whitespace-nowrap text-right">
-      <div className="flex justify-end gap-4">
-        <Skeleton width="3rem" height="1rem" />
-        <Skeleton width="3rem" height="1rem" />
-      </div>
-    </td>
-  </tr>
-);
-
-export const CategoryTableSkeleton: React.FC<{ rows?: number }> = ({
-  rows = 5,
-}) => (
-  <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-    <table className="min-w-full divide-y divide-gray-200">
-      <thead className="bg-gray-50">
-        <tr>
-          <th className="px-6 py-3 text-left">
-            <Skeleton width="3rem" height="0.75rem" />
-          </th>
-          <th className="px-6 py-3 text-left">
-            <Skeleton width="6rem" height="0.75rem" />
-          </th>
-          <th className="px-6 py-3 text-left">
-            <Skeleton width="4rem" height="0.75rem" />
-          </th>
-          <th className="px-6 py-3 text-left">
-            <Skeleton width="5rem" height="0.75rem" />
-          </th>
-          <th className="px-6 py-3 text-right">
-            <Skeleton width="5rem" height="0.75rem" />
-          </th>
-        </tr>
-      </thead>
-      <tbody className="bg-white divide-y divide-gray-200">
-        {Array.from({ length: rows }).map((_, index) => (
-          <CategoryRowSkeleton key={index} />
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
-
 // Card skeleton components
 export const CardSkeleton: React.FC<{
   showImage?: boolean;
@@ -284,8 +225,6 @@ export const OptimisticOverlay: React.FC<{
 const SkeletonComponents = {
   Skeleton,
   TableSkeleton,
-  CategoryRowSkeleton,
-  CategoryTableSkeleton,
   CardSkeleton,
   FormSkeleton,
   ListItemSkeleton,
