@@ -33,13 +33,8 @@ export default function LoginPage() {
 
     const success = await login(credentials);
     if (success) {
-      logger.info("Login successful, handling redirect...");
-      // Redirect to dashboard or the intended page
-      const redirectUrl =
-        new URLSearchParams(window.location.search).get("redirect") ||
-        "/dashboard";
-      logger.info("Redirecting to:", redirectUrl);
-      router.push(redirectUrl);
+      // AuthRouteGuard will detect authentication and redirect; avoid double navigation
+      logger.info("Login successful; AuthRouteGuard will handle redirect");
     } else {
       logger.warn("Login failed");
     }
