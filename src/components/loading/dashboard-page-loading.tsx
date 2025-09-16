@@ -31,7 +31,9 @@ export default function DashboardPageLoading({
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <div className="h-8 w-32 bg-gray-200 animate-pulse rounded"></div>
+          <h1 className="text-xl font-semibold text-gray-700 animate-pulse">
+            {title}
+          </h1>
           <div className="h-4 w-48 bg-gray-200 animate-pulse rounded mt-2"></div>
         </div>
         {showActionButton && (
