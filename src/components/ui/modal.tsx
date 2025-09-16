@@ -38,6 +38,7 @@ export function Modal({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <Dialog.Content
+          {...(description ? {} : { "aria-describedby": undefined })}
           className={`fixed left-1/2 top-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-xl ${maxWidth} data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95`}>
           {(title || title === "") && (
             <div className="mb-4 flex items-center justify-between">
@@ -64,12 +65,15 @@ export function Modal({
               </Dialog.Close>
             </div>
           )}
+
           {description && (
             <Dialog.Description className="mb-3 text-sm text-gray-600">
               {description}
             </Dialog.Description>
           )}
+
           <div className="modal-body">{children}</div>
+
           {footer && <div className="mt-6">{footer}</div>}
         </Dialog.Content>
       </Dialog.Portal>
