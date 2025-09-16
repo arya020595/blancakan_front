@@ -18,6 +18,9 @@ import { useCallback, useState } from "react";
 
 const logger = createLogger("EVENT_TYPES HOOKS");
 
+// Simple in-flight request cache to prevent duplicate network calls
+const inFlightRequests = new Map<string, Promise<any>>();
+
 // Hook for fetching event types list with optimistic updates
 export const useEventTypes = () => {
   const [eventTypes, setEventTypes] = useState<EventType[]>([]);
@@ -27,31 +30,48 @@ export const useEventTypes = () => {
 
   const fetchEventTypes = useCallback(
     async (params: EventTypesQueryParams = {}) => {
-      try {
-        logger.info("Starting event types fetch", params);
-        setIsLoading(true);
-        setError(null);
+      const cacheKey = JSON.stringify(params);
 
-        const response = await eventTypesApiService.getEventTypes(params);
-
-        logger.info("Event types fetch successful", {
-          count: response.data.length,
-          total: response.meta.total_count,
-        });
-
-        setEventTypes(response.data);
-        setMeta(response.meta);
-        return response;
-      } catch (err) {
-        const apiError = err as ApiError;
-        logger.error("Event types fetch failed", apiError);
-        setError(apiError);
-        setEventTypes([]);
-        setMeta(null);
-        throw apiError;
-      } finally {
-        setIsLoading(false);
+      // Return existing promise if request is already in flight
+      if (inFlightRequests.has(cacheKey)) {
+        logger.info("Reusing in-flight event types fetch", { params });
+        return inFlightRequests.get(cacheKey);
       }
+
+      // Create new request promise
+      const requestPromise = (async () => {
+        try {
+          logger.info("Starting event types fetch", params);
+          setIsLoading(true);
+          setError(null);
+
+          const response = await eventTypesApiService.getEventTypes(params);
+
+          logger.info("Event types fetch successful", {
+            count: response.data.length,
+            total: response.meta.total_count,
+          });
+
+          setEventTypes(response.data);
+          setMeta(response.meta);
+          return response;
+        } catch (err) {
+          const apiError = err as ApiError;
+          logger.error("Event types fetch failed", { params, error: apiError });
+          setError(apiError);
+          setEventTypes([]);
+          setMeta(null);
+          throw apiError;
+        } finally {
+          setIsLoading(false);
+          // Clean up cache entry when request completes
+          inFlightRequests.delete(cacheKey);
+        }
+      })();
+
+      // Cache the promise
+      inFlightRequests.set(cacheKey, requestPromise);
+      return requestPromise;
     },
     []
   );

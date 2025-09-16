@@ -18,6 +18,9 @@ import { useCallback, useState } from "react";
 
 const logger = createLogger("CATEGORIES HOOKS");
 
+// Simple in-flight request cache to prevent duplicate network calls
+const inFlightRequests = new Map<string, Promise<any>>();
+
 // Hook for fetching categories list with optimistic updates
 export const useCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -27,31 +30,48 @@ export const useCategories = () => {
 
   const fetchCategories = useCallback(
     async (params: CategoriesQueryParams = {}) => {
-      try {
-        logger.info("Starting categories fetch", params);
-        setIsLoading(true);
-        setError(null);
+      const cacheKey = JSON.stringify(params);
 
-        const response = await categoriesApiService.getCategories(params);
-
-        logger.info("Categories fetch successful", {
-          count: response.data.length,
-          total: response.meta.total_count,
-        });
-
-        setCategories(response.data);
-        setMeta(response.meta);
-        return response;
-      } catch (err) {
-        const apiError = err as ApiError;
-        logger.error("Categories fetch failed", apiError);
-        setError(apiError);
-        setCategories([]);
-        setMeta(null);
-        throw apiError;
-      } finally {
-        setIsLoading(false);
+      // Return existing promise if request is already in flight
+      if (inFlightRequests.has(cacheKey)) {
+        logger.info("Reusing in-flight categories fetch", { params });
+        return inFlightRequests.get(cacheKey);
       }
+
+      // Create new request promise
+      const requestPromise = (async () => {
+        try {
+          logger.info("Starting categories fetch", params);
+          setIsLoading(true);
+          setError(null);
+
+          const response = await categoriesApiService.getCategories(params);
+
+          logger.info("Categories fetch successful", {
+            count: response.data.length,
+            total: response.meta.total_count,
+          });
+
+          setCategories(response.data);
+          setMeta(response.meta);
+          return response;
+        } catch (err) {
+          const apiError = err as ApiError;
+          logger.error("Categories fetch failed", { params, error: apiError });
+          setError(apiError);
+          setCategories([]);
+          setMeta(null);
+          throw apiError;
+        } finally {
+          setIsLoading(false);
+          // Clean up cache entry when request completes
+          inFlightRequests.delete(cacheKey);
+        }
+      })();
+
+      // Cache the promise
+      inFlightRequests.set(cacheKey, requestPromise);
+      return requestPromise;
     },
     []
   );
