@@ -6,6 +6,7 @@
 
 "use client";
 
+import type { User } from "@/lib/api/types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createLogger } from "../lib/utils/logger";
@@ -38,7 +39,7 @@ interface UseAuthProtectionReturn {
   /** Whether currently redirecting */
   isRedirecting: boolean;
   /** User profile data */
-  user: any;
+  user: User | null;
   /** Current loading message */
   loadingMessage: string;
   /** Whether the component should show loading UI */
@@ -100,6 +101,7 @@ export function useAuthProtection(
     isAuthenticated,
     isLoading,
     hasInitialized,
+    hasHydrated,
     router,
     redirectTo,
     enableLogging,
