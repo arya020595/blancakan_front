@@ -18,6 +18,9 @@ import { useCallback, useState } from "react";
 
 const logger = createLogger("ROLES HOOKS");
 
+// Simple in-flight request cache to prevent duplicate network calls
+const inFlightRequests = new Map<string, Promise<any>>();
+
 // Hook for fetching roles list with optimistic updates
 export const useRoles = () => {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -26,31 +29,48 @@ export const useRoles = () => {
   const [error, setError] = useState<ApiError | null>(null);
 
   const fetchRoles = useCallback(async (params: RolesQueryParams = {}) => {
-    try {
-      logger.info("Starting roles fetch", params);
-      setIsLoading(true);
-      setError(null);
+    const cacheKey = JSON.stringify(params);
 
-      const response = await rolesApiService.getRoles(params);
-
-      logger.info("Roles fetch successful", {
-        count: response.data.length,
-        total: response.meta.total_count,
-      });
-
-      setRoles(response.data);
-      setMeta(response.meta);
-      return response;
-    } catch (err) {
-      const apiError = err as ApiError;
-      logger.error("Roles fetch failed", apiError);
-      setError(apiError);
-      setRoles([]);
-      setMeta(null);
-      throw apiError;
-    } finally {
-      setIsLoading(false);
+    // Return existing promise if request is already in flight
+    if (inFlightRequests.has(cacheKey)) {
+      logger.info("Reusing in-flight roles fetch", { params });
+      return inFlightRequests.get(cacheKey);
     }
+
+    // Create new request promise
+    const requestPromise = (async () => {
+      try {
+        logger.info("Starting roles fetch", params);
+        setIsLoading(true);
+        setError(null);
+
+        const response = await rolesApiService.getRoles(params);
+
+        logger.info("Roles fetch successful", {
+          count: response.data.length,
+          total: response.meta.total_count,
+        });
+
+        setRoles(response.data);
+        setMeta(response.meta);
+        return response;
+      } catch (err) {
+        const apiError = err as ApiError;
+        logger.error("Roles fetch failed", { params, error: apiError });
+        setError(apiError);
+        setRoles([]);
+        setMeta(null);
+        throw apiError;
+      } finally {
+        setIsLoading(false);
+        // Clean up cache entry when request completes
+        inFlightRequests.delete(cacheKey);
+      }
+    })();
+
+    // Cache the promise
+    inFlightRequests.set(cacheKey, requestPromise);
+    return requestPromise;
   }, []);
 
   const refreshRoles = useCallback(
