@@ -5,6 +5,7 @@
 
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { createLogger } from "@/lib/utils/logger";
 import React, { ErrorInfo, ReactNode } from "react";
 
@@ -187,18 +188,14 @@ function DefaultErrorFallback({
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <button
-            onClick={onRetry}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            Try Again
-          </button>
+          <Button onClick={onRetry}>Try Again</Button>
 
           {level === "page" && (
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+            <Button
+              variant="secondary"
+              onClick={() => window.location.reload()}>
               Reload Page
-            </button>
+            </Button>
           )}
         </div>
 

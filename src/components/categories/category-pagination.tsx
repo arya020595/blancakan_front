@@ -14,6 +14,7 @@
 
 "use client";
 
+import { Button } from "@/components/ui/button";
 import type { PaginationMeta } from "@/lib/api/types";
 import React from "react";
 
@@ -144,14 +145,15 @@ export const CategoryPagination = React.memo<CategoryPaginationProps>(
                 {/* First page */}
                 {currentPage > 3 && (
                   <>
-                    <button
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => onPageChange(1)}
                       onKeyDown={(e) => handleKeyDown(e, () => onPageChange(1))}
                       disabled={isLoading}
-                      className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                       aria-label="Go to page 1">
                       1
-                    </button>
+                    </Button>
                     {currentPage > 4 && (
                       <span className="px-2 py-2 text-sm text-gray-500">
                         ...
@@ -162,16 +164,17 @@ export const CategoryPagination = React.memo<CategoryPaginationProps>(
 
                 {/* Previous page */}
                 {currentPage > 1 && (
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => onPageChange(currentPage - 1)}
                     onKeyDown={(e) =>
                       handleKeyDown(e, () => onPageChange(currentPage - 1))
                     }
                     disabled={isLoading}
-                    className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                     aria-label={`Go to page ${currentPage - 1}`}>
                     {currentPage - 1}
-                  </button>
+                  </Button>
                 )}
 
                 {/* Current page */}
@@ -184,16 +187,17 @@ export const CategoryPagination = React.memo<CategoryPaginationProps>(
 
                 {/* Next page */}
                 {currentPage < meta.total_pages && (
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => onPageChange(currentPage + 1)}
                     onKeyDown={(e) =>
                       handleKeyDown(e, () => onPageChange(currentPage + 1))
                     }
                     disabled={isLoading}
-                    className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                     aria-label={`Go to page ${currentPage + 1}`}>
                     {currentPage + 1}
-                  </button>
+                  </Button>
                 )}
 
                 {/* Last page */}
@@ -204,16 +208,17 @@ export const CategoryPagination = React.memo<CategoryPaginationProps>(
                         ...
                       </span>
                     )}
-                    <button
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => onPageChange(meta.total_pages)}
                       onKeyDown={(e) =>
                         handleKeyDown(e, () => onPageChange(meta.total_pages))
                       }
                       disabled={isLoading}
-                      className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                       aria-label={`Go to page ${meta.total_pages}`}>
                       {meta.total_pages}
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>

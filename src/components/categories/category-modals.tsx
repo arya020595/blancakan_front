@@ -14,6 +14,7 @@
 
 "use client";
 
+import { Button } from "@/components/ui/button";
 import type { Category } from "@/lib/api/types";
 import React, { useEffect, useRef } from "react";
 
@@ -139,17 +140,14 @@ export const CreateCategoryModal = React.memo<CreateCategoryModalProps>(
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={onClose}
-                disabled={isCreating}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50">
+                disabled={isCreating}>
                 Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isCreating}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              </Button>
+              <Button type="submit" disabled={isCreating}>
                 {isCreating ? (
                   <>
                     <svg
@@ -173,7 +171,7 @@ export const CreateCategoryModal = React.memo<CreateCategoryModalProps>(
                 ) : (
                   "Create Category"
                 )}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -296,17 +294,14 @@ export const EditCategoryModal = React.memo<EditCategoryModalProps>(
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={onClose}
-                disabled={isUpdating}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50">
+                disabled={isUpdating}>
                 Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isUpdating}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              </Button>
+              <Button type="submit" disabled={isUpdating}>
                 {isUpdating ? (
                   <>
                     <svg
@@ -330,7 +325,7 @@ export const EditCategoryModal = React.memo<EditCategoryModalProps>(
                 ) : (
                   "Update Category"
                 )}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -421,17 +416,14 @@ export const DeleteConfirmModal = React.memo<DeleteConfirmModalProps>(
           </div>
 
           <div className="flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              disabled={isDeleting}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50">
+            <Button variant="outline" onClick={onClose} disabled={isDeleting}>
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               ref={confirmButtonRef}
+              variant="destructive"
               onClick={onConfirm}
-              disabled={isDeleting}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              disabled={isDeleting}>
               {isDeleting ? (
                 <>
                   <svg
@@ -455,7 +447,7 @@ export const DeleteConfirmModal = React.memo<DeleteConfirmModalProps>(
               ) : (
                 "Delete Category"
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

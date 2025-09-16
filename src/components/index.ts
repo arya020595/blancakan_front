@@ -9,3 +9,6 @@ export * from "./auth";
 export * from "./roles/role-pagination";
 export * from "./roles/role-table-row";
 export * from "./roles/roles-table";
+
+// UI Components
+export { Button } from "./ui/button";

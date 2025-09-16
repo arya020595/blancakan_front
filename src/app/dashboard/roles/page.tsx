@@ -27,6 +27,7 @@ import { RolePagination } from "@/components/roles/role-pagination";
 import { RoleTableRow } from "@/components/roles/role-table-row";
 import { RolesTable } from "@/components/roles/roles-table";
 import { useOptimisticToasts } from "@/components/toast";
+import { Button } from "@/components/ui/button";
 import Modal from "@/components/ui/modal";
 import {
   useCreateRole,
@@ -312,11 +313,7 @@ export default function RolesPage() {
               Manage user roles and permissions
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            Add Role
-          </button>
+          <Button onClick={() => setShowCreateModal(true)}>Add Role</Button>
         </div>
 
         {/* Search */}
@@ -420,18 +417,18 @@ export default function RolesPage() {
           title="Delete Role">
           {deletingRole && <DeleteRoleContent roleName={deletingRole.name} />}
           <div className="flex justify-end gap-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => setDeletingRole(null)}
-              disabled={isDeleting}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50">
+              disabled={isDeleting}>
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="destructive"
               onClick={handleDelete}
-              disabled={isDeleting}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              disabled={isDeleting}>
               {isDeleting ? (
                 <span className="inline-flex items-center gap-2">
                   <svg
@@ -457,7 +454,7 @@ export default function RolesPage() {
               ) : (
                 "Delete Role"
               )}
-            </button>
+            </Button>
           </div>
         </Modal>
       </div>

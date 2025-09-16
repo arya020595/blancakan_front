@@ -28,6 +28,7 @@ import {
 import { CategoryTableRow } from "@/components/categories/category-table-row";
 import { ComponentErrorBoundary } from "@/components/error-boundary";
 import { useOptimisticToasts } from "@/components/toast";
+import { Button } from "@/components/ui/button";
 import {
   useCategories,
   useCreateCategory,
@@ -293,11 +294,7 @@ export default function CategoriesPage() {
               Manage your event categories
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            Add Category
-          </button>
+          <Button onClick={() => setShowCreateModal(true)}>Add Category</Button>
         </div>
 
         {/* Search */}
