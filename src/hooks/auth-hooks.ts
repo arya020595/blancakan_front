@@ -13,7 +13,7 @@ import { useCallback, useState } from "react";
 const logger = createLogger("AUTH HOOKS");
 
 // Simple in-flight request cache to prevent duplicate network calls
-const inFlightRequests = new Map<string, Promise<any>>();
+const inFlightRequests = new Map<string, Promise<void>>();
 
 // Custom hook for login functionality
 export const useLogin = () => {
@@ -161,7 +161,7 @@ export const useProfile = () => {
     // Return existing promise if request is already in flight
     if (inFlightRequests.has(cacheKey)) {
       logger.info("Reusing in-flight profile fetch");
-      return inFlightRequests.get(cacheKey);
+      return inFlightRequests.get(cacheKey)!;
     }
 
     // Create new request promise

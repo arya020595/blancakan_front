@@ -10,6 +10,7 @@ import type {
   CategoriesQueryParams,
   Category,
   CreateCategoryRequest,
+  PaginatedResponse,
   PaginationMeta,
   UpdateCategoryRequest,
 } from "@/lib/api/types";
@@ -19,7 +20,10 @@ import { useCallback, useState } from "react";
 const logger = createLogger("CATEGORIES HOOKS");
 
 // Simple in-flight request cache to prevent duplicate network calls
-const inFlightRequests = new Map<string, Promise<any>>();
+const inFlightRequests = new Map<
+  string,
+  Promise<PaginatedResponse<Category>>
+>();
 
 // Hook for fetching categories list with optimistic updates
 export const useCategories = () => {
@@ -39,35 +43,39 @@ export const useCategories = () => {
       }
 
       // Create new request promise
-      const requestPromise = (async () => {
-        try {
-          logger.info("Starting categories fetch", params);
-          setIsLoading(true);
-          setError(null);
+      const requestPromise: Promise<PaginatedResponse<Category>> =
+        (async () => {
+          try {
+            logger.info("Starting categories fetch", params);
+            setIsLoading(true);
+            setError(null);
 
-          const response = await categoriesApiService.getCategories(params);
+            const response = await categoriesApiService.getCategories(params);
 
-          logger.info("Categories fetch successful", {
-            count: response.data.length,
-            total: response.meta.total_count,
-          });
+            logger.info("Categories fetch successful", {
+              count: response.data.length,
+              total: response.meta.total_count,
+            });
 
-          setCategories(response.data);
-          setMeta(response.meta);
-          return response;
-        } catch (err) {
-          const apiError = err as ApiError;
-          logger.error("Categories fetch failed", { params, error: apiError });
-          setError(apiError);
-          setCategories([]);
-          setMeta(null);
-          throw apiError;
-        } finally {
-          setIsLoading(false);
-          // Clean up cache entry when request completes
-          inFlightRequests.delete(cacheKey);
-        }
-      })();
+            setCategories(response.data);
+            setMeta(response.meta);
+            return response;
+          } catch (err) {
+            const apiError = err as ApiError;
+            logger.error("Categories fetch failed", {
+              params,
+              error: apiError,
+            });
+            setError(apiError);
+            setCategories([]);
+            setMeta(null);
+            throw apiError;
+          } finally {
+            setIsLoading(false);
+            // Clean up cache entry when request completes
+            inFlightRequests.delete(cacheKey);
+          }
+        })();
 
       // Cache the promise
       inFlightRequests.set(cacheKey, requestPromise);

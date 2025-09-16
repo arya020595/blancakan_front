@@ -8,6 +8,7 @@ import { rolesApiService } from "@/lib/api/services/roles-service";
 import type {
   ApiError,
   CreateRoleRequest,
+  PaginatedResponse,
   PaginationMeta,
   Role,
   RolesQueryParams,
@@ -19,7 +20,7 @@ import { useCallback, useState } from "react";
 const logger = createLogger("ROLES HOOKS");
 
 // Simple in-flight request cache to prevent duplicate network calls
-const inFlightRequests = new Map<string, Promise<any>>();
+const inFlightRequests = new Map<string, Promise<PaginatedResponse<Role>>>();
 
 // Hook for fetching roles list with optimistic updates
 export const useRoles = () => {
@@ -38,7 +39,7 @@ export const useRoles = () => {
     }
 
     // Create new request promise
-    const requestPromise = (async () => {
+    const requestPromise: Promise<PaginatedResponse<Role>> = (async () => {
       try {
         logger.info("Starting roles fetch", params);
         setIsLoading(true);

@@ -31,12 +31,8 @@ export function withAuthProtection<P extends object>(
   options: UseAuthProtectionOptions = {}
 ) {
   const ProtectedComponent: React.FC<P> = (props) => {
-    const {
-      shouldShowLoading,
-      shouldShowContent,
-      loadingMessage,
-      isAuthenticated,
-    } = useAuthProtection(options);
+    const { shouldShowLoading, loadingMessage, isAuthenticated } =
+      useAuthProtection(options);
 
     // Show loading UI
     if (shouldShowLoading) {
