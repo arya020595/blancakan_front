@@ -16,7 +16,6 @@
 "use client";
 
 import { ComponentErrorBoundary } from "@/components/error-boundary";
-import { CategoryTableSkeleton } from "@/components/loading/skeleton";
 import {
   CreateRoleModal,
   DeleteRoleModal,
@@ -280,10 +279,6 @@ export default function RolesPage() {
 
   // Memoized table content
   const tableContent = useMemo(() => {
-    if (isLoading) {
-      return <CategoryTableSkeleton rows={5} />;
-    }
-
     if (roles.length === 0) {
       return (
         <tr>
@@ -302,7 +297,7 @@ export default function RolesPage() {
         onDelete={handleDeleteConfirm}
       />
     ));
-  }, [isLoading, roles, handleEdit, handleDeleteConfirm]);
+  }, [roles, handleEdit, handleDeleteConfirm]);
 
   return (
     <ComponentErrorBoundary>
@@ -366,13 +361,11 @@ export default function RolesPage() {
         )}
 
         {/* Roles Table with Suspense */}
-        <Suspense fallback={<CategoryTableSkeleton rows={10} />}>
-          <RolesTable
-            tableContent={tableContent}
-            isLoading={isLoading}
-            error={errorState ? new Error(errorState.message) : null}
-          />
-        </Suspense>
+        <RolesTable
+          tableContent={tableContent}
+          error={errorState ? new Error(errorState.message) : null}
+          isLoading={isLoading}
+        />
 
         {/* Pagination with Suspense */}
         <Suspense fallback={<div>Loading pagination...</div>}>

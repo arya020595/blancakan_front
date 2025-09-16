@@ -24,7 +24,6 @@ import {
 import { EventTypePagination } from "@/components/event-types/event-type-pagination";
 import { EventTypeTableRow } from "@/components/event-types/event-type-table-row";
 import { EventTypesTable } from "@/components/event-types/event-types-table";
-import { CategoryTableSkeleton } from "@/components/loading/skeleton";
 import { useOptimisticToasts } from "@/components/toast";
 import {
   useCreateEventType,
@@ -38,7 +37,7 @@ import type {
   UpdateEventTypeRequest,
 } from "@/lib/api/types";
 import { createLogger } from "@/lib/utils/logger";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const logger = createLogger("EVENT_TYPES PAGE");
 
@@ -269,10 +268,6 @@ export default function EventTypesPage() {
 
   // Memoized table content
   const tableContent = useMemo(() => {
-    if (isLoading) {
-      return <CategoryTableSkeleton rows={5} />;
-    }
-
     if (eventTypes.length === 0) {
       return (
         <tr>
@@ -312,7 +307,7 @@ export default function EventTypesPage() {
         onDelete={handleDeleteConfirm}
       />
     ));
-  }, [isLoading, eventTypes, handleEdit, handleDeleteConfirm, searchQuery]);
+  }, [eventTypes, handleEdit, handleDeleteConfirm, searchQuery]);
 
   return (
     <ComponentErrorBoundary>
@@ -407,13 +402,11 @@ export default function EventTypesPage() {
         )}
 
         {/* Event Types Table */}
-        <Suspense fallback={<CategoryTableSkeleton rows={10} />}>
-          <EventTypesTable
-            tableContent={tableContent}
-            isLoading={isLoading}
-            error={errorState ? new Error(errorState.message) : null}
-          />
-        </Suspense>
+        <EventTypesTable
+          tableContent={tableContent}
+          error={errorState ? new Error(errorState.message) : null}
+          isLoading={isLoading}
+        />
 
         {/* Pagination */}
         {meta && (

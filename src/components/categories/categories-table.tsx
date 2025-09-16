@@ -1,46 +1,44 @@
 /**
  * Categories Table Component
  *
- * Follows React Suspense patterns and enterprise standards:
- * - Proper Suspense boundary integration
- * - Loading state management
+ * Simplified table component focused on displaying data:
+ * - Clean semantic HTML structure
  * - Accessibility with ARIA attributes
- * - Semantic HTML structure
  * - TypeScript strict typing
- *
- * @see https://react.dev/reference/react/Suspense
- * @see https://react.dev/reference/react/memo
+ * - Error boundary compatible
+ * - Loading states with skeleton
  */
 
 "use client";
 
-import { CategoryTableSkeleton } from "@/components/loading/skeleton";
+import { TableSkeleton } from "@/components/loading/skeleton";
 import React from "react";
 
 interface CategoriesTableProps {
   /** Table content (rows) to render */
   tableContent: React.ReactNode;
-  /** Loading state indicator */
-  isLoading: boolean;
   /** Optional error state */
   error?: Error | null;
+  /** Loading state */
+  isLoading?: boolean;
 }
 
 /**
- * CategoriesTable - Main table component with Suspense support
+ * CategoriesTable - Clean table component with loading states
  *
  * Features:
- * - Handles loading states gracefully
+ * - Pure data display
  * - Proper semantic table structure
  * - Accessibility compliance
  * - Memoized for performance
  * - Error boundary compatible
+ * - Loading skeleton support
  */
 export const CategoriesTable = React.memo<CategoriesTableProps>(
-  ({ tableContent, isLoading, error }) => {
+  ({ tableContent, error, isLoading = false }) => {
     // Handle loading state
     if (isLoading) {
-      return <CategoryTableSkeleton rows={5} />;
+      return <TableSkeleton rows={5} columns={5} />;
     }
 
     // Handle error state

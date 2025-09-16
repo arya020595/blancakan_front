@@ -27,7 +27,6 @@ import {
 } from "@/components/categories/category-pagination";
 import { CategoryTableRow } from "@/components/categories/category-table-row";
 import { ComponentErrorBoundary } from "@/components/error-boundary";
-import { CategoryTableSkeleton } from "@/components/loading/skeleton";
 import { useOptimisticToasts } from "@/components/toast";
 import {
   useCategories,
@@ -263,10 +262,6 @@ export default function CategoriesPage() {
 
   // Memoized table content
   const tableContent = useMemo(() => {
-    if (isLoading) {
-      return <CategoryTableSkeleton rows={5} />;
-    }
-
     if (categories.length === 0) {
       return (
         <tr>
@@ -285,7 +280,7 @@ export default function CategoriesPage() {
         onDelete={handleDeleteConfirm}
       />
     ));
-  }, [isLoading, categories, handleEdit, handleDeleteConfirm]);
+  }, [categories, handleEdit, handleDeleteConfirm]);
 
   return (
     <ComponentErrorBoundary>
@@ -349,13 +344,11 @@ export default function CategoriesPage() {
         )}
 
         {/* Categories Table with Suspense */}
-        <Suspense fallback={<CategoryTableSkeleton rows={10} />}>
-          <CategoriesTable
-            tableContent={tableContent}
-            isLoading={isLoading}
-            error={errorState ? new Error(errorState.message) : null}
-          />
-        </Suspense>
+        <CategoriesTable
+          tableContent={tableContent}
+          error={errorState ? new Error(errorState.message) : null}
+          isLoading={isLoading}
+        />
 
         {/* Pagination with Suspense */}
         <Suspense fallback={<CategoryPaginationSkeleton />}>
