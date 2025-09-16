@@ -6,11 +6,24 @@
 import { BaseApiService } from "@/lib/api/base-service";
 import { API_CONFIG } from "@/lib/api/config";
 import { tokenManager as defaultTokenManager } from "@/lib/auth/token-manager";
-import { IAuthenticationService, ITokenManager } from "@/lib/interfaces/auth.interfaces";
+import {
+  IAuthenticationService,
+  ITokenManager,
+} from "@/lib/interfaces/auth.interfaces";
 import { createLogger, ILogger } from "@/lib/utils/logger";
-import { ApiResponse, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, User } from "../types";
+import {
+  ApiResponse,
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+  User,
+} from "../types";
 
-export class AuthApiService extends BaseApiService implements IAuthenticationService {
+export class AuthApiService
+  extends BaseApiService
+  implements IAuthenticationService
+{
   private readonly logger: ILogger;
   private readonly tokenManager: ITokenManager;
 
@@ -58,11 +71,11 @@ export class AuthApiService extends BaseApiService implements IAuthenticationSer
       const response = await this.performRegister(userData);
 
       if (response.status === "success" && response.data) {
-        this.logger.info("Registration successful", { 
-          userId: response.data.id, 
-          email: response.data.email 
+        this.logger.info("Registration successful", {
+          userId: response.data.id,
+          email: response.data.email,
         });
-        
+
         await this.handleSuccessfulRegistration(response.data);
         return true;
       }
@@ -78,13 +91,13 @@ export class AuthApiService extends BaseApiService implements IAuthenticationSer
   async logout(): Promise<void> {
     try {
       this.logger.info("Starting logout process");
-      
+
       // Attempt to notify the server
       await this.performLogout();
-      
+
       // Always clear tokens locally
       this.tokenManager.removeToken();
-      
+
       this.logger.info("Logout completed");
     } catch (error) {
       // Always clear tokens even if server request fails
@@ -146,7 +159,9 @@ export class AuthApiService extends BaseApiService implements IAuthenticationSer
   }
 
   // Private helper methods
-  private async performLogin(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
+  private async performLogin(
+    credentials: LoginRequest
+  ): Promise<ApiResponse<LoginResponse>> {
     return this.customAction<LoginResponse, LoginRequest>(
       "POST",
       API_CONFIG.ENDPOINTS.AUTH.LOGIN,
@@ -158,7 +173,9 @@ export class AuthApiService extends BaseApiService implements IAuthenticationSer
     return this.customAction<void>("POST", API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
   }
 
-  private async performRegister(userData: RegisterRequest): Promise<ApiResponse<RegisterResponse>> {
+  private async performRegister(
+    userData: RegisterRequest
+  ): Promise<ApiResponse<RegisterResponse>> {
     return this.customAction<RegisterResponse, RegisterRequest>(
       "POST",
       API_CONFIG.ENDPOINTS.AUTH.REGISTER,
@@ -169,25 +186,27 @@ export class AuthApiService extends BaseApiService implements IAuthenticationSer
   private async handleSuccessfulLogin(loginData: LoginResponse): Promise<void> {
     const token = this.tokenManager.extractToken(loginData.authorization);
     this.logger.debug("Storing authentication token", {
-      tokenPreview: `${token.substring(0, 20)}...`
+      tokenPreview: `${token.substring(0, 20)}...`,
     });
-    
+
     this.tokenManager.setToken(token);
-    
+
     // Store refresh token if provided
     if (loginData.refresh_token) {
       this.tokenManager.setRefreshToken(loginData.refresh_token);
     }
   }
 
-  private async handleSuccessfulRegistration(registerData: RegisterResponse): Promise<void> {
+  private async handleSuccessfulRegistration(
+    registerData: RegisterResponse
+  ): Promise<void> {
     const token = this.tokenManager.extractToken(registerData.authorization);
     this.logger.debug("Storing authentication token after registration", {
-      tokenPreview: `${token.substring(0, 20)}...`
+      tokenPreview: `${token.substring(0, 20)}...`,
     });
-    
+
     this.tokenManager.setToken(token);
-    
+
     // Store refresh token if provided
     if (registerData.refresh_token) {
       this.tokenManager.setRefreshToken(registerData.refresh_token);

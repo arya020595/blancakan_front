@@ -6,15 +6,10 @@
 
 import DashboardClient from "@/app/dashboard/dashboard-client";
 import { DashboardStats } from "@/lib/api/types";
-import { ServerAuthService } from "@/lib/auth/server-auth-guard";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  // Require authentication before proceeding
-  // This will automatically redirect to login if not authenticated
-  await ServerAuthService.requireAuthentication();
-
   // Mock data for now (not calling any APIs)
   const mockStats: DashboardStats = {
     total_categories: 0,
