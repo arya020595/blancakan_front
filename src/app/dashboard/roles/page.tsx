@@ -16,15 +16,18 @@
 "use client";
 
 import { ComponentErrorBoundary } from "@/components/error-boundary";
+// Refactored: use global Modal + field-only forms
+import { FormShell } from "@/components/forms/form-shell";
+import { DeleteRoleContent } from "@/components/roles/forms/delete-role-content";
 import {
-  CreateRoleModal,
-  DeleteRoleModal,
-  EditRoleModal,
-} from "@/components/roles/role-modals";
+  RoleForm,
+  type RoleFormValues,
+} from "@/components/roles/forms/role-form";
 import { RolePagination } from "@/components/roles/role-pagination";
 import { RoleTableRow } from "@/components/roles/role-table-row";
 import { RolesTable } from "@/components/roles/roles-table";
 import { useOptimisticToasts } from "@/components/toast";
+import Modal from "@/components/ui/modal";
 import {
   useCreateRole,
   useDeleteRole,
@@ -54,8 +57,7 @@ export default function RolesPage() {
   const toasts = useOptimisticToasts();
 
   // Optimistic updates hook
-  const { addOptimisticUpdate, removeOptimisticUpdate, getOptimisticStatus } =
-    useOptimisticRoles();
+  const { addOptimisticUpdate, removeOptimisticUpdate } = useOptimisticRoles();
 
   // Hooks
   const { roles, meta, isLoading, error, fetchRoles, setRoles } = useRoles();
@@ -99,11 +101,11 @@ export default function RolesPage() {
 
   // Memoized handlers
   const handleCreate = useCallback(
-    async (formData: FormData) => {
+    async (data: RoleFormValues) => {
       const roleData: CreateRoleRequest = {
         role: {
-          name: formData.get("name") as string,
-          description: formData.get("description") as string,
+          name: data.name,
+          description: (data.description || "").trim(),
         },
       };
 
@@ -145,7 +147,7 @@ export default function RolesPage() {
   );
 
   const handleUpdate = useCallback(
-    async (formData: FormData) => {
+    async (data: RoleFormValues) => {
       if (!editingRole) return;
 
       if (isTempId(editingRole._id)) {
@@ -158,8 +160,8 @@ export default function RolesPage() {
 
       const roleData: UpdateRoleRequest = {
         role: {
-          name: formData.get("name") as string,
-          description: formData.get("description") as string,
+          name: data.name,
+          description: (data.description || "").trim(),
         },
       };
 
@@ -378,28 +380,86 @@ export default function RolesPage() {
         </Suspense>
 
         {/* Modals */}
-        <CreateRoleModal
+        {/* Create Role Modal */}
+        <Modal
           isOpen={showCreateModal}
-          isCreating={isCreating}
           onClose={() => setShowCreateModal(false)}
-          onSubmit={handleCreate}
-        />
+          title="Create New Role">
+          <FormShell<RoleFormValues>
+            defaultValues={{ name: "", description: "" }}
+            onSubmit={handleCreate}
+            isSubmitting={isCreating}
+            submitLabel="Create Role"
+            onCancel={() => setShowCreateModal(false)}>
+            <RoleForm mode="create" isSubmitting={isCreating} />
+          </FormShell>
+        </Modal>
 
-        <EditRoleModal
+        {/* Edit Role Modal */}
+        <Modal
           isOpen={!!editingRole}
-          role={editingRole}
-          isUpdating={isUpdating}
           onClose={() => setEditingRole(null)}
-          onSubmit={handleUpdate}
-        />
+          title="Edit Role">
+          <FormShell<RoleFormValues>
+            defaultValues={{
+              name: editingRole?.name || "",
+              description: editingRole?.description || "",
+            }}
+            onSubmit={handleUpdate}
+            isSubmitting={isUpdating}
+            submitLabel="Update Role"
+            onCancel={() => setEditingRole(null)}>
+            <RoleForm mode="edit" isSubmitting={isUpdating} />
+          </FormShell>
+        </Modal>
 
-        <DeleteRoleModal
+        {/* Delete Role Modal */}
+        <Modal
           isOpen={!!deletingRole}
-          role={deletingRole}
-          isDeleting={isDeleting}
           onClose={() => setDeletingRole(null)}
-          onConfirm={handleDelete}
-        />
+          title="Delete Role">
+          {deletingRole && <DeleteRoleContent roleName={deletingRole.name} />}
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setDeletingRole(null)}
+              disabled={isDeleting}
+              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50">
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              {isDeleting ? (
+                <span className="inline-flex items-center gap-2">
+                  <svg
+                    className="-ml-1 h-4 w-4 animate-spin text-white"
+                    fill="none"
+                    viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Deleting...
+                </span>
+              ) : (
+                "Delete Role"
+              )}
+            </button>
+          </div>
+        </Modal>
       </div>
     </ComponentErrorBoundary>
   );

@@ -409,8 +409,10 @@ export const DeleteRoleModal = React.memo<DeleteRoleModalProps>(
           <div className="mb-4">
             <p className="text-sm text-gray-500">
               Are you sure you want to delete the role{" "}
-              <span className="font-medium text-gray-900">"{role.name}"</span>?
-              This action cannot be undone.
+              <span className="font-medium text-gray-900">
+                &quot;{role.name}&quot;
+              </span>
+              ? This action cannot be undone.
             </p>
           </div>
 
