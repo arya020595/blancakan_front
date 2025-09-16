@@ -40,7 +40,7 @@ class ErrorBoundaryClass extends React.Component<
     // Update state so the next render will show the fallback UI
     const errorId = `error-${Date.now()}-${Math.random()
       .toString(36)
-      .substr(2, 9)}`;
+      .substring(2, 9)}`;
     return {
       hasError: true,
       error,
