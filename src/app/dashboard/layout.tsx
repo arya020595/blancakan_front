@@ -43,6 +43,14 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     }
   }, [profile, setUser]);
 
+  // Define nav items and render via map for maintainability
+  const navItems = [
+    { href: "/dashboard", label: "Dashboard", exact: true },
+    { href: "/dashboard/categories", label: "Categories" },
+    { href: "/dashboard/event-types", label: "Event Types" },
+    { href: "/dashboard/roles", label: "Roles" },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
@@ -55,30 +63,15 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           </div>
           <nav className="mt-8">
             <div className="px-3 space-y-1">
-              <NavLink
-                href="/dashboard"
-                exact
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                Dashboard
-              </NavLink>
-
-              <NavLink
-                href="/dashboard/categories"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                Categories
-              </NavLink>
-
-              <NavLink
-                href="/dashboard/event-types"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                Event Types
-              </NavLink>
-
-              <NavLink
-                href="/dashboard/roles"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                Roles
-              </NavLink>
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.href}
+                  href={item.href}
+                  exact={item.exact}
+                  className="group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                  {item.label}
+                </NavLink>
+              ))}
             </div>
           </nav>
         </div>
