@@ -1,12 +1,30 @@
 /**
  * Roles Table Component
  *
- * Simplified table component focused on displaying data:
- * - Clean semantic HTML structure
- * - Accessibility with ARIA attributes
- * - TypeScript strict typing
- * - Error boundary compatible
- * - Loading states with skeleton
+ * Purpose:
+ * - Display a paginated list of roles in a semantic table.
+ * - This component is a presentational wrapper: it accepts pre-rendered
+ *   `tableContent` (usually an array of `RoleTableRow` elements), an optional
+ *   `error` to show a friendly error state, and `isLoading` to render a
+ *   `TableSkeleton` while data is being fetched.
+ *
+ * Usage:
+ * - Use the `useRoles` hook to fetch roles and pass `roles.map(...)` as
+ *   `tableContent` (each item should be a `RoleTableRow`).
+ * - Keep data-loading logic in the parent/page component and only pass the
+ *   `isLoading` flag to this component to show the skeleton.
+ * - This separation keeps the table purely presentational and easy to reuse.
+ *
+ * Example:
+ * <RolesTable
+ *   tableContent={roles.map(r => <RoleTableRow key={r._id} role={r} ... />)}
+ *   isLoading={isLoading}
+ *   error={error}
+ * />
+ *
+ * Notes:
+ * - `RoleTableRow` handles per-row actions (edit/delete) and should call
+ *   callbacks provided by the parent page.
  */
 
 "use client";

@@ -1,12 +1,27 @@
 /**
  * Role Table Row Component
  *
- * Follows React best practices:
- * - Memoized for performance optimization
- * - Single responsibility principle
- * - Proper TypeScript interfaces
- * - Accessibility considerations
- * - Clear prop interfaces
+ * Purpose:
+ * - Renders a single row representing a `Role` in a table.
+ * - Handles row-level UI like temporary optimistic state, and exposes
+ *   `onEdit` and `onDelete` callbacks to the parent page/component.
+ *
+ * Props:
+ * - `role`: the `Role` object to display (expects `_id`, `name`, `description`,
+ *   `created_at`, `updated_at`).
+ * - `onEdit(role)`: called when the user clicks Edit. Parent should open
+ *   an edit modal and handle updating.
+ * - `onDelete(id)`: called when the user confirms deletion. Parent should
+ *   handle optimistic deletion and API call.
+ *
+ * Usage:
+ * <tr>
+ *  <RoleTableRow role={role} onEdit={openEdit} onDelete={confirmDelete} />
+ * </tr>
+ *
+ * Notes:
+ * - The component visually indicates optimistic/temporary roles (ids that
+ *   start with "temp-") and disables actions while saving.
  *
  * @see https://react.dev/reference/react/memo
  * @see https://react.dev/learn/passing-props-to-a-component
