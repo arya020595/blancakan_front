@@ -59,11 +59,14 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         // 👈 Don't persist isAuthenticated - always check token
       }),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.hasHydrated = true; // 👈 Mark as hydrated
-          state.checkAuth(); // 👈 Force fresh auth check
-        }
+      onRehydrateStorage: () => (_persistedState) => {
+        // 👇 Defer to the next tick and use the real store API
+        // to avoid synchronous mutations during rehydrate
+        setTimeout(() => {
+          useAuthStore.setState({ hasHydrated: true }); // 👈 Mark as hydrated
+          const s = useAuthStore.getState();
+          s.checkAuth?.(); // 👈 Force fresh auth check
+        }, 0);
       },
     }
   )
@@ -78,7 +81,9 @@ function DashboardLayout() {
   const { isAuthenticated, hasHydrated, checkAuth } = useAuthStore();
 
   useEffect(() => {
-    // 👈 Only check auth AFTER hydration
+    // 👈 Only check auth AFTER hydration (optional)
+    // Note: the store already triggers checkAuth() on rehydrate.
+    // Keeping this is harmless as checkAuth is idempotent and cheap.
     if (hasHydrated) {
       checkAuth();
     }
@@ -140,13 +145,21 @@ if (!hasHydrated) {
 ### ✅ Ensures Fresh Authentication Checks
 
 ```typescript
-onRehydrateStorage: () => (state) => {
-  if (state) {
-    state.hasHydrated = true;
-    state.checkAuth(); // 👈 Always verify token on startup
-  }
+onRehydrateStorage: () => (_persistedState) => {
+  // Defer and use the real store API to avoid rehydrate races
+  setTimeout(() => {
+    useAuthStore.setState({ hasHydrated: true });
+    const s = useAuthStore.getState();
+    s.checkAuth?.(); // 👈 Always verify token on startup
+  }, 0);
 };
 ```
+
+### ℹ️ Why defer with setTimeout?
+
+- Avoids mutating state synchronously during the persist middleware's rehydrate phase, which can cause subtle hydration mismatches.
+- Guarantees `useAuthStore` is fully created before we call `setState/getState`.
+- Keeps SSR markup stable; client-side changes happen after hydration is complete.
 
 ### ✅ Prevents Race Conditions
 

@@ -124,12 +124,14 @@ const authPersistOptions = {
     user: state.user,
     // Don't persist isAuthenticated or hasHydrated - always determine from token
   }),
-  onRehydrateStorage: () => (state?: AuthStore) => {
-    if (state) {
-      state.hasHydrated = true;
-      // Force auth check after hydration
-      state.checkAuth();
-    }
+  onRehydrateStorage: () => (_persistedState?: Partial<AuthStore>) => {
+    // Run after rehydrate completes on the client to avoid sync hydration races
+    setTimeout(() => {
+      // Mark hydrated and trigger a fresh auth check via the real store API
+      useAuthStore.setState({ hasHydrated: true });
+      const s = useAuthStore.getState();
+      s.checkAuth?.();
+    }, 0);
   },
 } as const;
 
