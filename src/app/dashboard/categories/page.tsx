@@ -17,18 +17,20 @@
 
 import { CategoriesTable } from "@/components/categories/categories-table";
 import {
-  CreateCategoryModal,
-  DeleteConfirmModal,
-  EditCategoryModal,
-} from "@/components/categories/category-modals";
-import {
   CategoryPagination,
   CategoryPaginationSkeleton,
 } from "@/components/categories/category-pagination";
 import { CategoryTableRow } from "@/components/categories/category-table-row";
+import {
+  CategoryForm,
+  type CategoryFormValues,
+} from "@/components/categories/forms/category-form";
+import { DeleteCategoryContent } from "@/components/categories/forms/delete-category-content";
 import { ComponentErrorBoundary } from "@/components/error-boundary";
+import { FormShell } from "@/components/forms/form-shell";
 import { useOptimisticToasts } from "@/components/toast";
 import { Button } from "@/components/ui/button";
+import Modal from "@/components/ui/modal";
 import {
   useCategories,
   useCreateCategory,
@@ -41,6 +43,7 @@ import type {
   UpdateCategoryRequest,
 } from "@/lib/api/types";
 import { createLogger } from "@/lib/utils/logger";
+import { Loader2 as Loader2Icon } from "lucide-react";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
 const logger = createLogger("CATEGORIES PAGE");
@@ -108,11 +111,11 @@ export default function CategoriesPage() {
 
   // Memoized handlers
   const handleCreate = useCallback(
-    async (formData: FormData) => {
+    async (data: CategoryFormValues) => {
       const categoryData: CreateCategoryRequest = {
         category: {
-          name: formData.get("name") as string,
-          description: formData.get("description") as string,
+          name: data.name,
+          description: (data.description || "").trim(),
           is_active: true,
           parent_id: null,
         },
@@ -155,7 +158,7 @@ export default function CategoriesPage() {
   );
 
   const handleUpdate = useCallback(
-    async (formData: FormData) => {
+    async (data: CategoryFormValues) => {
       if (!editingCategory) return;
 
       if (isTempId(editingCategory._id)) {
@@ -168,8 +171,8 @@ export default function CategoriesPage() {
 
       const categoryData: UpdateCategoryRequest = {
         category: {
-          name: formData.get("name") as string,
-          description: formData.get("description") as string,
+          name: data.name,
+          description: (data.description || "").trim(),
           status: true,
           parent_id: null,
         },
@@ -358,32 +361,75 @@ export default function CategoriesPage() {
         </Suspense>
 
         {/* Modals */}
-        <CreateCategoryModal
+        {/* Create Category Modal */}
+        <Modal
           isOpen={showCreateModal}
-          isCreating={isCreating}
           onClose={() => setShowCreateModal(false)}
-          onSubmit={handleCreate}
-        />
+          title="Create New Category">
+          <FormShell<CategoryFormValues>
+            defaultValues={{ name: "", description: "" }}
+            onSubmit={handleCreate}
+            isSubmitting={isCreating}
+            submitLabel="Create Category"
+            onCancel={() => setShowCreateModal(false)}>
+            <CategoryForm mode="create" isSubmitting={isCreating} />
+          </FormShell>
+        </Modal>
 
-        <EditCategoryModal
+        {/* Edit Category Modal */}
+        <Modal
           isOpen={!!editingCategory}
-          category={editingCategory}
-          isUpdating={isUpdating}
           onClose={() => setEditingCategory(null)}
-          onSubmit={handleUpdate}
-        />
+          title="Edit Category">
+          <FormShell<CategoryFormValues>
+            defaultValues={{
+              name: editingCategory?.name || "",
+              description: editingCategory?.description || "",
+            }}
+            onSubmit={handleUpdate}
+            isSubmitting={isUpdating}
+            submitLabel="Update Category"
+            onCancel={() => setEditingCategory(null)}>
+            <CategoryForm mode="edit" isSubmitting={isUpdating} />
+          </FormShell>
+        </Modal>
 
-        <DeleteConfirmModal
+        {/* Delete Category Modal */}
+        <Modal
           isOpen={!!deleteConfirm}
-          categoryName={
-            deleteConfirm
-              ? categories.find((cat) => cat._id === deleteConfirm)?.name
-              : undefined
-          }
-          isDeleting={isDeleting}
           onClose={() => setDeleteConfirm(null)}
-          onConfirm={() => deleteConfirm && handleDelete(deleteConfirm)}
-        />
+          title="Delete Category">
+          {deleteConfirm && (
+            <DeleteCategoryContent 
+              categoryName={
+                categories.find((cat) => cat._id === deleteConfirm)?.name || ""
+              } 
+            />
+          )}
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteConfirm(null)}
+              disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
+              disabled={isDeleting}>
+              {isDeleting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2Icon className="-ml-1 h-4 w-4 animate-spin" />
+                  Deleting...
+                </span>
+              ) : (
+                "Delete Category"
+              )}
+            </Button>
+          </div>
+        </Modal>
       </div>
     </ComponentErrorBoundary>
   );
