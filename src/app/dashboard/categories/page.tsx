@@ -46,7 +46,6 @@ import type {
 } from "@/lib/api/types";
 import { normalizeError } from "@/lib/utils/error-utils";
 import { createLogger } from "@/lib/utils/logger";
-import { Loader2 as Loader2Icon } from "lucide-react";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
 const logger = createLogger("CATEGORIES PAGE");
@@ -412,8 +411,7 @@ export default function CategoriesPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setDeleteConfirm(null)}
-              disabled={isDeleting}>
+              onClick={() => setDeleteConfirm(null)}>
               Cancel
             </Button>
             <Button
@@ -421,14 +419,7 @@ export default function CategoriesPage() {
               variant="destructive"
               onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
               disabled={isDeleting}>
-              {isDeleting ? (
-                <span className="inline-flex items-center gap-2">
-                  <Loader2Icon className="-ml-1 h-4 w-4 animate-spin" />
-                  Deleting...
-                </span>
-              ) : (
-                "Delete Category"
-              )}
+              Delete Category
             </Button>
           </div>
         </Modal>
