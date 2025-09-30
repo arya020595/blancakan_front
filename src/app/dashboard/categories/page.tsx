@@ -30,6 +30,7 @@ import { ComponentErrorBoundary } from "@/components/error-boundary";
 import { FormShell } from "@/components/forms/form-shell";
 import { useOptimisticToasts } from "@/components/toast";
 import { Button } from "@/components/ui/button";
+import ErrorModal from "@/components/ui/error-modal";
 import Modal from "@/components/ui/modal";
 import {
   useCategories,
@@ -37,11 +38,13 @@ import {
   useDeleteCategory,
   useUpdateCategory,
 } from "@/hooks/categories-hooks";
+import { useErrorModal } from "@/hooks/use-error-modal";
 import type {
   Category,
   CreateCategoryRequest,
   UpdateCategoryRequest,
 } from "@/lib/api/types";
+import { normalizeError } from "@/lib/utils/error-utils";
 import { createLogger } from "@/lib/utils/logger";
 import { Loader2 as Loader2Icon } from "lucide-react";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
@@ -58,6 +61,9 @@ export default function CategoriesPage() {
 
   // Enhanced toast system
   const toasts = useOptimisticToasts();
+
+  // Error modal hook
+  const { error: modalError, isErrorModalOpen, showError, closeError } = useErrorModal();
 
   // Hooks
   const {
@@ -76,18 +82,21 @@ export default function CategoriesPage() {
     createCategory,
     isLoading: isCreating,
     error: createError,
+    clearError: clearCreateError,
   } = useCreateCategory();
 
   const {
     updateCategory,
     isLoading: isUpdating,
     error: updateError,
+    clearError: clearUpdateError,
   } = useUpdateCategory();
 
   const {
     deleteCategory,
     isLoading: isDeleting,
     error: deleteError,
+    clearError: clearDeleteError,
   } = useDeleteCategory();
 
   // Memoized callbacks to prevent unnecessary re-renders
@@ -143,8 +152,13 @@ export default function CategoriesPage() {
         logger.info("Category created successfully");
       } catch (error) {
         removeCategoryOptimistic(tempId);
-        setShowCreateModal(true);
-        toasts.createError("Category");
+        setShowCreateModal(false); // Close form modal on error
+        
+        // Show detailed validation errors in modal
+        const validationError = normalizeError(error, "Failed to create category");
+        showError(validationError);
+        // Clear hook error to prevent table hiding
+        clearCreateError();
         logger.error("Failed to create category", error);
       }
     },
@@ -154,6 +168,8 @@ export default function CategoriesPage() {
       replaceTempCategoryOptimistic,
       removeCategoryOptimistic,
       toasts,
+      showError,
+      clearCreateError,
     ]
   );
 
@@ -201,8 +217,13 @@ export default function CategoriesPage() {
         logger.info("Category updated successfully");
       } catch (error) {
         updateCategoryOptimistic(originalCategory);
-        setEditingCategory(originalCategory);
-        toasts.updateError("Category");
+        setEditingCategory(null); // Close edit modal on error
+        
+        // Show detailed validation errors in modal
+        const validationError = normalizeError(error, "Failed to update category");
+        showError(validationError);
+        // Clear hook error to prevent table hiding
+        clearUpdateError();
         logger.error("Failed to update category", error);
       }
     },
@@ -211,6 +232,8 @@ export default function CategoriesPage() {
       updateCategory,
       updateCategoryOptimistic,
       toasts,
+      showError,
+      clearUpdateError,
       isTempId,
     ]
   );
@@ -235,8 +258,13 @@ export default function CategoriesPage() {
         logger.info("Category deleted successfully");
       } catch (error) {
         addCategoryOptimistic(categoryToDelete);
-        setDeleteConfirm(id);
-        toasts.deleteError("Category");
+        setDeleteConfirm(null); // Close delete modal on error
+        
+        // Show detailed validation errors in modal
+        const validationError = normalizeError(error, "Failed to delete category");
+        showError(validationError);
+        // Clear hook error to prevent table hiding
+        clearDeleteError();
         logger.error("Failed to delete category", error);
       }
     },
@@ -246,6 +274,8 @@ export default function CategoriesPage() {
       removeCategoryOptimistic,
       addCategoryOptimistic,
       toasts,
+      showError,
+      clearDeleteError,
       isTempId,
     ]
   );
@@ -258,10 +288,10 @@ export default function CategoriesPage() {
     setDeleteConfirm(id);
   }, []);
 
-  // Memoized error state
+  // Memoized error state (only fetch errors should affect table display)
   const errorState = useMemo(
-    () => error || createError || updateError || deleteError,
-    [error, createError, updateError, deleteError]
+    () => error, // Only use fetch error since mutation errors are handled by modal
+    [error]
   );
 
   // Memoized table content
@@ -313,35 +343,7 @@ export default function CategoriesPage() {
           </div>
         </div>
 
-        {/* Error Display */}
-        {errorState && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Operation Failed
-                </h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>{errorState.message}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Categories Table with Suspense */}
         <CategoriesTable
@@ -430,6 +432,14 @@ export default function CategoriesPage() {
             </Button>
           </div>
         </Modal>
+
+        {/* Error Modal for Backend Validation Errors */}
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          onClose={closeError}
+          error={modalError}
+          title="Validation Error"
+        />
       </div>
     </ComponentErrorBoundary>
   );
