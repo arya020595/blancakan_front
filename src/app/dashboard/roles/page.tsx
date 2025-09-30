@@ -357,8 +357,6 @@ export default function RolesPage() {
           </div>
         </div>
 
-
-
         {/* Roles Table with Suspense */}
         <RolesTable
           tableContent={tableContent}
