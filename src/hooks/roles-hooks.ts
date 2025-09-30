@@ -126,11 +126,16 @@ export const useCreateRole = () => {
     []
   );
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     createRole,
     isLoading,
     error,
     setError,
+    clearError,
   };
 };
 
@@ -171,11 +176,16 @@ export const useUpdateRole = () => {
     []
   );
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     updateRole,
     isLoading,
     error,
     setError,
+    clearError,
   };
 };
 
@@ -206,11 +216,16 @@ export const useDeleteRole = () => {
     }
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     deleteRole,
     isLoading,
     error,
     setError,
+    clearError,
   };
 };
 
@@ -246,6 +261,10 @@ export const useRole = () => {
     }
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     role,
     isLoading,
@@ -253,6 +272,7 @@ export const useRole = () => {
     fetchRole,
     setRole,
     setError,
+    clearError,
   };
 };
 

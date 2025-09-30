@@ -73,21 +73,21 @@ export default function RolesPage() {
     createRole,
     isLoading: isCreating,
     error: createError,
-    setError: clearCreateError,
+    clearError: clearCreateError,
   } = useCreateRole();
 
   const {
     updateRole,
     isLoading: isUpdating,
     error: updateError,
-    setError: clearUpdateError,
+    clearError: clearUpdateError,
   } = useUpdateRole();
 
   const {
     deleteRole,
     isLoading: isDeleting,
     error: deleteError,
-    setError: clearDeleteError,
+    clearError: clearDeleteError,
   } = useDeleteRole();
 
   // Memoized callbacks to prevent unnecessary re-renders
@@ -154,7 +154,7 @@ export default function RolesPage() {
         const validationError = normalizeError(error, "Failed to create role");
         showError(validationError);
         // Clear hook error to prevent table hiding
-        clearCreateError(null);
+        clearCreateError();
         logger.error("Failed to create role", error);
       }
     },
@@ -223,7 +223,7 @@ export default function RolesPage() {
         const validationError = normalizeError(error, "Failed to update role");
         showError(validationError);
         // Clear hook error to prevent table hiding
-        clearUpdateError(null);
+        clearUpdateError();
         logger.error("Failed to update role", error);
       }
     },
@@ -273,7 +273,7 @@ export default function RolesPage() {
       const validationError = normalizeError(error, "Failed to delete role");
       showError(validationError);
       // Clear hook error to prevent table hiding
-      clearDeleteError(null);
+      clearDeleteError();
       logger.error("Failed to delete role", error);
     }
   }, [
