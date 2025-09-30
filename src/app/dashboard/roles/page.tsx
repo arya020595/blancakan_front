@@ -28,6 +28,7 @@ import { RoleTableRow } from "@/components/roles/role-table-row";
 import { RolesTable } from "@/components/roles/roles-table";
 import { useOptimisticToasts } from "@/components/toast";
 import { Button } from "@/components/ui/button";
+import ErrorModal from "@/components/ui/error-modal";
 import Modal from "@/components/ui/modal";
 import {
   useCreateRole,
@@ -36,11 +37,13 @@ import {
   useRoles,
   useUpdateRole,
 } from "@/hooks/roles-hooks";
+import { useErrorModal } from "@/hooks/use-error-modal";
 import type {
   CreateRoleRequest,
   Role,
   UpdateRoleRequest,
 } from "@/lib/api/types";
+import { normalizeError } from "@/lib/utils/error-utils";
 import { createLogger } from "@/lib/utils/logger";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
@@ -57,6 +60,9 @@ export default function RolesPage() {
   // Enhanced toast system
   const toasts = useOptimisticToasts();
 
+  // Error modal hook
+  const { error: modalError, isErrorModalOpen, showError, closeError } = useErrorModal();
+
   // Optimistic updates hook
   const { addOptimisticUpdate, removeOptimisticUpdate } = useOptimisticRoles();
 
@@ -67,18 +73,21 @@ export default function RolesPage() {
     createRole,
     isLoading: isCreating,
     error: createError,
+    setError: clearCreateError,
   } = useCreateRole();
 
   const {
     updateRole,
     isLoading: isUpdating,
     error: updateError,
+    setError: clearUpdateError,
   } = useUpdateRole();
 
   const {
     deleteRole,
     isLoading: isDeleting,
     error: deleteError,
+    setError: clearDeleteError,
   } = useDeleteRole();
 
   // Memoized callbacks to prevent unnecessary re-renders
@@ -139,12 +148,17 @@ export default function RolesPage() {
         // Remove temporary role
         setRoles((prev) => prev.filter((role) => role._id !== tempId));
         removeOptimisticUpdate(tempId);
-        setShowCreateModal(true);
-        toasts.createError("Role");
+        setShowCreateModal(false); // Close form modal on error
+        
+        // Show detailed validation errors in modal
+        const validationError = normalizeError(error, "Failed to create role");
+        showError(validationError);
+        // Clear hook error to prevent table hiding
+        clearCreateError(null);
         logger.error("Failed to create role", error);
       }
     },
-    [createRole, setRoles, addOptimisticUpdate, removeOptimisticUpdate, toasts]
+    [createRole, setRoles, addOptimisticUpdate, removeOptimisticUpdate, toasts, showError, clearCreateError]
   );
 
   const handleUpdate = useCallback(
@@ -203,8 +217,13 @@ export default function RolesPage() {
           )
         );
         removeOptimisticUpdate(editingRole._id);
-        setEditingRole(originalRole);
-        toasts.updateError("Role");
+        setEditingRole(null); // Close edit modal on error
+        
+        // Show detailed validation errors in modal
+        const validationError = normalizeError(error, "Failed to update role");
+        showError(validationError);
+        // Clear hook error to prevent table hiding
+        clearUpdateError(null);
         logger.error("Failed to update role", error);
       }
     },
@@ -215,6 +234,8 @@ export default function RolesPage() {
       addOptimisticUpdate,
       removeOptimisticUpdate,
       toasts,
+      showError,
+      clearUpdateError,
       isTempId,
     ]
   );
@@ -246,8 +267,13 @@ export default function RolesPage() {
       // Revert optimistic update
       setRoles((prev) => [...prev, roleToDelete]);
       removeOptimisticUpdate(deletingRole._id);
-      setDeletingRole(roleToDelete);
-      toasts.deleteError("Role");
+      setDeletingRole(null); // Close delete modal on error
+      
+      // Show detailed validation errors in modal
+      const validationError = normalizeError(error, "Failed to delete role");
+      showError(validationError);
+      // Clear hook error to prevent table hiding
+      clearDeleteError(null);
       logger.error("Failed to delete role", error);
     }
   }, [
@@ -257,6 +283,8 @@ export default function RolesPage() {
     addOptimisticUpdate,
     removeOptimisticUpdate,
     toasts,
+    showError,
+    clearDeleteError,
     isTempId,
   ]);
 
@@ -274,10 +302,10 @@ export default function RolesPage() {
     [roles]
   );
 
-  // Memoized error state
+  // Memoized error state (only fetch errors should affect table display)
   const errorState = useMemo(
-    () => error || createError || updateError || deleteError,
-    [error, createError, updateError, deleteError]
+    () => error, // Only use fetch error since mutation errors are handled by modal
+    [error]
   );
 
   // Memoized table content
@@ -329,35 +357,7 @@ export default function RolesPage() {
           </div>
         </div>
 
-        {/* Error Display */}
-        {errorState && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Operation Failed
-                </h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>{errorState.message}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Roles Table with Suspense */}
         <RolesTable
@@ -457,6 +457,14 @@ export default function RolesPage() {
             </Button>
           </div>
         </Modal>
+
+        {/* Error Modal for Backend Validation Errors */}
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          onClose={closeError}
+          error={modalError}
+          title="Validation Error"
+        />
       </div>
     </ComponentErrorBoundary>
   );

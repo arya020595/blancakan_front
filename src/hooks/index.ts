@@ -15,3 +15,6 @@ export * from "./categories-hooks";
 export * from "./dashboard-hooks";
 export * from "./event-types-hooks";
 export * from "./roles-hooks";
+
+// UI Hooks
+export * from "./use-error-modal";
