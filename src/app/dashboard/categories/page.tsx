@@ -342,8 +342,6 @@ export default function CategoriesPage() {
           </div>
         </div>
 
-
-
         {/* Categories Table with Suspense */}
         <CategoriesTable
           tableContent={tableContent}
