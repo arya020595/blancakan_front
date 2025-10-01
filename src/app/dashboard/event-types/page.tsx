@@ -1,16 +1,5 @@
 /**
- * Event Types Page with Enterprise Component Architecture
- *
- * Follows React best practices and enterprise standards:
- * - Single Responsibility Principle
- * - Proper component separation
- * - Suspense boundaries for streaming UI
- * - Optimistic updates for better UX
- * - Error boundary integration
- * - Accessibility compliance
- *
- * @see https://react.dev/reference/react/Suspense
- * @see https://react.dev/learn/thinking-in-react
+ * Event Types Page - Simplified with Optimistic Updates
  */
 
 "use client";
@@ -42,28 +31,19 @@ import type {
   UpdateEventTypeRequest,
 } from "@/lib/api/types";
 import { normalizeError } from "@/lib/utils/error-utils";
-import { createLogger } from "@/lib/utils/logger";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-const logger = createLogger("EVENT_TYPES PAGE");
-
-// Main component
 export default function EventTypesPage() {
+  // State
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingEventType, setEditingEventType] = useState<EventType | null>(
-    null
-  );
+  const [editingEventType, setEditingEventType] = useState<EventType | null>(null);
   const [deletingEventType, setDeletingEventType] = useState<EventType | null>(null);
 
-  // Enhanced toast system
-  const toasts = useOptimisticToasts();
-
-  // Error modal hook
-  const { error: modalError, isErrorModalOpen, showError, closeError } = useErrorModal();
-
   // Hooks
+  const toasts = useOptimisticToasts();
+  const { error: modalError, isErrorModalOpen, showError, closeError } = useErrorModal();
   const {
     eventTypes,
     meta,
@@ -76,179 +56,112 @@ export default function EventTypesPage() {
     replaceTempEventTypeOptimistic,
   } = useEventTypes();
 
-  const {
-    createEventType,
-    isLoading: isCreating,
-    clearError: clearCreateError,
-  } = useCreateEventType();
+  const { createEventType, isLoading: isCreating, clearError: clearCreateError } = useCreateEventType();
+  const { updateEventType, isLoading: isUpdating, clearError: clearUpdateError } = useUpdateEventType();
+  const { deleteEventType, isLoading: isDeleting, clearError: clearDeleteError } = useDeleteEventType();
 
-  const {
-    updateEventType,
-    isLoading: isUpdating,
-    clearError: clearUpdateError,
-  } = useUpdateEventType();
-
-  const {
-    deleteEventType,
-    isLoading: isDeleting,
-    clearError: clearDeleteError,
-  } = useDeleteEventType();
-
-  // Memoized callbacks to prevent unnecessary re-renders
-  const isTempId = useCallback((id: string) => id.startsWith("temp-"), []);
-
-  // Memoized fetch parameters
-  const fetchParams = useMemo(
-    () => ({
+  // Fetch data when params change
+  useEffect(() => {
+    fetchEventTypes({
       page: currentPage,
       per_page: 10,
       query: searchQuery || "*",
-    }),
-    [currentPage, searchQuery]
-  );
+    });
+  }, [fetchEventTypes, currentPage, searchQuery]);
 
-  // Load event types when params change
-  useEffect(() => {
-    logger.info("Loading event types page", fetchParams);
-    fetchEventTypes(fetchParams);
-  }, [fetchEventTypes, fetchParams]);
+  // Create handler with optimistic updates
+  const handleCreate = async (data: EventTypeFormValues) => {
+    const eventTypeData: CreateEventTypeRequest = {
+      event_type: {
+        name: data.name,
+        description: (data.description || "").trim(),
+        icon_url: (data.icon_url || "").trim(),
+        sort_order: data.sort_order,
+        is_active: data.is_active,
+      },
+    };
 
-  // Memoized handlers
-  const handleCreate = useCallback(
-    async (data: EventTypeFormValues) => {
-      const eventTypeData: CreateEventTypeRequest = {
-        event_type: {
-          name: data.name,
-          description: (data.description || "").trim(),
-          icon_url: (data.icon_url || "").trim(),
-          sort_order: data.sort_order,
-          is_active: data.is_active,
-        },
-      };
+    const tempId = `temp-${Date.now()}`;
+    const optimisticEventType: EventType = {
+      _id: tempId,
+      name: eventTypeData.event_type.name,
+      description: eventTypeData.event_type.description,
+      icon_url: eventTypeData.event_type.icon_url,
+      is_active: eventTypeData.event_type.is_active,
+      slug: eventTypeData.event_type.name.toLowerCase().replace(/\s+/g, "-"),
+      sort_order: eventTypeData.event_type.sort_order,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
 
-      const tempId = `temp-${Date.now()}`;
-      const optimisticEventType: EventType = {
-        _id: tempId,
-        name: eventTypeData.event_type.name,
-        description: eventTypeData.event_type.description,
-        icon_url: eventTypeData.event_type.icon_url,
-        is_active: eventTypeData.event_type.is_active,
-        slug: eventTypeData.event_type.name.toLowerCase().replace(/\s+/g, "-"),
-        sort_order: eventTypeData.event_type.sort_order,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+    try {
+      addEventTypeOptimistic(optimisticEventType);
+      setShowCreateModal(false);
 
-      try {
-        addEventTypeOptimistic(optimisticEventType);
-        setShowCreateModal(false);
+      const response = await createEventType(eventTypeData);
+      replaceTempEventTypeOptimistic(tempId, response);
+      toasts.createSuccess("Event Type");
+    } catch (error) {
+      removeEventTypeOptimistic(tempId);
+      setShowCreateModal(false);
+      showError(normalizeError(error, "Failed to create event type"));
+      clearCreateError();
+    }
+  };
 
-        const response = await createEventType(eventTypeData);
-        replaceTempEventTypeOptimistic(tempId, response);
-        toasts.createSuccess("Event Type");
+  // Update handler with optimistic updates
+  const handleUpdate = async (data: EventTypeFormValues) => {
+    if (!editingEventType) return;
 
-        logger.info("Event type created successfully");
-      } catch (error) {
-        removeEventTypeOptimistic(tempId);
-        setShowCreateModal(false); // Close form modal on error
-        
-        // Show detailed validation errors in modal
-        const validationError = normalizeError(error, "Failed to create event type");
-        showError(validationError);
-        // Clear hook error to prevent table hiding
-        clearCreateError();
-        logger.error("Failed to create event type", error);
-      }
-    },
-    [
-      createEventType,
-      addEventTypeOptimistic,
-      replaceTempEventTypeOptimistic,
-      removeEventTypeOptimistic,
-      toasts,
-      showError,
-      clearCreateError,
-    ]
-  );
-
-  const handleUpdate = useCallback(
-    async (data: EventTypeFormValues) => {
-      if (!editingEventType) return;
-
-      if (isTempId(editingEventType._id)) {
-        logger.warn("Attempted to edit temporary event type", {
-          id: editingEventType._id,
-        });
-        setEditingEventType(null);
-        return;
-      }
-
-      const eventTypeData: UpdateEventTypeRequest = {
-        event_type: {
-          name: data.name,
-          description: (data.description || "").trim(),
-          icon_url: (data.icon_url || "").trim(),
-          sort_order: data.sort_order,
-          is_active: data.is_active,
-        },
-      };
-
-      const optimisticEventType: EventType = {
-        ...editingEventType,
-        name: eventTypeData.event_type.name,
-        description: eventTypeData.event_type.description,
-        icon_url: eventTypeData.event_type.icon_url,
-        sort_order: eventTypeData.event_type.sort_order,
-        is_active: eventTypeData.event_type.is_active,
-        updated_at: new Date().toISOString(),
-      };
-
-      const originalEventType = editingEventType;
-
-      try {
-        updateEventTypeOptimistic(optimisticEventType);
-        setEditingEventType(null);
-
-        const response = await updateEventType(
-          editingEventType._id,
-          eventTypeData
-        );
-        updateEventTypeOptimistic(response);
-        toasts.updateSuccess("Event Type");
-
-        logger.info("Event type updated successfully");
-      } catch (error) {
-        updateEventTypeOptimistic(originalEventType);
-        setEditingEventType(null); // Close edit modal on error
-        
-        // Show detailed validation errors in modal
-        const validationError = normalizeError(error, "Failed to update event type");
-        showError(validationError);
-        // Clear hook error to prevent table hiding
-        clearUpdateError();
-        logger.error("Failed to update event type", error);
-      }
-    },
-    [
-      editingEventType,
-      updateEventType,
-      updateEventTypeOptimistic,
-      toasts,
-      isTempId,
-      showError,
-      clearUpdateError,
-    ]
-  );
-
-  const handleDelete = useCallback(async () => {
-    if (!deletingEventType) return;
-
-    if (isTempId(deletingEventType._id)) {
-      logger.warn("Attempted to delete temporary event type", {
-        id: deletingEventType._id,
-      });
+    // Skip temp event types
+    if (editingEventType._id.startsWith("temp-")) {
+      setEditingEventType(null);
       return;
     }
+
+    const eventTypeData: UpdateEventTypeRequest = {
+      event_type: {
+        name: data.name,
+        description: (data.description || "").trim(),
+        icon_url: (data.icon_url || "").trim(),
+        sort_order: data.sort_order,
+        is_active: data.is_active,
+      },
+    };
+
+    const optimisticEventType: EventType = {
+      ...editingEventType,
+      name: eventTypeData.event_type.name,
+      description: eventTypeData.event_type.description,
+      icon_url: eventTypeData.event_type.icon_url,
+      sort_order: eventTypeData.event_type.sort_order,
+      is_active: eventTypeData.event_type.is_active,
+      updated_at: new Date().toISOString(),
+    };
+
+    const originalEventType = editingEventType;
+
+    try {
+      updateEventTypeOptimistic(optimisticEventType);
+      setEditingEventType(null);
+
+      const response = await updateEventType(editingEventType._id, eventTypeData);
+      updateEventTypeOptimistic(response);
+      toasts.updateSuccess("Event Type");
+    } catch (error) {
+      updateEventTypeOptimistic(originalEventType);
+      setEditingEventType(null);
+      showError(normalizeError(error, "Failed to update event type"));
+      clearUpdateError();
+    }
+  };
+
+  // Delete handler with optimistic updates
+  const handleDelete = async () => {
+    if (!deletingEventType) return;
+
+    // Skip temp event types
+    if (deletingEventType._id.startsWith("temp-")) return;
 
     const eventTypeToDelete = deletingEventType;
 
@@ -258,71 +171,39 @@ export default function EventTypesPage() {
 
       await deleteEventType(deletingEventType._id);
       toasts.deleteSuccess("Event Type");
-
-      logger.info("Event type deleted successfully");
     } catch (error) {
       addEventTypeOptimistic(eventTypeToDelete);
-      setDeletingEventType(null); // Close delete modal on error
-      
-      // Show detailed validation errors in modal
-      const validationError = normalizeError(error, "Failed to delete event type");
-      showError(validationError);
-      // Clear hook error to prevent table hiding
+      setDeletingEventType(null);
+      showError(normalizeError(error, "Failed to delete event type"));
       clearDeleteError();
-      logger.error("Failed to delete event type", error);
     }
-  }, [
-    deletingEventType,
-    deleteEventType,
-    removeEventTypeOptimistic,
-    addEventTypeOptimistic,
-    toasts,
-    showError,
-    clearDeleteError,
-    isTempId,
-  ]);
+  };
 
-  const handleEdit = useCallback((eventType: EventType) => {
-    setEditingEventType(eventType);
-  }, []);
+  // Simple handlers
+  const handleEdit = (eventType: EventType) => setEditingEventType(eventType);
 
-  const handleDeleteConfirm = useCallback(
-    (id: string) => {
-      const eventType = eventTypes.find((eventType) => eventType._id === id);
-      if (eventType) {
-        setDeletingEventType(eventType);
-      }
-    },
-    [eventTypes]
-  );
+  const handleDeleteConfirm = (id: string) => {
+    const eventType = eventTypes.find((eventType) => eventType._id === id);
+    if (eventType) setDeletingEventType(eventType);
+  };
 
-  // Memoized error state (only fetch errors should affect table display)
-  const errorState = useMemo(
-    () => error, // Only use fetch error since mutation errors are handled by modal
-    [error]
-  );
-
-  // Memoized table content
-  const tableContent = useMemo(() => {
-    if (eventTypes.length === 0) {
-      return (
-        <tr>
-          <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-            No event types found
-          </td>
-        </tr>
-      );
-    }
-
-    return eventTypes.map((eventType) => (
+  // Table content
+  const tableContent = eventTypes.length === 0 ? (
+    <tr>
+      <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+        No event types found
+      </td>
+    </tr>
+  ) : (
+    eventTypes.map((eventType) => (
       <EventTypeTableRow
         key={eventType._id}
         eventType={eventType}
         onEdit={handleEdit}
         onDelete={handleDeleteConfirm}
       />
-    ));
-  }, [eventTypes, handleEdit, handleDeleteConfirm]);
+    ))
+  );
 
   return (
     <ComponentErrorBoundary>
@@ -339,22 +220,18 @@ export default function EventTypesPage() {
         </div>
 
         {/* Search */}
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search event types..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-        </div>
+        <input
+          type="text"
+          placeholder="Search event types..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
 
-        {/* Event Types Table with Suspense */}
+        {/* Table */}
         <EventTypesTable
           tableContent={tableContent}
-          error={errorState ? new Error(errorState.message) : null}
+          error={error ? new Error(error.message) : null}
           isLoading={isLoading}
         />
 
