@@ -1,16 +1,5 @@
 /**
- * Categories Page with Enterprise Component Architecture
- *
- * Follows React best practices and enterprise standards:
- * - Single Responsibility Principle
- * - Proper component separation
- * - Suspense boundaries for streaming UI
- * - Optimistic updates for better UX
- * - Error boundary integration
- * - Accessibility compliance
- *
- * @see https://react.dev/reference/react/Suspense
- * @see https://react.dev/learn/thinking-in-react
+ * Categories Page - Simplified with Optimistic Updates
  */
 
 "use client";
@@ -45,26 +34,19 @@ import type {
   UpdateCategoryRequest,
 } from "@/lib/api/types";
 import { normalizeError } from "@/lib/utils/error-utils";
-import { createLogger } from "@/lib/utils/logger";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-const logger = createLogger("CATEGORIES PAGE");
-
-// Main component
 export default function CategoriesPage() {
+  // State
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-
-  // Enhanced toast system
-  const toasts = useOptimisticToasts();
-
-  // Error modal hook
-  const { error: modalError, isErrorModalOpen, showError, closeError } = useErrorModal();
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
 
   // Hooks
+  const toasts = useOptimisticToasts();
+  const { error: modalError, isErrorModalOpen, showError, closeError } = useErrorModal();
   const {
     categories,
     meta,
@@ -77,243 +59,148 @@ export default function CategoriesPage() {
     replaceTempCategoryOptimistic,
   } = useCategories();
 
-  const {
-    createCategory,
-    isLoading: isCreating,
-    error: createError,
-    clearError: clearCreateError,
-  } = useCreateCategory();
+  const { createCategory, isLoading: isCreating, clearError: clearCreateError } = useCreateCategory();
+  const { updateCategory, isLoading: isUpdating, clearError: clearUpdateError } = useUpdateCategory();
+  const { deleteCategory, isLoading: isDeleting, clearError: clearDeleteError } = useDeleteCategory();
 
-  const {
-    updateCategory,
-    isLoading: isUpdating,
-    error: updateError,
-    clearError: clearUpdateError,
-  } = useUpdateCategory();
-
-  const {
-    deleteCategory,
-    isLoading: isDeleting,
-    error: deleteError,
-    clearError: clearDeleteError,
-  } = useDeleteCategory();
-
-  // Memoized callbacks to prevent unnecessary re-renders
-  const isTempId = useCallback((id: string) => id.startsWith("temp-"), []);
-
-  // Memoized fetch parameters
-  const fetchParams = useMemo(
-    () => ({
+  // Fetch data when params change
+  useEffect(() => {
+    fetchCategories({
       page: currentPage,
       per_page: 10,
       query: searchQuery || "*",
-    }),
-    [currentPage, searchQuery]
-  );
+    });
+  }, [fetchCategories, currentPage, searchQuery]);
 
-  // Load categories when params change
-  useEffect(() => {
-    logger.info("Loading categories page", fetchParams);
-    fetchCategories(fetchParams);
-  }, [fetchCategories, fetchParams]);
+  // Create handler with optimistic updates
+  const handleCreate = async (data: CategoryFormValues) => {
+    const categoryData: CreateCategoryRequest = {
+      category: {
+        name: data.name,
+        description: (data.description || "").trim(),
+        is_active: data.is_active,
+        parent_id: null,
+      },
+    };
 
-  // Memoized handlers
-  const handleCreate = useCallback(
-    async (data: CategoryFormValues) => {
-      const categoryData: CreateCategoryRequest = {
-        category: {
-          name: data.name,
-          description: (data.description || "").trim(),
-          is_active: true,
-          parent_id: null,
-        },
-      };
+    const tempId = `temp-${Date.now()}`;
+    const optimisticCategory: Category = {
+      _id: tempId,
+      name: categoryData.category.name,
+      description: categoryData.category.description,
+      is_active: categoryData.category.is_active,
+      parent_id: categoryData.category.parent_id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
 
-      const tempId = `temp-${Date.now()}`;
-      const optimisticCategory: Category = {
-        _id: tempId,
-        name: categoryData.category.name,
-        description: categoryData.category.description,
-        is_active: categoryData.category.is_active,
-        parent_id: categoryData.category.parent_id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+    try {
+      addCategoryOptimistic(optimisticCategory);
+      setShowCreateModal(false);
 
-      try {
-        addCategoryOptimistic(optimisticCategory);
-        setShowCreateModal(false);
+      const response = await createCategory(categoryData);
+      replaceTempCategoryOptimistic(tempId, response);
+      toasts.createSuccess("Category");
+    } catch (error) {
+      removeCategoryOptimistic(tempId);
+      setShowCreateModal(false);
+      showError(normalizeError(error, "Failed to create category"));
+      clearCreateError();
+    }
+  };
 
-        const response = await createCategory(categoryData);
-        replaceTempCategoryOptimistic(tempId, response);
-        toasts.createSuccess("Category");
+  // Update handler with optimistic updates
+  const handleUpdate = async (data: CategoryFormValues) => {
+    if (!editingCategory) return;
 
-        logger.info("Category created successfully");
-      } catch (error) {
-        removeCategoryOptimistic(tempId);
-        setShowCreateModal(false); // Close form modal on error
-        
-        // Show detailed validation errors in modal
-        const validationError = normalizeError(error, "Failed to create category");
-        showError(validationError);
-        // Clear hook error to prevent table hiding
-        clearCreateError();
-        logger.error("Failed to create category", error);
-      }
-    },
-    [
-      createCategory,
-      addCategoryOptimistic,
-      replaceTempCategoryOptimistic,
-      removeCategoryOptimistic,
-      toasts,
-      showError,
-      clearCreateError,
-    ]
-  );
-
-  const handleUpdate = useCallback(
-    async (data: CategoryFormValues) => {
-      if (!editingCategory) return;
-
-      if (isTempId(editingCategory._id)) {
-        logger.warn("Attempted to edit temporary category", {
-          id: editingCategory._id,
-        });
-        setEditingCategory(null);
-        return;
-      }
-
-      const categoryData: UpdateCategoryRequest = {
-        category: {
-          name: data.name,
-          description: (data.description || "").trim(),
-          status: true,
-          parent_id: null,
-        },
-      };
-
-      const optimisticCategory: Category = {
-        ...editingCategory,
-        name: categoryData.category.name,
-        description: categoryData.category.description,
-        updated_at: new Date().toISOString(),
-      };
-
-      const originalCategory = editingCategory;
-
-      try {
-        updateCategoryOptimistic(optimisticCategory);
-        setEditingCategory(null);
-
-        const response = await updateCategory(
-          editingCategory._id,
-          categoryData
-        );
-        updateCategoryOptimistic(response);
-        toasts.updateSuccess("Category");
-
-        logger.info("Category updated successfully");
-      } catch (error) {
-        updateCategoryOptimistic(originalCategory);
-        setEditingCategory(null); // Close edit modal on error
-        
-        // Show detailed validation errors in modal
-        const validationError = normalizeError(error, "Failed to update category");
-        showError(validationError);
-        // Clear hook error to prevent table hiding
-        clearUpdateError();
-        logger.error("Failed to update category", error);
-      }
-    },
-    [
-      editingCategory,
-      updateCategory,
-      updateCategoryOptimistic,
-      toasts,
-      showError,
-      clearUpdateError,
-      isTempId,
-    ]
-  );
-
-  const handleDelete = useCallback(
-    async (id: string) => {
-      if (isTempId(id)) {
-        logger.warn("Attempted to delete temporary category", { id });
-        return;
-      }
-
-      const categoryToDelete = categories.find((cat) => cat._id === id);
-      if (!categoryToDelete) return;
-
-      try {
-        removeCategoryOptimistic(id);
-        setDeleteConfirm(null);
-
-        await deleteCategory(id);
-        toasts.deleteSuccess("Category");
-
-        logger.info("Category deleted successfully");
-      } catch (error) {
-        addCategoryOptimistic(categoryToDelete);
-        setDeleteConfirm(null); // Close delete modal on error
-        
-        // Show detailed validation errors in modal
-        const validationError = normalizeError(error, "Failed to delete category");
-        showError(validationError);
-        // Clear hook error to prevent table hiding
-        clearDeleteError();
-        logger.error("Failed to delete category", error);
-      }
-    },
-    [
-      categories,
-      deleteCategory,
-      removeCategoryOptimistic,
-      addCategoryOptimistic,
-      toasts,
-      showError,
-      clearDeleteError,
-      isTempId,
-    ]
-  );
-
-  const handleEdit = useCallback((category: Category) => {
-    setEditingCategory(category);
-  }, []);
-
-  const handleDeleteConfirm = useCallback((id: string) => {
-    setDeleteConfirm(id);
-  }, []);
-
-  // Memoized error state (only fetch errors should affect table display)
-  const errorState = useMemo(
-    () => error, // Only use fetch error since mutation errors are handled by modal
-    [error]
-  );
-
-  // Memoized table content
-  const tableContent = useMemo(() => {
-    if (categories.length === 0) {
-      return (
-        <tr>
-          <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-            No categories found
-          </td>
-        </tr>
-      );
+    // Skip temp categories
+    if (editingCategory._id.startsWith("temp-")) {
+      setEditingCategory(null);
+      return;
     }
 
-    return categories.map((category) => (
+    const categoryData: UpdateCategoryRequest = {
+      category: {
+        name: data.name,
+        description: (data.description || "").trim(),
+        is_active: data.is_active,
+        parent_id: null,
+      },
+    };
+
+    const optimisticCategory: Category = {
+      ...editingCategory,
+      name: categoryData.category.name,
+      description: categoryData.category.description,
+      is_active: data.is_active,
+      updated_at: new Date().toISOString(),
+    };
+
+    const originalCategory = editingCategory;
+
+    try {
+      updateCategoryOptimistic(optimisticCategory);
+      setEditingCategory(null);
+
+      const response = await updateCategory(editingCategory._id, categoryData);
+      updateCategoryOptimistic(response);
+      toasts.updateSuccess("Category");
+    } catch (error) {
+      updateCategoryOptimistic(originalCategory);
+      setEditingCategory(null);
+      showError(normalizeError(error, "Failed to update category"));
+      clearUpdateError();
+    }
+  };
+
+  // Delete handler with optimistic updates
+  const handleDelete = async () => {
+    if (!deletingCategory) return;
+
+    // Skip temp categories
+    if (deletingCategory._id.startsWith("temp-")) return;
+
+    const categoryToDelete = deletingCategory;
+
+    try {
+      removeCategoryOptimistic(deletingCategory._id);
+      setDeletingCategory(null);
+
+      await deleteCategory(deletingCategory._id);
+      toasts.deleteSuccess("Category");
+    } catch (error) {
+      addCategoryOptimistic(categoryToDelete);
+      setDeletingCategory(null);
+      showError(normalizeError(error, "Failed to delete category"));
+      clearDeleteError();
+    }
+  };
+
+  // Simple handlers
+  const handleEdit = (category: Category) => setEditingCategory(category);
+
+  const handleDeleteConfirm = (id: string) => {
+    const category = categories.find((cat) => cat._id === id);
+    if (category) setDeletingCategory(category);
+  };
+
+  // Table content
+  const tableContent = categories.length === 0 ? (
+    <tr>
+      <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+        No categories found
+      </td>
+    </tr>
+  ) : (
+    categories.map((category) => (
       <CategoryTableRow
         key={category._id}
         category={category}
         onEdit={handleEdit}
         onDelete={handleDeleteConfirm}
       />
-    ));
-  }, [categories, handleEdit, handleDeleteConfirm]);
+    ))
+  );
 
   return (
     <ComponentErrorBoundary>
@@ -330,22 +217,18 @@ export default function CategoriesPage() {
         </div>
 
         {/* Search */}
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search categories..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-        </div>
+        <input
+          type="text"
+          placeholder="Search categories..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
 
-        {/* Categories Table with Suspense */}
+        {/* Table */}
         <CategoriesTable
           tableContent={tableContent}
-          error={errorState ? new Error(errorState.message) : null}
+          error={error ? new Error(error.message) : null}
           isLoading={isLoading}
         />
 
@@ -366,7 +249,7 @@ export default function CategoriesPage() {
           onClose={() => setShowCreateModal(false)}
           title="Create New Category">
           <FormShell<CategoryFormValues>
-            defaultValues={{ name: "", description: "" }}
+            defaultValues={{ name: "", description: "", is_active: true }}
             onSubmit={handleCreate}
             isSubmitting={isCreating}
             submitLabel="Create Category"
@@ -384,6 +267,7 @@ export default function CategoriesPage() {
             defaultValues={{
               name: editingCategory?.name || "",
               description: editingCategory?.description || "",
+              is_active: editingCategory?.is_active ?? true,
             }}
             onSubmit={handleUpdate}
             isSubmitting={isUpdating}
@@ -393,30 +277,17 @@ export default function CategoriesPage() {
           </FormShell>
         </Modal>
 
-        {/* Delete Category Modal */}
+        {/* Delete Modal */}
         <Modal
-          isOpen={!!deleteConfirm}
-          onClose={() => setDeleteConfirm(null)}
+          isOpen={!!deletingCategory}
+          onClose={() => setDeletingCategory(null)}
           title="Delete Category">
-          {deleteConfirm && (
-            <DeleteCategoryContent 
-              categoryName={
-                categories.find((cat) => cat._id === deleteConfirm)?.name || ""
-              } 
-            />
-          )}
+          {deletingCategory && <DeleteCategoryContent categoryName={deletingCategory.name} />}
           <div className="flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setDeleteConfirm(null)}>
+            <Button variant="outline" onClick={() => setDeletingCategory(null)}>
               Cancel
             </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
-              disabled={isDeleting}>
+            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
               Delete Category
             </Button>
           </div>

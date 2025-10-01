@@ -5,6 +5,7 @@ import { useFormContext } from "react-hook-form";
 export type CategoryFormValues = {
   name: string;
   description?: string;
+  is_active: boolean;
 };
 
 export interface CategoryFormProps {
@@ -56,6 +57,21 @@ export function CategoryForm({ mode, isSubmitting }: CategoryFormProps) {
           className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500"
           placeholder="Enter category description (optional)"
         />
+      </div>
+
+      <div className="flex items-center">
+        <input
+          id={`${mode}-is_active`}
+          type="checkbox"
+          {...register("is_active")}
+          disabled={isSubmitting}
+          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+        />
+        <label
+          htmlFor={`${mode}-is_active`}
+          className="ml-2 block text-sm text-gray-700">
+          Active
+        </label>
       </div>
     </>
   );

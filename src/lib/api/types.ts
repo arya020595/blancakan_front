@@ -116,7 +116,7 @@ export interface UpdateCategoryRequest {
   category: {
     name: string;
     description?: string;
-    status: boolean;
+    is_active: boolean;
     parent_id?: string | null;
   };
 }
