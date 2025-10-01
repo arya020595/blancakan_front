@@ -166,10 +166,15 @@ export const useCreateEventType = () => {
     }
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     createEventType,
     isLoading,
     error,
+    clearError,
   };
 };
 
@@ -205,10 +210,15 @@ export const useUpdateEventType = () => {
     []
   );
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     updateEventType,
     isLoading,
     error,
+    clearError,
   };
 };
 
@@ -238,10 +248,15 @@ export const useDeleteEventType = () => {
     }
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     deleteEventType,
     isLoading,
     error,
+    clearError,
   };
 };
 

@@ -16,28 +16,34 @@
 "use client";
 
 import { ComponentErrorBoundary } from "@/components/error-boundary";
-import {
-  CreateEventTypeModal,
-  DeleteConfirmModal,
-  EditEventTypeModal,
-} from "@/components/event-types/event-type-modals";
 import { EventTypePagination } from "@/components/event-types/event-type-pagination";
 import { EventTypeTableRow } from "@/components/event-types/event-type-table-row";
 import { EventTypesTable } from "@/components/event-types/event-types-table";
+import { DeleteEventTypeContent } from "@/components/event-types/forms/delete-event-type-content";
+import {
+  EventTypeForm,
+  type EventTypeFormValues,
+} from "@/components/event-types/forms/event-type-form";
+import { FormShell } from "@/components/forms/form-shell";
 import { useOptimisticToasts } from "@/components/toast";
+import { Button } from "@/components/ui/button";
+import ErrorModal from "@/components/ui/error-modal";
+import Modal from "@/components/ui/modal";
 import {
   useCreateEventType,
   useDeleteEventType,
   useEventTypes,
   useUpdateEventType,
 } from "@/hooks/event-types-hooks";
+import { useErrorModal } from "@/hooks/use-error-modal";
 import type {
   CreateEventTypeRequest,
   EventType,
   UpdateEventTypeRequest,
 } from "@/lib/api/types";
+import { normalizeError } from "@/lib/utils/error-utils";
 import { createLogger } from "@/lib/utils/logger";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
 const logger = createLogger("EVENT_TYPES PAGE");
 
@@ -49,10 +55,13 @@ export default function EventTypesPage() {
   const [editingEventType, setEditingEventType] = useState<EventType | null>(
     null
   );
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deletingEventType, setDeletingEventType] = useState<EventType | null>(null);
 
   // Enhanced toast system
   const toasts = useOptimisticToasts();
+
+  // Error modal hook
+  const { error: modalError, isErrorModalOpen, showError, closeError } = useErrorModal();
 
   // Hooks
   const {
@@ -70,19 +79,19 @@ export default function EventTypesPage() {
   const {
     createEventType,
     isLoading: isCreating,
-    error: createError,
+    clearError: clearCreateError,
   } = useCreateEventType();
 
   const {
     updateEventType,
     isLoading: isUpdating,
-    error: updateError,
+    clearError: clearUpdateError,
   } = useUpdateEventType();
 
   const {
     deleteEventType,
     isLoading: isDeleting,
-    error: deleteError,
+    clearError: clearDeleteError,
   } = useDeleteEventType();
 
   // Memoized callbacks to prevent unnecessary re-renders
@@ -106,14 +115,14 @@ export default function EventTypesPage() {
 
   // Memoized handlers
   const handleCreate = useCallback(
-    async (formData: FormData) => {
+    async (data: EventTypeFormValues) => {
       const eventTypeData: CreateEventTypeRequest = {
         event_type: {
-          name: formData.get("name") as string,
-          description: formData.get("description") as string,
-          icon_url: formData.get("icon_url") as string,
-          sort_order: parseInt(formData.get("sort_order") as string, 10),
-          is_active: formData.get("is_active") === "on",
+          name: data.name,
+          description: (data.description || "").trim(),
+          icon_url: (data.icon_url || "").trim(),
+          sort_order: data.sort_order,
+          is_active: data.is_active,
         },
       };
 
@@ -141,8 +150,13 @@ export default function EventTypesPage() {
         logger.info("Event type created successfully");
       } catch (error) {
         removeEventTypeOptimistic(tempId);
-        setShowCreateModal(true);
-        toasts.createError("Event Type");
+        setShowCreateModal(false); // Close form modal on error
+        
+        // Show detailed validation errors in modal
+        const validationError = normalizeError(error, "Failed to create event type");
+        showError(validationError);
+        // Clear hook error to prevent table hiding
+        clearCreateError();
         logger.error("Failed to create event type", error);
       }
     },
@@ -152,11 +166,13 @@ export default function EventTypesPage() {
       replaceTempEventTypeOptimistic,
       removeEventTypeOptimistic,
       toasts,
+      showError,
+      clearCreateError,
     ]
   );
 
   const handleUpdate = useCallback(
-    async (formData: FormData) => {
+    async (data: EventTypeFormValues) => {
       if (!editingEventType) return;
 
       if (isTempId(editingEventType._id)) {
@@ -169,11 +185,11 @@ export default function EventTypesPage() {
 
       const eventTypeData: UpdateEventTypeRequest = {
         event_type: {
-          name: formData.get("name") as string,
-          description: formData.get("description") as string,
-          icon_url: formData.get("icon_url") as string,
-          sort_order: parseInt(formData.get("sort_order") as string, 10),
-          is_active: formData.get("is_active") === "on",
+          name: data.name,
+          description: (data.description || "").trim(),
+          icon_url: (data.icon_url || "").trim(),
+          sort_order: data.sort_order,
+          is_active: data.is_active,
         },
       };
 
@@ -203,8 +219,13 @@ export default function EventTypesPage() {
         logger.info("Event type updated successfully");
       } catch (error) {
         updateEventTypeOptimistic(originalEventType);
-        setEditingEventType(originalEventType);
-        toasts.updateError("Event Type");
+        setEditingEventType(null); // Close edit modal on error
+        
+        // Show detailed validation errors in modal
+        const validationError = normalizeError(error, "Failed to update event type");
+        showError(validationError);
+        // Clear hook error to prevent table hiding
+        clearUpdateError();
         logger.error("Failed to update event type", error);
       }
     },
@@ -214,56 +235,71 @@ export default function EventTypesPage() {
       updateEventTypeOptimistic,
       toasts,
       isTempId,
+      showError,
+      clearUpdateError,
     ]
   );
 
-  const handleDelete = useCallback(
-    async (id: string) => {
-      if (isTempId(id)) {
-        logger.warn("Attempted to delete temporary event type", { id });
-        return;
-      }
+  const handleDelete = useCallback(async () => {
+    if (!deletingEventType) return;
 
-      const eventTypeToDelete = eventTypes.find((et) => et._id === id);
-      if (!eventTypeToDelete) return;
+    if (isTempId(deletingEventType._id)) {
+      logger.warn("Attempted to delete temporary event type", {
+        id: deletingEventType._id,
+      });
+      return;
+    }
 
-      try {
-        removeEventTypeOptimistic(id);
-        setDeleteConfirm(null);
+    const eventTypeToDelete = deletingEventType;
 
-        await deleteEventType(id);
-        toasts.deleteSuccess("Event Type");
+    try {
+      removeEventTypeOptimistic(deletingEventType._id);
+      setDeletingEventType(null);
 
-        logger.info("Event type deleted successfully");
-      } catch (error) {
-        addEventTypeOptimistic(eventTypeToDelete);
-        setDeleteConfirm(id);
-        toasts.deleteError("Event Type");
-        logger.error("Failed to delete event type", error);
-      }
-    },
-    [
-      eventTypes,
-      deleteEventType,
-      removeEventTypeOptimistic,
-      addEventTypeOptimistic,
-      toasts,
-      isTempId,
-    ]
-  );
+      await deleteEventType(deletingEventType._id);
+      toasts.deleteSuccess("Event Type");
+
+      logger.info("Event type deleted successfully");
+    } catch (error) {
+      addEventTypeOptimistic(eventTypeToDelete);
+      setDeletingEventType(null); // Close delete modal on error
+      
+      // Show detailed validation errors in modal
+      const validationError = normalizeError(error, "Failed to delete event type");
+      showError(validationError);
+      // Clear hook error to prevent table hiding
+      clearDeleteError();
+      logger.error("Failed to delete event type", error);
+    }
+  }, [
+    deletingEventType,
+    deleteEventType,
+    removeEventTypeOptimistic,
+    addEventTypeOptimistic,
+    toasts,
+    showError,
+    clearDeleteError,
+    isTempId,
+  ]);
 
   const handleEdit = useCallback((eventType: EventType) => {
     setEditingEventType(eventType);
   }, []);
 
-  const handleDeleteConfirm = useCallback((id: string) => {
-    setDeleteConfirm(id);
-  }, []);
+  const handleDeleteConfirm = useCallback(
+    (id: string) => {
+      const eventType = eventTypes.find((eventType) => eventType._id === id);
+      if (eventType) {
+        setDeletingEventType(eventType);
+      }
+    },
+    [eventTypes]
+  );
 
-  // Memoized error state
+  // Memoized error state (only fetch errors should affect table display)
   const errorState = useMemo(
-    () => error || createError || updateError || deleteError,
-    [error, createError, updateError, deleteError]
+    () => error, // Only use fetch error since mutation errors are handled by modal
+    [error]
   );
 
   // Memoized table content
@@ -271,29 +307,8 @@ export default function EventTypesPage() {
     if (eventTypes.length === 0) {
       return (
         <tr>
-          <td colSpan={7} className="px-6 py-12 text-center">
-            <div className="text-gray-500">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
-                No event types found
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                {searchQuery
-                  ? "Try adjusting your search terms."
-                  : "Get started by creating your first event type."}
-              </p>
-            </div>
+          <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+            No event types found
           </td>
         </tr>
       );
@@ -307,143 +322,126 @@ export default function EventTypesPage() {
         onDelete={handleDeleteConfirm}
       />
     ));
-  }, [eventTypes, handleEdit, handleDeleteConfirm, searchQuery]);
+  }, [eventTypes, handleEdit, handleDeleteConfirm]);
 
   return (
     <ComponentErrorBoundary>
       <div className="space-y-6">
-        {/* Page Header */}
+        {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
-              Event Types
-            </h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Manage event type categories for your events. Configure icons,
-              display order, and availability.
+            <h1 className="text-2xl font-semibold text-gray-900">Event Types</h1>
+            <p className="text-sm text-gray-600">
+              Manage event type categories for your events. Configure icons, display order, and availability.
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            <svg
-              className="-ml-1 mr-2 h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-            Add Event Type
-          </button>
+          <Button onClick={() => setShowCreateModal(true)}>Add Event Type</Button>
         </div>
 
         {/* Search */}
         <div className="flex gap-4">
           <div className="flex-1">
-            <div className="relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg
-                  className="h-5 w-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Search event types..."
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Search event types..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
           </div>
         </div>
 
-        {/* Error Display */}
-        {errorState && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Error loading event types
-                </h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>{errorState.message}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Event Types Table */}
+        {/* Event Types Table with Suspense */}
         <EventTypesTable
           tableContent={tableContent}
           error={errorState ? new Error(errorState.message) : null}
           isLoading={isLoading}
         />
 
-        {/* Pagination */}
-        {meta && (
+        {/* Pagination with Suspense */}
+        <Suspense fallback={<div>Loading pagination...</div>}>
           <EventTypePagination
             meta={meta}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
             isLoading={isLoading}
           />
-        )}
+        </Suspense>
 
         {/* Modals */}
-        <CreateEventTypeModal
+        {/* Create Event Type Modal */}
+        <Modal
           isOpen={showCreateModal}
-          isCreating={isCreating}
           onClose={() => setShowCreateModal(false)}
-          onSubmit={handleCreate}
-        />
+          title="Create New Event Type">
+          <FormShell<EventTypeFormValues>
+            defaultValues={{
+              name: "",
+              description: "",
+              icon_url: "",
+              sort_order: 0,
+              is_active: true,
+            }}
+            onSubmit={handleCreate}
+            isSubmitting={isCreating}
+            submitLabel="Create Event Type"
+            onCancel={() => setShowCreateModal(false)}>
+            <EventTypeForm mode="create" isSubmitting={isCreating} />
+          </FormShell>
+        </Modal>
 
-        <EditEventTypeModal
+        {/* Edit Event Type Modal */}
+        <Modal
           isOpen={!!editingEventType}
-          eventType={editingEventType}
-          isUpdating={isUpdating}
           onClose={() => setEditingEventType(null)}
-          onSubmit={handleUpdate}
-        />
+          title="Edit Event Type">
+          <FormShell<EventTypeFormValues>
+            defaultValues={{
+              name: editingEventType?.name || "",
+              description: editingEventType?.description || "",
+              icon_url: editingEventType?.icon_url || "",
+              sort_order: editingEventType?.sort_order || 0,
+              is_active: editingEventType?.is_active ?? true,
+            }}
+            onSubmit={handleUpdate}
+            isSubmitting={isUpdating}
+            submitLabel="Update Event Type"
+            onCancel={() => setEditingEventType(null)}>
+            <EventTypeForm mode="edit" isSubmitting={isUpdating} />
+          </FormShell>
+        </Modal>
 
-        <DeleteConfirmModal
-          isOpen={!!deleteConfirm}
-          eventTypeName={
-            deleteConfirm
-              ? eventTypes.find((et) => et._id === deleteConfirm)?.name
-              : undefined
-          }
-          isDeleting={isDeleting}
-          onClose={() => setDeleteConfirm(null)}
-          onConfirm={() => deleteConfirm && handleDelete(deleteConfirm)}
+        {/* Delete Event Type Modal */}
+        <Modal
+          isOpen={!!deletingEventType}
+          onClose={() => setDeletingEventType(null)}
+          title="Delete Event Type">
+          {deletingEventType && (
+            <DeleteEventTypeContent eventTypeName={deletingEventType.name} />
+          )}
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeletingEventType(null)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}>
+              Delete Event Type
+            </Button>
+          </div>
+        </Modal>
+
+        {/* Error Modal for Backend Validation Errors */}
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          onClose={closeError}
+          error={modalError}
+          title="Validation Error"
         />
       </div>
     </ComponentErrorBoundary>
