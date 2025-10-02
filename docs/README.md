@@ -25,6 +25,13 @@ Real-world examples and code samples.
 - **[COMPONENT_EXAMPLES.md](./examples/COMPONENT_EXAMPLES.md)** - Component implementation examples
 - **[API_EXAMPLES.md](./examples/API_EXAMPLES.md)** - API integration examples
 
+### Metadata System Documentation
+Complete guides for implementing SEO-friendly metadata.
+
+- **[METADATA_BLUEPRINT.md](./METADATA_BLUEPRINT.md)** - Complete metadata implementation guide
+- **[METADATA_QUICK_REFERENCE.md](./METADATA_QUICK_REFERENCE.md)** - Quick reference and templates
+- **[METADATA_EXAMPLES.md](./METADATA_EXAMPLES.md)** - Real-world implementation examples
+
 ## 🚀 Quick Navigation
 
 ### For New Developers
@@ -36,6 +43,11 @@ Real-world examples and code samples.
 1. Follow [DEVELOPMENT_FLOW.md](./guides/DEVELOPMENT_FLOW.md)
 2. Reference [COMPONENT_EXAMPLES.md](./examples/COMPONENT_EXAMPLES.md)
 3. Check [API_EXAMPLES.md](./examples/API_EXAMPLES.md)
+
+### For Adding Metadata to Pages
+1. Quick start: [METADATA_QUICK_REFERENCE.md](./METADATA_QUICK_REFERENCE.md)
+2. Complete guide: [METADATA_BLUEPRINT.md](./METADATA_BLUEPRINT.md)
+3. Real examples: [METADATA_EXAMPLES.md](./METADATA_EXAMPLES.md)
 
 ### For Architecture Understanding
 1. Review [API_ARCHITECTURE.md](./architecture/API_ARCHITECTURE.md)

@@ -6,8 +6,16 @@
 
 import DashboardClient from "@/app/dashboard/dashboard-client";
 import { DashboardStats } from "@/lib/api/types";
+import { generateMetadata as generateMeta, pageMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Generate metadata for Dashboard page
+ */
+export const metadata = generateMeta({
+  page: pageMetadata.dashboard,
+});
 
 export default async function DashboardPage() {
   // Mock data for now (not calling any APIs)
