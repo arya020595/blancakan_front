@@ -1,58 +1,63 @@
 # Project Documentation
 
-This folder contains comprehensive documentation for the E-commerce Dashboard project.
+This folder contains comprehensive documentation for the Event Management Dashboard project.
 
 ## 📁 Documentation Structure
 
-### `/guides/`
-Step-by-step guides for development workflows and best practices.
+### [`/core/`](core/) - Essential System Documentation
+Core architecture and standards that every developer should know.
 
-- **[DEVELOPMENT_FLOW.md](./guides/DEVELOPMENT_FLOW.md)** - Complete guide from UI creation to API integration
-- **[DEVELOPMENT_FLOW_DIAGRAM.md](./guides/DEVELOPMENT_FLOW_DIAGRAM.md)** - Visual flow diagrams for development process
-- **[QUICK_START.md](./guides/QUICK_START.md)** - Get started quickly with the project
-- **[BEST_PRACTICES.md](./guides/BEST_PRACTICES.md)** - Coding standards and patterns
+- **[TEAM_STANDARDS.md](core/TEAM_STANDARDS.md)** - Official development standards and patterns
+- **[AUTH_PROTECTION_GUIDE.md](core/AUTH_PROTECTION_GUIDE.md)** - Authentication system usage
+- **[HYDRATION_GUIDE.md](core/HYDRATION_GUIDE.md)** - SSR hydration patterns
+- **[API_ARCHITECTURE.md](core/API_ARCHITECTURE.md)** - API layer design
+- **[FOLDER_STRUCTURE.md](core/FOLDER_STRUCTURE.md)** - Project organization
 
-### `/architecture/`
-Technical architecture documentation and design decisions.
+### [`/patterns/`](patterns/) - Reusable Patterns
+Proven patterns and architectures for consistent development.
 
-- **[API_ARCHITECTURE.md](./architecture/API_ARCHITECTURE.md)** - API layer architecture and patterns
-- **[AUTH_SYSTEM.md](./architecture/AUTH_SYSTEM.md)** - Authentication system design
-- **[FOLDER_STRUCTURE.md](./architecture/FOLDER_STRUCTURE.md)** - Project organization
+- **[ENTERPRISE_COMPONENT_ARCHITECTURE.md](patterns/ENTERPRISE_COMPONENT_ARCHITECTURE.md)** - Component design patterns
 
-### `/examples/`
-Real-world examples and code samples.
+### [`/guides/`](guides/) - Step-by-Step Guides
+Detailed guides for specific development tasks.
 
-- **[COMPONENT_EXAMPLES.md](./examples/COMPONENT_EXAMPLES.md)** - Component implementation examples
-- **[API_EXAMPLES.md](./examples/API_EXAMPLES.md)** - API integration examples
+- **[QUICK_START.md](guides/QUICK_START.md)** - Get started quickly
+- **[DEVELOPMENT_FLOW.md](guides/DEVELOPMENT_FLOW.md)** - Complete development workflow
+- **[BEST_PRACTICES.md](guides/BEST_PRACTICES.md)** - Coding standards and practices
+- **[METADATA_BLUEPRINT.md](guides/METADATA_BLUEPRINT.md)** - SEO metadata implementation
 
-### Metadata System Documentation
-Complete guides for implementing SEO-friendly metadata.
+### [`/reference/`](reference/) - Quick Reference
+Quick lookups and examples for daily development.
 
-- **[METADATA_BLUEPRINT.md](./METADATA_BLUEPRINT.md)** - Complete metadata implementation guide
-- **[METADATA_QUICK_REFERENCE.md](./METADATA_QUICK_REFERENCE.md)** - Quick reference and templates
-- **[METADATA_EXAMPLES.md](./METADATA_EXAMPLES.md)** - Real-world implementation examples
+- **[METADATA_QUICK_REFERENCE.md](reference/METADATA_QUICK_REFERENCE.md)** - Copy-paste metadata templates
+- **[METADATA_EXAMPLES.md](reference/METADATA_EXAMPLES.md)** - Real-world metadata examples
+- **[COMPONENT_EXAMPLES.md](reference/COMPONENT_EXAMPLES.md)** - Component implementation examples
 
 ## 🚀 Quick Navigation
 
 ### For New Developers
-1. Start with [QUICK_START.md](./guides/QUICK_START.md)
-2. Read [DEVELOPMENT_FLOW.md](./guides/DEVELOPMENT_FLOW.md)
-3. Review [BEST_PRACTICES.md](./guides/BEST_PRACTICES.md)
+1. Start with [QUICK_START.md](guides/QUICK_START.md)
+2. Review [TEAM_STANDARDS.md](core/TEAM_STANDARDS.md)
+3. Follow [DEVELOPMENT_FLOW.md](guides/DEVELOPMENT_FLOW.md)
 
 ### For Feature Development
-1. Follow [DEVELOPMENT_FLOW.md](./guides/DEVELOPMENT_FLOW.md)
-2. Reference [COMPONENT_EXAMPLES.md](./examples/COMPONENT_EXAMPLES.md)
-3. Check [API_EXAMPLES.md](./examples/API_EXAMPLES.md)
+1. Check [TEAM_STANDARDS.md](core/TEAM_STANDARDS.md) for patterns
+2. Use [COMPONENT_EXAMPLES.md](reference/COMPONENT_EXAMPLES.md) for reference
+3. Follow [ENTERPRISE_COMPONENT_ARCHITECTURE.md](patterns/ENTERPRISE_COMPONENT_ARCHITECTURE.md)
 
-### For Adding Metadata to Pages
-1. Quick start: [METADATA_QUICK_REFERENCE.md](./METADATA_QUICK_REFERENCE.md)
-2. Complete guide: [METADATA_BLUEPRINT.md](./METADATA_BLUEPRINT.md)
-3. Real examples: [METADATA_EXAMPLES.md](./METADATA_EXAMPLES.md)
+### For Authentication
+1. Read [AUTH_PROTECTION_GUIDE.md](core/AUTH_PROTECTION_GUIDE.md)
+2. Understand [HYDRATION_GUIDE.md](core/HYDRATION_GUIDE.md)
+
+### For SEO/Metadata
+1. Quick start: [METADATA_QUICK_REFERENCE.md](reference/METADATA_QUICK_REFERENCE.md)
+2. Complete guide: [METADATA_BLUEPRINT.md](guides/METADATA_BLUEPRINT.md)
+3. Examples: [METADATA_EXAMPLES.md](reference/METADATA_EXAMPLES.md)
 
 ### For Architecture Understanding
-1. Review [API_ARCHITECTURE.md](./architecture/API_ARCHITECTURE.md)
-2. Understand [AUTH_SYSTEM.md](./architecture/AUTH_SYSTEM.md)
-3. Study [FOLDER_STRUCTURE.md](./architecture/FOLDER_STRUCTURE.md)
+1. Review [API_ARCHITECTURE.md](core/API_ARCHITECTURE.md)
+2. Study [FOLDER_STRUCTURE.md](core/FOLDER_STRUCTURE.md)
+3. Follow [TEAM_STANDARDS.md](core/TEAM_STANDARDS.md)
 
 ## 🔧 Development Workflow Summary
 
@@ -66,46 +71,46 @@ graph TD
     F --> G[Testing]
 ```
 
-## 📚 Key Patterns
+## � Documentation Principles
 
-### API Integration
-```typescript
-// 1. Define types
-interface ApiRequest { /* ... */ }
+### ✅ What We Keep
+- **Team standards** - Official patterns everyone follows
+- **Core system guides** - Authentication, hydration, API architecture
+- **Reusable patterns** - Component architecture, development workflows
+- **Quick references** - Copy-paste examples and templates
 
-// 2. Create service
-class FeatureService extends BaseApiService { /* ... */ }
+### ❌ What We Remove
+- Implementation status documents
+- Module-specific integration details
+- Duplicate content
+- Outdated fix documentation
+- Analysis documents (decisions already made)
 
-// 3. Create hooks
-export const useFeature = () => { /* ... */ }
+## 🔧 Maintenance
 
-// 4. Use in components
-const { data, isLoading, error } = useFeature();
-```
+### Adding New Documentation
+- **Core systems**: Add to `/core/`
+- **Reusable patterns**: Add to `/patterns/`
+- **Step-by-step guides**: Add to `/guides/`
+- **Quick references**: Add to `/reference/`
 
-### Error Handling
-```typescript
-// Always handle errors consistently
-try {
-  const result = await apiCall();
-  return result;
-} catch (error) {
-  logger.error("Operation failed", error);
-  throw error;
-}
-```
-
-### Logging
-```typescript
-// Use structured logging
-const logger = createLogger("COMPONENT_NAME");
-logger.info("Operation started", { params });
-```
+### Documentation Standards
+- Clear, actionable content
+- Copy-paste examples
+- Organized by use case
+- Regular cleanup of outdated content
 
 ## 📞 Support
 
-- Check the guides for step-by-step instructions
-- Review examples for implementation patterns
-- Follow the architecture docs for understanding the system design
+- **Getting Started**: Check `/guides/` for step-by-step instructions
+- **Daily Development**: Use `/reference/` for quick lookups and examples
+- **Architecture Questions**: Review `/core/` for system understanding
+- **Pattern Implementation**: Follow `/patterns/` for proven approaches
+
+---
+
+**Last Updated**: October 2025  
+**Status**: Organized and Current  
+**Total Files**: 12 essential documents
 
 Happy coding! 🎉
