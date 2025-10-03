@@ -2,7 +2,11 @@
  * Categories Layout - Provides metadata for categories page
  */
 
-import { generateMetadata as generateMeta, pageMetadata } from "@/lib/metadata";
+import {
+  generateMetadata as generateMeta,
+  generateViewport,
+  pageMetadata,
+} from "@/lib/metadata";
 import type { ReactNode } from "react";
 
 /**
@@ -11,6 +15,11 @@ import type { ReactNode } from "react";
 export const metadata = generateMeta({
   page: pageMetadata.categories,
 });
+
+/**
+ * Generate viewport configuration
+ */
+export const viewport = generateViewport();
 
 export default function CategoriesLayout({
   children,

@@ -2,7 +2,11 @@
  * Roles Layout - Provides metadata for roles page
  */
 
-import { generateMetadata as generateMeta, pageMetadata } from "@/lib/metadata";
+import {
+  generateMetadata as generateMeta,
+  generateViewport,
+  pageMetadata,
+} from "@/lib/metadata";
 import type { ReactNode } from "react";
 
 /**
@@ -11,6 +15,11 @@ import type { ReactNode } from "react";
 export const metadata = generateMeta({
   page: pageMetadata.roles,
 });
+
+/**
+ * Generate viewport configuration
+ */
+export const viewport = generateViewport();
 
 export default function RolesLayout({ children }: { children: ReactNode }) {
   return <>{children}</>;

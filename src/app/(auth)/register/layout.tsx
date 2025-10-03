@@ -2,7 +2,11 @@
  * Register Layout - Provides metadata for register page
  */
 
-import { generateMetadata as generateMeta, pageMetadata } from "@/lib/metadata";
+import {
+  generateMetadata as generateMeta,
+  generateViewport,
+  pageMetadata,
+} from "@/lib/metadata";
 import type { ReactNode } from "react";
 
 /**
@@ -11,6 +15,11 @@ import type { ReactNode } from "react";
 export const metadata = generateMeta({
   page: pageMetadata.register,
 });
+
+/**
+ * Generate viewport configuration
+ */
+export const viewport = generateViewport();
 
 export default function RegisterLayout({ children }: { children: ReactNode }) {
   return <>{children}</>;

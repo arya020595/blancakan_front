@@ -1,22 +1,22 @@
 /**
  * Metadata Module - Centralized metadata management
- * 
+ *
  * This module provides utilities for generating consistent,
  * SEO-friendly metadata across all pages in the application.
- * 
+ *
  * @example Quick usage with predefined config
  * ```ts
  * import { generateMetadata, pageMetadata } from "@/lib/metadata";
- * 
+ *
  * export const metadata = generateMetadata({
  *   page: pageMetadata.dashboard
  * });
  * ```
- * 
+ *
  * @example Custom metadata
  * ```ts
  * import { generateMetadata } from "@/lib/metadata";
- * 
+ *
  * export const metadata = generateMetadata({
  *   page: {
  *     title: "My Page",
@@ -29,5 +29,8 @@
 
 export * from "./config";
 export * from "./types";
-export * from "./utils";
-
+export {
+  createPageMetadata,
+  generateMetadata,
+  generateViewport,
+} from "./utils";

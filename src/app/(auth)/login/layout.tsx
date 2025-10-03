@@ -2,7 +2,11 @@
  * Login Layout - Provides metadata for login page
  */
 
-import { generateMetadata as generateMeta, pageMetadata } from "@/lib/metadata";
+import {
+  generateMetadata as generateMeta,
+  generateViewport,
+  pageMetadata,
+} from "@/lib/metadata";
 import type { ReactNode } from "react";
 
 /**
@@ -11,6 +15,11 @@ import type { ReactNode } from "react";
 export const metadata = generateMeta({
   page: pageMetadata.login,
 });
+
+/**
+ * Generate viewport configuration
+ */
+export const viewport = generateViewport();
 
 export default function LoginLayout({ children }: { children: ReactNode }) {
   return <>{children}</>;

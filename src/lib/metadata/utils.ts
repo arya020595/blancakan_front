@@ -9,7 +9,7 @@ import { MetadataOptions, PageMetadata, SiteMetadata } from "./types";
 
 /**
  * Generate complete Next.js metadata from page configuration
- * 
+ *
  * @example
  * ```ts
  * export const metadata = generateMetadata({
@@ -26,10 +26,7 @@ export function generateMetadata(options: MetadataOptions): Metadata {
   const { page } = options;
 
   // Combine site and page keywords
-  const keywords = [
-    ...(site.defaultKeywords || []),
-    ...(page.keywords || []),
-  ];
+  const keywords = [...(site.defaultKeywords || []), ...(page.keywords || [])];
 
   // Generate full title
   const title = `${page.title} | ${site.siteName}`;
@@ -82,15 +79,29 @@ export function generateMetadata(options: MetadataOptions): Metadata {
       description: page.description,
       images: [absoluteOgImage],
     },
-    ...(site.themeColor && {
-      themeColor: site.themeColor,
-    }),
+  };
+}
+
+/**
+ * Generate viewport configuration
+ * themeColor should be in viewport export, not metadata export
+ *
+ * @example
+ * ```ts
+ * export const viewport = generateViewport();
+ * ```
+ */
+export function generateViewport() {
+  return {
+    themeColor: siteConfig.themeColor,
+    width: "device-width",
+    initialScale: 1,
   };
 }
 
 /**
  * Quick metadata generator using predefined page configuration
- * 
+ *
  * @example
  * ```ts
  * export const metadata = createPageMetadata("dashboard");
@@ -133,7 +144,7 @@ export function mergeMetadata(
 
 /**
  * Generate metadata for dynamic routes
- * 
+ *
  * @example
  * ```ts
  * export async function generateMetadata({ params }): Promise<Metadata> {
