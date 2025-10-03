@@ -4,7 +4,6 @@
 
 "use client";
 
-import { ComponentErrorBoundary } from "@/components/error-boundary";
 import { EventTypePagination } from "@/components/event-types/event-type-pagination";
 import { EventTypeTableRow } from "@/components/event-types/event-type-table-row";
 import { EventTypesTable } from "@/components/event-types/event-types-table";
@@ -38,12 +37,21 @@ export default function EventTypesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingEventType, setEditingEventType] = useState<EventType | null>(null);
-  const [deletingEventType, setDeletingEventType] = useState<EventType | null>(null);
+  const [editingEventType, setEditingEventType] = useState<EventType | null>(
+    null
+  );
+  const [deletingEventType, setDeletingEventType] = useState<EventType | null>(
+    null
+  );
 
   // Hooks
   const toasts = useOptimisticToasts();
-  const { error: modalError, isErrorModalOpen, showError, closeError } = useErrorModal();
+  const {
+    error: modalError,
+    isErrorModalOpen,
+    showError,
+    closeError,
+  } = useErrorModal();
   const {
     eventTypes,
     meta,
@@ -56,9 +64,21 @@ export default function EventTypesPage() {
     replaceTempEventTypeOptimistic,
   } = useEventTypes();
 
-  const { createEventType, isLoading: isCreating, clearError: clearCreateError } = useCreateEventType();
-  const { updateEventType, isLoading: isUpdating, clearError: clearUpdateError } = useUpdateEventType();
-  const { deleteEventType, isLoading: isDeleting, clearError: clearDeleteError } = useDeleteEventType();
+  const {
+    createEventType,
+    isLoading: isCreating,
+    clearError: clearCreateError,
+  } = useCreateEventType();
+  const {
+    updateEventType,
+    isLoading: isUpdating,
+    clearError: clearUpdateError,
+  } = useUpdateEventType();
+  const {
+    deleteEventType,
+    isLoading: isDeleting,
+    clearError: clearDeleteError,
+  } = useDeleteEventType();
 
   // Fetch data when params change
   useEffect(() => {
@@ -145,7 +165,10 @@ export default function EventTypesPage() {
       updateEventTypeOptimistic(optimisticEventType);
       setEditingEventType(null);
 
-      const response = await updateEventType(editingEventType._id, eventTypeData);
+      const response = await updateEventType(
+        editingEventType._id,
+        eventTypeData
+      );
       updateEventTypeOptimistic(response);
       toasts.updateSuccess("Event Type");
     } catch (error) {
@@ -188,139 +211,139 @@ export default function EventTypesPage() {
   };
 
   // Table content
-  const tableContent = eventTypes.length === 0 ? (
-    <tr>
-      <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-        No event types found
-      </td>
-    </tr>
-  ) : (
-    eventTypes.map((eventType) => (
-      <EventTypeTableRow
-        key={eventType._id}
-        eventType={eventType}
-        onEdit={handleEdit}
-        onDelete={handleDeleteConfirm}
-      />
-    ))
-  );
+  const tableContent =
+    eventTypes.length === 0 ? (
+      <tr>
+        <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+          No event types found
+        </td>
+      </tr>
+    ) : (
+      eventTypes.map((eventType) => (
+        <EventTypeTableRow
+          key={eventType._id}
+          eventType={eventType}
+          onEdit={handleEdit}
+          onDelete={handleDeleteConfirm}
+        />
+      ))
+    );
 
   return (
-    <ComponentErrorBoundary>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Event Types</h1>
-            <p className="text-sm text-gray-600">
-              Manage event type categories for your events. Configure icons, display order, and availability.
-            </p>
-          </div>
-          <Button onClick={() => setShowCreateModal(true)}>Add Event Type</Button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Event Types</h1>
+          <p className="text-sm text-gray-600">
+            Manage event type categories for your events. Configure icons,
+            display order, and availability.
+          </p>
         </div>
+        <Button onClick={() => setShowCreateModal(true)}>Add Event Type</Button>
+      </div>
 
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="Search event types..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Search event types..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      />
 
-        {/* Table */}
-        <EventTypesTable
-          tableContent={tableContent}
-          error={error ? new Error(error.message) : null}
+      {/* Table */}
+      <EventTypesTable
+        tableContent={tableContent}
+        error={error ? new Error(error.message) : null}
+        isLoading={isLoading}
+      />
+
+      {/* Pagination with Suspense */}
+      <Suspense fallback={<div>Loading pagination...</div>}>
+        <EventTypePagination
+          meta={meta}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
           isLoading={isLoading}
         />
+      </Suspense>
 
-        {/* Pagination with Suspense */}
-        <Suspense fallback={<div>Loading pagination...</div>}>
-          <EventTypePagination
-            meta={meta}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
-            isLoading={isLoading}
-          />
-        </Suspense>
+      {/* Modals */}
+      {/* Create Event Type Modal */}
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create New Event Type">
+        <FormShell<EventTypeFormValues>
+          defaultValues={{
+            name: "",
+            description: "",
+            icon_url: "",
+            sort_order: 0,
+            is_active: true,
+          }}
+          onSubmit={handleCreate}
+          isSubmitting={isCreating}
+          submitLabel="Create Event Type"
+          onCancel={() => setShowCreateModal(false)}>
+          <EventTypeForm mode="create" isSubmitting={isCreating} />
+        </FormShell>
+      </Modal>
 
-        {/* Modals */}
-        {/* Create Event Type Modal */}
-        <Modal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          title="Create New Event Type">
-          <FormShell<EventTypeFormValues>
-            defaultValues={{
-              name: "",
-              description: "",
-              icon_url: "",
-              sort_order: 0,
-              is_active: true,
-            }}
-            onSubmit={handleCreate}
-            isSubmitting={isCreating}
-            submitLabel="Create Event Type"
-            onCancel={() => setShowCreateModal(false)}>
-            <EventTypeForm mode="create" isSubmitting={isCreating} />
-          </FormShell>
-        </Modal>
+      {/* Edit Event Type Modal */}
+      <Modal
+        isOpen={!!editingEventType}
+        onClose={() => setEditingEventType(null)}
+        title="Edit Event Type">
+        <FormShell<EventTypeFormValues>
+          defaultValues={{
+            name: editingEventType?.name || "",
+            description: editingEventType?.description || "",
+            icon_url: editingEventType?.icon_url || "",
+            sort_order: editingEventType?.sort_order || 0,
+            is_active: editingEventType?.is_active ?? true,
+          }}
+          onSubmit={handleUpdate}
+          isSubmitting={isUpdating}
+          submitLabel="Update Event Type"
+          onCancel={() => setEditingEventType(null)}>
+          <EventTypeForm mode="edit" isSubmitting={isUpdating} />
+        </FormShell>
+      </Modal>
 
-        {/* Edit Event Type Modal */}
-        <Modal
-          isOpen={!!editingEventType}
-          onClose={() => setEditingEventType(null)}
-          title="Edit Event Type">
-          <FormShell<EventTypeFormValues>
-            defaultValues={{
-              name: editingEventType?.name || "",
-              description: editingEventType?.description || "",
-              icon_url: editingEventType?.icon_url || "",
-              sort_order: editingEventType?.sort_order || 0,
-              is_active: editingEventType?.is_active ?? true,
-            }}
-            onSubmit={handleUpdate}
-            isSubmitting={isUpdating}
-            submitLabel="Update Event Type"
-            onCancel={() => setEditingEventType(null)}>
-            <EventTypeForm mode="edit" isSubmitting={isUpdating} />
-          </FormShell>
-        </Modal>
+      {/* Delete Event Type Modal */}
+      <Modal
+        isOpen={!!deletingEventType}
+        onClose={() => setDeletingEventType(null)}
+        title="Delete Event Type">
+        {deletingEventType && (
+          <DeleteEventTypeContent eventTypeName={deletingEventType.name} />
+        )}
+        <div className="flex justify-end gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setDeletingEventType(null)}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isDeleting}>
+            Delete Event Type
+          </Button>
+        </div>
+      </Modal>
 
-        {/* Delete Event Type Modal */}
-        <Modal
-          isOpen={!!deletingEventType}
-          onClose={() => setDeletingEventType(null)}
-          title="Delete Event Type">
-          {deletingEventType && (
-            <DeleteEventTypeContent eventTypeName={deletingEventType.name} />
-          )}
-          <div className="flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setDeletingEventType(null)}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}>
-              Delete Event Type
-            </Button>
-          </div>
-        </Modal>
-
-        {/* Error Modal for Backend Validation Errors */}
-        <ErrorModal
-          isOpen={isErrorModalOpen}
-          onClose={closeError}
-          error={modalError}
-          title="Validation Error"
-        />
-      </div>
-    </ComponentErrorBoundary>
+      {/* Error Modal for Backend Validation Errors */}
+      <ErrorModal
+        isOpen={isErrorModalOpen}
+        onClose={closeError}
+        error={modalError}
+        title="Validation Error"
+      />
+    </div>
   );
 }

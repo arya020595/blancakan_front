@@ -4,10 +4,12 @@
 
 "use client";
 
-import { ComponentErrorBoundary } from "@/components/error-boundary";
 import { FormShell } from "@/components/forms/form-shell";
 import { DeleteRoleContent } from "@/components/roles/forms/delete-role-content";
-import { RoleForm, type RoleFormValues } from "@/components/roles/forms/role-form";
+import {
+  RoleForm,
+  type RoleFormValues,
+} from "@/components/roles/forms/role-form";
 import { RolePagination } from "@/components/roles/role-pagination";
 import { RoleTableRow } from "@/components/roles/role-table-row";
 import { RolesTable } from "@/components/roles/roles-table";
@@ -23,7 +25,11 @@ import {
   useUpdateRole,
 } from "@/hooks/roles-hooks";
 import { useErrorModal } from "@/hooks/use-error-modal";
-import type { CreateRoleRequest, Role, UpdateRoleRequest } from "@/lib/api/types";
+import type {
+  CreateRoleRequest,
+  Role,
+  UpdateRoleRequest,
+} from "@/lib/api/types";
 import { normalizeError } from "@/lib/utils/error-utils";
 import { Suspense, useEffect, useState } from "react";
 
@@ -39,16 +45,33 @@ export default function RolesPage() {
   const toasts = useOptimisticToasts();
 
   // Error modal hook
-  const { error: modalError, isErrorModalOpen, showError, closeError } = useErrorModal();
+  const {
+    error: modalError,
+    isErrorModalOpen,
+    showError,
+    closeError,
+  } = useErrorModal();
 
   // Optimistic updates hook
   const { addOptimisticUpdate, removeOptimisticUpdate } = useOptimisticRoles();
 
   // Hooks
   const { roles, meta, isLoading, error, fetchRoles, setRoles } = useRoles();
-  const { createRole, isLoading: isCreating, clearError: clearCreateError } = useCreateRole();
-  const { updateRole, isLoading: isUpdating, clearError: clearUpdateError } = useUpdateRole();
-  const { deleteRole, isLoading: isDeleting, clearError: clearDeleteError } = useDeleteRole();
+  const {
+    createRole,
+    isLoading: isCreating,
+    clearError: clearCreateError,
+  } = useCreateRole();
+  const {
+    updateRole,
+    isLoading: isUpdating,
+    clearError: clearUpdateError,
+  } = useUpdateRole();
+  const {
+    deleteRole,
+    isLoading: isDeleting,
+    clearError: clearDeleteError,
+  } = useDeleteRole();
 
   // Fetch data when params change
   useEffect(() => {
@@ -84,7 +107,9 @@ export default function RolesPage() {
 
       const response = await createRole(roleData);
 
-      setRoles((prev) => prev.map((role) => (role._id === tempId ? response : role)));
+      setRoles((prev) =>
+        prev.map((role) => (role._id === tempId ? response : role))
+      );
       removeOptimisticUpdate(tempId);
       toasts.createSuccess("Role");
     } catch (error) {
@@ -125,7 +150,9 @@ export default function RolesPage() {
     try {
       addOptimisticUpdate(editingRole._id, "updating");
       setRoles((prev) =>
-        prev.map((role) => (role._id === editingRole._id ? optimisticRole : role))
+        prev.map((role) =>
+          role._id === editingRole._id ? optimisticRole : role
+        )
       );
       setEditingRole(null);
 
@@ -182,123 +209,122 @@ export default function RolesPage() {
   };
 
   // Table content
-  const tableContent = roles.length === 0 ? (
-    <tr>
-      <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-        No roles found
-      </td>
-    </tr>
-  ) : (
-    roles.map((role) => (
-      <RoleTableRow
-        key={role._id}
-        role={role}
-        onEdit={handleEdit}
-        onDelete={handleDeleteConfirm}
-      />
-    ))
-  );
+  const tableContent =
+    roles.length === 0 ? (
+      <tr>
+        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+          No roles found
+        </td>
+      </tr>
+    ) : (
+      roles.map((role) => (
+        <RoleTableRow
+          key={role._id}
+          role={role}
+          onEdit={handleEdit}
+          onDelete={handleDeleteConfirm}
+        />
+      ))
+    );
 
   return (
-    <ComponentErrorBoundary>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Roles</h1>
-            <p className="text-sm text-gray-600">Manage user roles and permissions</p>
-          </div>
-          <Button onClick={() => setShowCreateModal(true)}>Add Role</Button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Roles</h1>
+          <p className="text-sm text-gray-600">
+            Manage user roles and permissions
+          </p>
         </div>
+        <Button onClick={() => setShowCreateModal(true)}>Add Role</Button>
+      </div>
 
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="Search roles..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Search roles..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      />
 
-        {/* Table */}
-        <RolesTable
-          tableContent={tableContent}
-          error={error ? new Error(error.message) : null}
+      {/* Table */}
+      <RolesTable
+        tableContent={tableContent}
+        error={error ? new Error(error.message) : null}
+        isLoading={isLoading}
+      />
+
+      {/* Pagination */}
+      <Suspense fallback={<div>Loading pagination...</div>}>
+        <RolePagination
+          meta={meta}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
           isLoading={isLoading}
         />
+      </Suspense>
 
-        {/* Pagination */}
-        <Suspense fallback={<div>Loading pagination...</div>}>
-          <RolePagination
-            meta={meta}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
-            isLoading={isLoading}
-          />
-        </Suspense>
+      {/* Create Modal */}
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create New Role">
+        <FormShell<RoleFormValues>
+          defaultValues={{ name: "", description: "" }}
+          onSubmit={handleCreate}
+          isSubmitting={isCreating}
+          submitLabel="Create Role"
+          onCancel={() => setShowCreateModal(false)}>
+          <RoleForm mode="create" isSubmitting={isCreating} />
+        </FormShell>
+      </Modal>
 
-        {/* Create Modal */}
-        <Modal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          title="Create New Role"
-        >
-          <FormShell<RoleFormValues>
-            defaultValues={{ name: "", description: "" }}
-            onSubmit={handleCreate}
-            isSubmitting={isCreating}
-            submitLabel="Create Role"
-            onCancel={() => setShowCreateModal(false)}
-          >
-            <RoleForm mode="create" isSubmitting={isCreating} />
-          </FormShell>
-        </Modal>
+      {/* Edit Modal */}
+      <Modal
+        isOpen={!!editingRole}
+        onClose={() => setEditingRole(null)}
+        title="Edit Role">
+        <FormShell<RoleFormValues>
+          defaultValues={{
+            name: editingRole?.name || "",
+            description: editingRole?.description || "",
+          }}
+          onSubmit={handleUpdate}
+          isSubmitting={isUpdating}
+          submitLabel="Update Role"
+          onCancel={() => setEditingRole(null)}>
+          <RoleForm mode="edit" isSubmitting={isUpdating} />
+        </FormShell>
+      </Modal>
 
-        {/* Edit Modal */}
-        <Modal
-          isOpen={!!editingRole}
-          onClose={() => setEditingRole(null)}
-          title="Edit Role"
-        >
-          <FormShell<RoleFormValues>
-            defaultValues={{
-              name: editingRole?.name || "",
-              description: editingRole?.description || "",
-            }}
-            onSubmit={handleUpdate}
-            isSubmitting={isUpdating}
-            submitLabel="Update Role"
-            onCancel={() => setEditingRole(null)}
-          >
-            <RoleForm mode="edit" isSubmitting={isUpdating} />
-          </FormShell>
-        </Modal>
+      {/* Delete Modal */}
+      <Modal
+        isOpen={!!deletingRole}
+        onClose={() => setDeletingRole(null)}
+        title="Delete Role">
+        {deletingRole && <DeleteRoleContent roleName={deletingRole.name} />}
+        <div className="flex justify-end gap-3">
+          <Button variant="outline" onClick={() => setDeletingRole(null)}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isDeleting}>
+            Delete Role
+          </Button>
+        </div>
+      </Modal>
 
-        {/* Delete Modal */}
-        <Modal
-          isOpen={!!deletingRole}
-          onClose={() => setDeletingRole(null)}
-          title="Delete Role"
-        >
-          {deletingRole && <DeleteRoleContent roleName={deletingRole.name} />}
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setDeletingRole(null)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-              Delete Role
-            </Button>
-          </div>
-        </Modal>
-
-        {/* Error Modal */}
-        <ErrorModal
-          isOpen={isErrorModalOpen}
-          onClose={closeError}
-          error={modalError}
-          title="Validation Error"
-        />
-      </div>
-    </ComponentErrorBoundary>
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={isErrorModalOpen}
+        onClose={closeError}
+        error={modalError}
+        title="Validation Error"
+      />
+    </div>
   );
 }
