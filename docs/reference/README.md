@@ -5,28 +5,44 @@ Copy-paste examples and templates for daily development.
 ## 📋 Contents
 
 ### [METADATA_QUICK_REFERENCE.md](METADATA_QUICK_REFERENCE.md)
+
 **Copy-paste metadata templates** - Quick metadata setup
+
 - Server component template
 - Client component template
 - Configuration examples
 
 ### [METADATA_EXAMPLES.md](METADATA_EXAMPLES.md)
+
 **Real-world metadata examples** - Complete implementations
+
 - Server components
 - Client components
 - Dynamic routes
 - Custom metadata
 
 ### [COMPONENT_EXAMPLES.md](COMPONENT_EXAMPLES.md)
+
 **Component implementation examples** - Reusable component patterns
+
 - Form components
 - Table components
 - Modal components
 - Loading states
 
+### [FORM_QUICK_REFERENCE.md](FORM_QUICK_REFERENCE.md)
+
+**Form implementation templates** - Copy-paste form patterns
+
+- Schema templates
+- Form component patterns
+- Common field types
+- Validation patterns
+
 ## 🎯 Usage
 
 These references are designed for:
+
 - Quick copy-paste during development
 - Learning by example
 - Consistent implementation patterns
