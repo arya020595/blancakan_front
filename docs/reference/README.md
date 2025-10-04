@@ -49,15 +49,7 @@ Copy-paste examples and templates for daily development.
 - Testing guide
 - Performance comparison
 
-### [BACKEND_TIMING_ISSUE.md](BACKEND_TIMING_ISSUE.md) 🐛 **TROUBLESHOOTING**
-
-**Backend Timing Issue Analysis** - Original problem documentation
-
-- Problem discovery and evidence
-- Root cause analysis
-- 200ms delay workaround explanation
-- Frontend temporary solution
-- Why the workaround was needed
+**📋 Full Analysis**: See [`/rca/elasticsearch-delay/`](../rca/elasticsearch-delay/) for complete RCA, action plan, and solution
 
 ### [TANSTACK_QUERY_QUICK_REFERENCE.md](TANSTACK_QUERY_QUICK_REFERENCE.md)
 

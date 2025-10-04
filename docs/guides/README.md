@@ -55,26 +55,6 @@ Step-by-step guides for specific development tasks.
 - Simple, maintainable, battle-tested
 - **Recommended for all CRUD applications**
 
-### [ELASTICSEARCH_VS_MONGODB.md](ELASTICSEARCH_VS_MONGODB.md) 🔥 **ARCHITECTURE**
-
-**Elasticsearch vs MongoDB for Admin Dashboard** - Complete Implementation Guide
-
-- Root cause analysis of data delay issues
-- When to use MongoDB vs Elasticsearch
-- Industry patterns from GitHub, Shopify, Stripe
-- Complete backend & frontend code examples
-- Performance comparison and migration plan
-
-### [BACKEND_ACTION_ITEMS.md](BACKEND_ACTION_ITEMS.md) 🔧 **BACKEND**
-
-**Backend Implementation Tasks** - For Rails team
-
-- Specific controller changes required
-- Background job implementation
-- Routes configuration
-- Testing guide with curl commands
-- Verification checklist
-
 ### [TANSTACK_QUERY_BLUEPRINT.md](TANSTACK_QUERY_BLUEPRINT.md)
 
 **Advanced TanStack Query patterns** - For reference only

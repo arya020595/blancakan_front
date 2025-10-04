@@ -14,7 +14,7 @@ Admin dashboard experiences 1-2 second delay when creating/deleting data because
 
 ### 🔥 **START HERE** - For Decision Makers
 
-**Document**: [`core/ARCHITECTURE_COMPARISON.md`](./core/ARCHITECTURE_COMPARISON.md)
+**Document**: [`rca/elasticsearch-delay/02-RCA.md`](./rca/elasticsearch-delay/02-RCA.md)
 
 **What it contains**:
 
@@ -50,7 +50,7 @@ Admin dashboard experiences 1-2 second delay when creating/deleting data because
 
 ### 📖 **COMPLETE GUIDE** - For Implementation
 
-**Document**: [`guides/ELASTICSEARCH_VS_MONGODB.md`](./guides/ELASTICSEARCH_VS_MONGODB.md)
+**Document**: [`rca/elasticsearch-delay/04-SOLUTION.md`](./rca/elasticsearch-delay/04-SOLUTION.md)
 
 **What it contains**:
 
@@ -70,7 +70,7 @@ Admin dashboard experiences 1-2 second delay when creating/deleting data because
 
 ### 🔧 **BACKEND TASKS** - For Backend Team
 
-**Document**: [`guides/BACKEND_ACTION_ITEMS.md`](./guides/BACKEND_ACTION_ITEMS.md)
+**Document**: [`rca/elasticsearch-delay/03-ACTION_PLAN.md`](./rca/elasticsearch-delay/03-ACTION_PLAN.md)
 
 **What it contains**:
 
@@ -88,9 +88,9 @@ Admin dashboard experiences 1-2 second delay when creating/deleting data because
 
 ---
 
-### 🐛 **TROUBLESHOOTING** - Original Issue Documentation
+### 🐛 **PROBLEM DISCOVERY** - Original Issue Documentation
 
-**Document**: [`reference/BACKEND_TIMING_ISSUE.md`](./reference/BACKEND_TIMING_ISSUE.md)
+**Document**: [`rca/elasticsearch-delay/01-PROBLEM.md`](./rca/elasticsearch-delay/01-PROBLEM.md)
 
 **What it contains**:
 

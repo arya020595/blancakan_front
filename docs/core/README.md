@@ -13,20 +13,11 @@ Essential architecture and standards for the application.
 - Performance guidelines
 - Code review checklist
 
-### [ARCHITECTURE_COMPARISON.md](ARCHITECTURE_COMPARISON.md) 🔥 **CRITICAL**
-
-**Elasticsearch vs MongoDB Architecture** - Visual comparison and decision guide
-
-- Current vs recommended architecture flow diagrams
-- Performance metrics comparison
-- Data consistency timelines
-- Side-by-side comparison
-
 ### [EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md) 💼 **DECISION**
 
 **Architecture Decision Summary** - For leadership and decision makers
 
-- One-page problem & solution summary
+- One-page problem & solution summary (Elasticsearch delay issue)
 - Cost-benefit analysis
 - Implementation plan
 - Success metrics
@@ -66,11 +57,14 @@ Essential architecture and standards for the application.
 ## 🎯 Priority Reading Order
 
 1. **TEAM_STANDARDS.md** - Start here
-2. **ARCHITECTURE_COMPARISON.md** - Critical architecture decisions
-3. **FOLDER_STRUCTURE.md** - Project organization
-4. **AUTH_PROTECTION_GUIDE.md** - Security patterns
-5. **API_ARCHITECTURE.md** - Backend integration
-6. **HYDRATION_GUIDE.md** - Advanced SSR concepts
+2. **FOLDER_STRUCTURE.md** - Project organization
+3. **AUTH_PROTECTION_GUIDE.md** - Security patterns
+4. **API_ARCHITECTURE.md** - Backend integration
+5. **HYDRATION_GUIDE.md** - Advanced SSR concepts
+
+## 🔗 Related Documentation
+
+- **[`/rca/`](../rca/)** - Root cause analysis for critical issues (including Elasticsearch architecture decisions)
 
 ## 🚀 Quick Reference
 
