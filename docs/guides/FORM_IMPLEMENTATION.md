@@ -10,7 +10,8 @@ A comprehensive guide to implementing forms using Zod validation, React Hook For
 4. [Complete Example](#complete-example)
 5. [Best Practices](#best-practices)
 6. [Common Patterns](#common-patterns)
-7. [Troubleshooting](#troubleshooting)
+7. [Modal Integration](#modal-integration)
+8. [Troubleshooting](#troubleshooting)
 
 ## Architecture Overview
 
@@ -650,6 +651,107 @@ username: z
   );
 }
 ```
+
+## Modal Integration
+
+Our Modal component is designed to work seamlessly with forms and supports vertical scrolling for long content.
+
+### Basic Modal with Form
+
+```tsx
+// Modal with form integration
+<Modal
+  isOpen={showCreateModal}
+  onClose={() => setShowCreateModal(false)}
+  title="Create New User">
+  <FormShell<UserFormValues>
+    resolver={zodResolver(userSchema)}
+    onSubmit={handleSubmit}
+    defaultValues={{ name: "", email: "", is_active: true }}
+    submitLabel="Create User"
+    onCancel={() => setShowCreateModal(false)}>
+    <UserForm mode="create" isSubmitting={isSubmitting} />
+  </FormShell>
+</Modal>
+```
+
+### Scrollable Modal Features
+
+The Modal component automatically handles:
+
+- **Vertical Scrolling**: Content that exceeds viewport height becomes scrollable
+- **Fixed Header**: Title and close button remain visible during scroll
+- **Fixed Footer**: FormShell buttons stay at bottom during scroll
+- **Responsive Height**: Maximum height is `calc(100vh - 2rem)` with proper padding
+
+### Modal Structure
+
+```
+┌─────────────────────────────────────┐
+│           Fixed Header              │ ← Title + Close Button
+├─────────────────────────────────────┤
+│                                     │
+│                                     │ ← Scrollable Content Area
+│          Form Content               │   (overflow-y-auto)
+│                                     │
+│                                     │
+├─────────────────────────────────────┤
+│           Fixed Footer              │ ← FormShell Buttons
+└─────────────────────────────────────┘
+```
+
+### Large Form Example
+
+For forms with many fields, the modal automatically provides scrolling:
+
+```tsx
+// Example with many fields
+<Modal
+  isOpen={showModal}
+  onClose={closeModal}
+  title="Detailed User Form"
+  size="lg"> {/* Use "lg" for wider forms */}
+  <FormShell<DetailedUserFormValues>
+    resolver={zodResolver(detailedUserSchema)}
+    onSubmit={handleSubmit}
+    defaultValues={{...}}>
+    {/* This form has 15+ fields - modal will scroll automatically */}
+    <DetailedUserForm mode="create" />
+  </FormShell>
+</Modal>
+```
+
+### Modal Sizes
+
+Choose appropriate size based on form complexity:
+
+- **`size="sm"`** - Simple forms (1-3 fields)
+- **`size="md"`** - Standard forms (4-8 fields) - Default
+- **`size="lg"`** - Complex forms (9+ fields or wide inputs)
+
+### Best Practices for Modal Forms
+
+1. **Use appropriate sizing**: Large forms should use `size="lg"`
+2. **Keep titles concise**: They remain visible during scroll
+3. **Group related fields**: Use logical field ordering
+4. **Test scrolling**: Verify all fields are accessible on mobile devices
+5. **Consider field count**: Very long forms (20+ fields) might benefit from multi-step approach
+
+### Modal Without Title
+
+For cases where you don't need a title:
+
+```tsx
+<Modal isOpen={showModal} onClose={closeModal}>
+  {" "}
+  {/* No title prop */}
+  <FormShell>
+    <UserForm />
+  </FormShell>
+</Modal>
+```
+
+The close button automatically positions in the top-right corner when no title is provided.
 
 ## Troubleshooting
 
