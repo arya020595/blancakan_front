@@ -1,5 +1,15 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { EventTypeFormValues } from "@/lib/schemas/event-type-schema";
 import { useFormContext } from "react-hook-form";
 
@@ -9,135 +19,113 @@ export interface EventTypeFormProps {
 }
 
 /**
- * EventTypeForm: fields-only component. Must be rendered inside FormShell(FormProvider).
+ * EventTypeForm: fields-only component using shadcn/ui Form components.
+ * Must be rendered inside FormShell(FormProvider).
  */
 export function EventTypeForm({ mode, isSubmitting }: EventTypeFormProps) {
-  const {
-    register,
-    formState: { errors },
-  } = useFormContext<EventTypeFormValues>();
+  const form = useFormContext<EventTypeFormValues>();
 
   return (
     <>
-      <div>
-        <label
-          htmlFor={`${mode}-name`}
-          className="mb-1 block text-sm font-medium text-gray-700">
-          Name *
-        </label>
-        <input
-          id={`${mode}-name`}
-          type="text"
-          {...register("name")}
-          disabled={isSubmitting}
-          className={`w-full rounded-md border px-3 py-2 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-            errors.name
-              ? "border-red-300 focus:ring-red-500"
-              : "border-gray-300"
-          }`}
-          placeholder="Enter event type name"
-        />
-        {errors.name && (
-          <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Name *</FormLabel>
+            <FormControl>
+              <Input
+                placeholder="Enter event type name"
+                disabled={isSubmitting}
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
 
-      <div>
-        <label
-          htmlFor={`${mode}-description`}
-          className="mb-1 block text-sm font-medium text-gray-700">
-          Description
-        </label>
-        <textarea
-          id={`${mode}-description`}
-          rows={3}
-          {...register("description")}
-          disabled={isSubmitting}
-          className={`w-full rounded-md border px-3 py-2 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-            errors.description
-              ? "border-red-300 focus:ring-red-500"
-              : "border-gray-300"
-          }`}
-          placeholder="Enter event type description (optional)"
-        />
-        {errors.description && (
-          <p className="mt-1 text-sm text-red-600">
-            {errors.description.message}
-          </p>
+      <FormField
+        control={form.control}
+        name="description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Description</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Enter event type description (optional)"
+                disabled={isSubmitting}
+                rows={3}
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
 
-      <div>
-        <label
-          htmlFor={`${mode}-icon_url`}
-          className="mb-1 block text-sm font-medium text-gray-700">
-          Icon URL
-        </label>
-        <input
-          id={`${mode}-icon_url`}
-          type="url"
-          {...register("icon_url")}
-          disabled={isSubmitting}
-          className={`w-full rounded-md border px-3 py-2 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-            errors.icon_url
-              ? "border-red-300 focus:ring-red-500"
-              : "border-gray-300"
-          }`}
-          placeholder="Enter icon URL (optional)"
-        />
-        {errors.icon_url && (
-          <p className="mt-1 text-sm text-red-600">{errors.icon_url.message}</p>
+      <FormField
+        control={form.control}
+        name="icon_url"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Icon URL</FormLabel>
+            <FormControl>
+              <Input
+                type="url"
+                placeholder="Enter icon URL (optional)"
+                disabled={isSubmitting}
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
 
-      <div>
-        <label
-          htmlFor={`${mode}-sort_order`}
-          className="mb-1 block text-sm font-medium text-gray-700">
-          Sort Order
-        </label>
-        <input
-          id={`${mode}-sort_order`}
-          type="number"
-          min="0"
-          max="999"
-          {...register("sort_order", { valueAsNumber: true })}
-          disabled={isSubmitting}
-          className={`w-full rounded-md border px-3 py-2 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-            errors.sort_order
-              ? "border-red-300 focus:ring-red-500"
-              : "border-gray-300"
-          }`}
-          placeholder="Enter sort order (0-999)"
-        />
-        {errors.sort_order && (
-          <p className="mt-1 text-sm text-red-600">
-            {errors.sort_order.message}
-          </p>
+      <FormField
+        control={form.control}
+        name="sort_order"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Sort Order</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                min="0"
+                max="999"
+                placeholder="Enter sort order (0-999)"
+                disabled={isSubmitting}
+                {...field}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  field.onChange(value === "" ? 0 : parseInt(value, 10));
+                }}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
         )}
-      </div>
+      />
 
-      <div>
-        <div className="flex items-center">
-          <input
-            id={`${mode}-is_active`}
-            type="checkbox"
-            {...register("is_active")}
-            disabled={isSubmitting}
-            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-          />
-          <label
-            htmlFor={`${mode}-is_active`}
-            className="ml-2 block text-sm text-gray-900">
-            Active
-          </label>
-        </div>
-        {errors.is_active && (
-          <p className="mt-1 text-sm text-red-600">
-            {errors.is_active.message}
-          </p>
+      <FormField
+        control={form.control}
+        name="is_active"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormControl>
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={field.onChange}
+                disabled={isSubmitting}
+              />
+            </FormControl>
+            <div className="space-y-1 leading-none">
+              <FormLabel>Active</FormLabel>
+            </div>
+          </FormItem>
         )}
-      </div>
+      />
     </>
   );
 }
