@@ -6,10 +6,7 @@
 
 import { FormShell } from "@/components/forms/form-shell";
 import { DeleteRoleContent } from "@/components/roles/forms/delete-role-content";
-import {
-  RoleForm,
-  type RoleFormValues,
-} from "@/components/roles/forms/role-form";
+import { RoleForm } from "@/components/roles/forms/role-form";
 import { RolePagination } from "@/components/roles/role-pagination";
 import { RoleTableRow } from "@/components/roles/role-table-row";
 import { RolesTable } from "@/components/roles/roles-table";
@@ -30,7 +27,9 @@ import type {
   Role,
   UpdateRoleRequest,
 } from "@/lib/api/types";
+import { roleSchema, type RoleFormValues } from "@/lib/schemas/role-schema";
 import { normalizeError } from "@/lib/utils/error-utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Suspense, useEffect, useState } from "react";
 
 export default function RolesPage() {
@@ -273,6 +272,7 @@ export default function RolesPage() {
         title="Create New Role">
         <FormShell<RoleFormValues>
           defaultValues={{ name: "", description: "" }}
+          resolver={zodResolver(roleSchema)}
           onSubmit={handleCreate}
           isSubmitting={isCreating}
           submitLabel="Create Role"
@@ -291,6 +291,7 @@ export default function RolesPage() {
             name: editingRole?.name || "",
             description: editingRole?.description || "",
           }}
+          resolver={zodResolver(roleSchema)}
           onSubmit={handleUpdate}
           isSubmitting={isUpdating}
           submitLabel="Update Role"

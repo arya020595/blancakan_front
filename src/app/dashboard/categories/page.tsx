@@ -10,11 +10,13 @@ import {
   CategoryPaginationSkeleton,
 } from "@/components/categories/category-pagination";
 import { CategoryTableRow } from "@/components/categories/category-table-row";
-import {
-  CategoryForm,
-  type CategoryFormValues,
-} from "@/components/categories/forms/category-form";
+import { CategoryForm } from "@/components/categories/forms/category-form";
 import { DeleteCategoryContent } from "@/components/categories/forms/delete-category-content";
+import {
+  categorySchema,
+  type CategoryFormValues,
+} from "@/lib/schemas/category-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { FormShell } from "@/components/forms/form-shell";
 import { useOptimisticToasts } from "@/components/toast";
@@ -267,6 +269,7 @@ export default function CategoriesPage() {
         title="Create New Category">
         <FormShell<CategoryFormValues>
           defaultValues={{ name: "", description: "", is_active: true }}
+          resolver={zodResolver(categorySchema)}
           onSubmit={handleCreate}
           isSubmitting={isCreating}
           submitLabel="Create Category"
@@ -286,6 +289,7 @@ export default function CategoriesPage() {
             description: editingCategory?.description || "",
             is_active: editingCategory?.is_active ?? true,
           }}
+          resolver={zodResolver(categorySchema)}
           onSubmit={handleUpdate}
           isSubmitting={isUpdating}
           submitLabel="Update Category"

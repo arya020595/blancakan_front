@@ -1,11 +1,7 @@
 "use client";
 
+import { RoleFormValues } from "@/lib/schemas/role-schema";
 import { useFormContext } from "react-hook-form";
-
-export type RoleFormValues = {
-  name: string;
-  description?: string;
-};
 
 export interface RoleFormProps {
   mode: "create" | "edit";
@@ -32,13 +28,17 @@ export function RoleForm({ mode, isSubmitting }: RoleFormProps) {
         <input
           id={`${mode}-name`}
           type="text"
-          {...register("name", { required: true })}
+          {...register("name")}
           disabled={isSubmitting}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className={`w-full rounded-md border px-3 py-2 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+            errors.name
+              ? "border-red-300 focus:ring-red-500"
+              : "border-gray-300"
+          }`}
           placeholder="Enter role name"
         />
         {errors.name && (
-          <p className="mt-1 text-sm text-red-600">Name is required.</p>
+          <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
         )}
       </div>
 
@@ -50,12 +50,21 @@ export function RoleForm({ mode, isSubmitting }: RoleFormProps) {
         </label>
         <textarea
           id={`${mode}-description`}
-          rows={3}
           {...register("description")}
           disabled={isSubmitting}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          rows={3}
+          className={`w-full rounded-md border px-3 py-2 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+            errors.description
+              ? "border-red-300 focus:ring-red-500"
+              : "border-gray-300"
+          }`}
           placeholder="Enter role description (optional)"
         />
+        {errors.description && (
+          <p className="mt-1 text-sm text-red-600">
+            {errors.description.message}
+          </p>
+        )}
       </div>
     </>
   );

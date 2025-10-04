@@ -1,12 +1,12 @@
 /**
  * Example: Simple Form with Error Modal Pattern
- * 
+ *
  * This demonstrates the core error modal pattern for forms
  * without complex integrations. Perfect blueprint for rapid development.
- * 
+ *
  * Key concepts:
  * 1. Import and use useErrorModal hook
- * 2. Import and render ErrorModal component  
+ * 2. Import and render ErrorModal component
  * 3. Replace try/catch error handling to show validation errors
  * 4. Keep forms simple - no client validation logic needed
  * 5. Focus on UI, let backend handle all validation
@@ -14,10 +14,7 @@
 
 "use client";
 
-import {
-    CategoryForm,
-    type CategoryFormValues,
-} from "@/components/categories/forms/category-form";
+import { CategoryForm } from "@/components/categories/forms/category-form";
 import { FormShell } from "@/components/forms/form-shell";
 import { Button } from "@/components/ui/button";
 import ErrorModal from "@/components/ui/error-modal"; // NEW: Import ErrorModal
@@ -25,6 +22,7 @@ import Modal from "@/components/ui/modal";
 import { useCreateCategory } from "@/hooks/categories-hooks";
 import { useErrorModal } from "@/hooks/use-error-modal"; // NEW: Import useErrorModal hook
 import type { CreateCategoryRequest } from "@/lib/api/types";
+import { type CategoryFormValues } from "@/lib/schemas/category-schema";
 import { normalizeError } from "@/lib/utils/error-utils"; // NEW: Import error utility
 import { createLogger } from "@/lib/utils/logger";
 import { useCallback, useState } from "react";
@@ -56,16 +54,19 @@ export default function SimpleFormWithErrorModal() {
       try {
         await createCategory(categoryData);
         setShowCreateModal(false); // Close form modal on success
-        
+
         // Optional: Show success message
         console.log("Category created successfully!");
         logger.info("Category created successfully");
       } catch (error) {
         // NEW: Instead of generic error handling, show detailed validation errors
-        const validationError = normalizeError(error, "Failed to create category");
+        const validationError = normalizeError(
+          error,
+          "Failed to create category"
+        );
         showError(validationError);
         logger.error("Failed to create category", error);
-        
+
         // Note: We DON'T close the form modal here, so user can fix errors and retry
       }
     },
@@ -120,21 +121,22 @@ export default function SimpleFormWithErrorModal() {
         </h2>
         <div className="space-y-3 text-sm text-gray-600">
           <p>
-            <strong>1. No Client Validation:</strong> The form has no validation logic. 
-            Submit any data and let the backend validate.
+            <strong>1. No Client Validation:</strong> The form has no validation
+            logic. Submit any data and let the backend validate.
           </p>
           <p>
-            <strong>2. Backend Error Display:</strong> When backend returns validation errors, 
-            they're displayed in a clean modal with proper formatting.
+            <strong>2. Backend Error Display:</strong> When backend returns
+            validation errors, they're displayed in a clean modal with proper
+            formatting.
           </p>
           <p>
-            <strong>3. Handles Both Formats:</strong> Works with both object-based 
-            ({`{ errors: { name: ["required"] } }`}) and array-based 
-            ({`{ errors: ["Name required"] }`}) error formats.
+            <strong>3. Handles Both Formats:</strong> Works with both
+            object-based ({`{ errors: { name: ["required"] } }`}) and
+            array-based ({`{ errors: ["Name required"] }`}) error formats.
           </p>
           <p>
-            <strong>4. Rapid Development:</strong> Frontend developers focus on UI only, 
-            no need to duplicate backend validation logic.
+            <strong>4. Rapid Development:</strong> Frontend developers focus on
+            UI only, no need to duplicate backend validation logic.
           </p>
         </div>
       </div>

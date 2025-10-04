@@ -8,10 +8,7 @@ import { EventTypePagination } from "@/components/event-types/event-type-paginat
 import { EventTypeTableRow } from "@/components/event-types/event-type-table-row";
 import { EventTypesTable } from "@/components/event-types/event-types-table";
 import { DeleteEventTypeContent } from "@/components/event-types/forms/delete-event-type-content";
-import {
-  EventTypeForm,
-  type EventTypeFormValues,
-} from "@/components/event-types/forms/event-type-form";
+import { EventTypeForm } from "@/components/event-types/forms/event-type-form";
 import { FormShell } from "@/components/forms/form-shell";
 import { useOptimisticToasts } from "@/components/toast";
 import { Button } from "@/components/ui/button";
@@ -29,7 +26,12 @@ import type {
   EventType,
   UpdateEventTypeRequest,
 } from "@/lib/api/types";
+import {
+  eventTypeSchema,
+  type EventTypeFormValues,
+} from "@/lib/schemas/event-type-schema";
 import { normalizeError } from "@/lib/utils/error-utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Suspense, useEffect, useState } from "react";
 
 export default function EventTypesPage() {
@@ -283,6 +285,7 @@ export default function EventTypesPage() {
             sort_order: 0,
             is_active: true,
           }}
+          resolver={zodResolver(eventTypeSchema)}
           onSubmit={handleCreate}
           isSubmitting={isCreating}
           submitLabel="Create Event Type"
@@ -304,6 +307,7 @@ export default function EventTypesPage() {
             sort_order: editingEventType?.sort_order || 0,
             is_active: editingEventType?.is_active ?? true,
           }}
+          resolver={zodResolver(eventTypeSchema)}
           onSubmit={handleUpdate}
           isSubmitting={isUpdating}
           submitLabel="Update Event Type"

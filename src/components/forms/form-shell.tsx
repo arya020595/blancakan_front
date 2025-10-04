@@ -6,11 +6,13 @@ import {
   useForm,
   type DefaultValues,
   type FieldValues,
+  type Resolver,
   type SubmitHandler,
 } from "react-hook-form";
 
 export interface FormShellProps<T extends FieldValues> {
   defaultValues?: DefaultValues<T>;
+  resolver?: Resolver<T>;
   onSubmit: SubmitHandler<T>;
   isSubmitting?: boolean;
   submitLabel?: string;
@@ -27,6 +29,7 @@ export interface FormShellProps<T extends FieldValues> {
  */
 export function FormShell<T extends FieldValues>({
   defaultValues,
+  resolver,
   onSubmit,
   isSubmitting,
   submitLabel = "Save",
@@ -37,6 +40,7 @@ export function FormShell<T extends FieldValues>({
 }: FormShellProps<T>) {
   const methods = useForm<T>({
     defaultValues,
+    resolver,
     mode: "onSubmit",
   });
 
