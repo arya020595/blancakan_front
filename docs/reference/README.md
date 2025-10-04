@@ -39,6 +39,42 @@ Copy-paste examples and templates for daily development.
 - Common field types
 - Validation patterns
 
+### [ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md](ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md) ⚡ **ARCHITECTURE**
+
+**Elasticsearch vs MongoDB Quick Reference** - TL;DR decision guide
+
+- Decision matrix (when to use what)
+- Implementation checklist
+- Common mistakes to avoid
+- Testing guide
+- Performance comparison
+
+### [BACKEND_TIMING_ISSUE.md](BACKEND_TIMING_ISSUE.md) 🐛 **TROUBLESHOOTING**
+
+**Backend Timing Issue Analysis** - Original problem documentation
+
+- Problem discovery and evidence
+- Root cause analysis
+- 200ms delay workaround explanation
+- Frontend temporary solution
+- Why the workaround was needed
+
+### [TANSTACK_QUERY_QUICK_REFERENCE.md](TANSTACK_QUERY_QUICK_REFERENCE.md)
+
+**TanStack Query Quick Reference** - Copy-paste patterns
+
+- Query hooks templates
+- Mutation hooks templates
+- Common patterns
+
+### [TANSTACK_QUERY_COPY_PASTE.md](TANSTACK_QUERY_COPY_PASTE.md)
+
+**TanStack Query Copy-Paste Templates** - Ready-to-use code
+
+- Complete module templates
+- Hook implementations
+- Page component patterns
+
 ## 🎯 Usage
 
 These references are designed for:

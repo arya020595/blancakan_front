@@ -4,11 +4,28 @@ This folder contains comprehensive documentation for the Event Management Dashbo
 
 ## 📁 Documentation Structure
 
+### 🔥 **CRITICAL** - Architecture Decisions
+
+**[ELASTICSEARCH_INDEX.md](ELASTICSEARCH_INDEX.md)** - 📍 START HERE
+
+Complete guide on Elasticsearch vs MongoDB architecture decision for admin dashboard.
+
+- **[core/ARCHITECTURE_COMPARISON.md](core/ARCHITECTURE_COMPARISON.md)** - Visual comparison (5 min read)
+- **[core/EXECUTIVE_SUMMARY.md](core/EXECUTIVE_SUMMARY.md)** - Executive decision summary
+- **[guides/ELASTICSEARCH_VS_MONGODB.md](guides/ELASTICSEARCH_VS_MONGODB.md)** - Complete implementation guide (20 min)
+- **[guides/BACKEND_ACTION_ITEMS.md](guides/BACKEND_ACTION_ITEMS.md)** - Backend implementation tasks
+- **[reference/ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md](reference/ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md)** - Quick reference (3 min)
+- **[reference/BACKEND_TIMING_ISSUE.md](reference/BACKEND_TIMING_ISSUE.md)** - Troubleshooting guide
+
+---
+
 ### [`/core/`](core/) - Essential System Documentation
 
 Core architecture and standards that every developer should know.
 
 - **[TEAM_STANDARDS.md](core/TEAM_STANDARDS.md)** - Official development standards and patterns
+- **[ARCHITECTURE_COMPARISON.md](core/ARCHITECTURE_COMPARISON.md)** - Elasticsearch vs MongoDB architecture
+- **[EXECUTIVE_SUMMARY.md](core/EXECUTIVE_SUMMARY.md)** - Architecture decision summary
 - **[AUTH_PROTECTION_GUIDE.md](core/AUTH_PROTECTION_GUIDE.md)** - Authentication system usage
 - **[HYDRATION_GUIDE.md](core/HYDRATION_GUIDE.md)** - SSR hydration patterns
 - **[API_ARCHITECTURE.md](core/API_ARCHITECTURE.md)** - API layer design

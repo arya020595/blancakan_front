@@ -14,7 +14,7 @@ Admin dashboard experiences 1-2 second delay when creating/deleting data because
 
 ### 🔥 **START HERE** - For Decision Makers
 
-**Document**: [`ARCHITECTURE_COMPARISON.md`](./ARCHITECTURE_COMPARISON.md)
+**Document**: [`core/ARCHITECTURE_COMPARISON.md`](./core/ARCHITECTURE_COMPARISON.md)
 
 **What it contains**:
 
@@ -32,7 +32,7 @@ Admin dashboard experiences 1-2 second delay when creating/deleting data because
 
 ### ⚡ **QUICK START** - For Developers
 
-**Document**: [`ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md`](./ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md)
+**Document**: [`reference/ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md`](./reference/ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md)
 
 **What it contains**:
 
@@ -50,7 +50,7 @@ Admin dashboard experiences 1-2 second delay when creating/deleting data because
 
 ### 📖 **COMPLETE GUIDE** - For Implementation
 
-**Document**: [`ELASTICSEARCH_VS_MONGODB.md`](./ELASTICSEARCH_VS_MONGODB.md)
+**Document**: [`guides/ELASTICSEARCH_VS_MONGODB.md`](./guides/ELASTICSEARCH_VS_MONGODB.md)
 
 **What it contains**:
 
@@ -70,7 +70,7 @@ Admin dashboard experiences 1-2 second delay when creating/deleting data because
 
 ### 🔧 **BACKEND TASKS** - For Backend Team
 
-**Document**: [`BACKEND_ACTION_ITEMS.md`](./BACKEND_ACTION_ITEMS.md)
+**Document**: [`guides/BACKEND_ACTION_ITEMS.md`](./guides/BACKEND_ACTION_ITEMS.md)
 
 **What it contains**:
 
@@ -90,7 +90,7 @@ Admin dashboard experiences 1-2 second delay when creating/deleting data because
 
 ### 🐛 **TROUBLESHOOTING** - Original Issue Documentation
 
-**Document**: [`BACKEND_TIMING_ISSUE.md`](./BACKEND_TIMING_ISSUE.md)
+**Document**: [`reference/BACKEND_TIMING_ISSUE.md`](./reference/BACKEND_TIMING_ISSUE.md)
 
 **What it contains**:
 
@@ -110,23 +110,23 @@ Admin dashboard experiences 1-2 second delay when creating/deleting data because
 
 ### If you are a **Product Manager** or **Team Lead**:
 
-1. Read: [`ARCHITECTURE_COMPARISON.md`](./ARCHITECTURE_COMPARISON.md) (5 min)
-2. Review: [`ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md`](./ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md) (3 min)
+1. Read: [`core/ARCHITECTURE_COMPARISON.md`](./core/ARCHITECTURE_COMPARISON.md) (5 min)
+2. Review: [`reference/ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md`](./reference/ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md) (3 min)
 3. Decision: Approve migration plan
 4. Share: Backend and frontend documentation with respective teams
 
 ### If you are a **Backend Developer**:
 
-1. Read: [`BACKEND_ACTION_ITEMS.md`](./BACKEND_ACTION_ITEMS.md) (10 min)
-2. Reference: [`ELASTICSEARCH_VS_MONGODB.md`](./ELASTICSEARCH_VS_MONGODB.md) for detailed explanations
+1. Read: [`guides/BACKEND_ACTION_ITEMS.md`](./guides/BACKEND_ACTION_ITEMS.md) (10 min)
+2. Reference: [`guides/ELASTICSEARCH_VS_MONGODB.md`](./guides/ELASTICSEARCH_VS_MONGODB.md) for detailed explanations
 3. Implement: Follow the code examples and checklists
 4. Test: Use the testing guide to verify changes
 5. Estimated effort: 2-4 hours
 
 ### If you are a **Frontend Developer**:
 
-1. Read: [`ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md`](./ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md) (3 min)
-2. Review: Frontend section in [`ELASTICSEARCH_VS_MONGODB.md`](./ELASTICSEARCH_VS_MONGODB.md)
+1. Read: [`reference/ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md`](./reference/ELASTICSEARCH_VS_MONGODB_QUICK_REFERENCE.md) (3 min)
+2. Review: Frontend section in [`guides/ELASTICSEARCH_VS_MONGODB.md`](./guides/ELASTICSEARCH_VS_MONGODB.md)
 3. Wait: For backend changes to be deployed
 4. Update: API service endpoints (remove MongoDB query params)
 5. Remove: 200ms delay workaround from hooks
@@ -135,7 +135,7 @@ Admin dashboard experiences 1-2 second delay when creating/deleting data because
 
 ### If you are an **Architect** or **Technical Lead**:
 
-1. Read: [`ELASTICSEARCH_VS_MONGODB.md`](./ELASTICSEARCH_VS_MONGODB.md) (full document)
+1. Read: [`guides/ELASTICSEARCH_VS_MONGODB.md`](./guides/ELASTICSEARCH_VS_MONGODB.md) (full document)
 2. Review: Book references and industry patterns
 3. Validate: Architecture decision matches company standards
 4. Plan: Migration timeline and rollout strategy
