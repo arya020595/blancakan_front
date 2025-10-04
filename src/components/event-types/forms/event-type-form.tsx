@@ -112,7 +112,7 @@ export function EventTypeForm({ mode, isSubmitting }: EventTypeFormProps) {
         control={form.control}
         name="is_active"
         render={({ field }) => (
-          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+          <FormItem className="flex flex-row items-end space-x-3 space-y-0">
             <FormControl>
               <Checkbox
                 checked={field.value}
