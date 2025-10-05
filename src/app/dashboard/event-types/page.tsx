@@ -17,6 +17,7 @@ import { useOptimisticToasts } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import ErrorModal from "@/components/ui/error-modal";
 import Modal from "@/components/ui/modal";
+import Spinner from "@/components/ui/spinner";
 import {
   useCreateEventType,
   useDeleteEventType,
@@ -281,7 +282,18 @@ export default function EventTypesPage() {
             variant="destructive"
             onClick={handleDelete}
             disabled={deleteMutation.isPending}>
-            Delete Event Type
+            {deleteMutation.isPending ? (
+              <span className="inline-flex items-center gap-2">
+                <Spinner
+                  size={16}
+                  className="-ml-1 text-white"
+                  ariaLabel="Deleting"
+                />
+                Deleting...
+              </span>
+            ) : (
+              "Delete Event Type"
+            )}
           </Button>
         </div>
       </Modal>
