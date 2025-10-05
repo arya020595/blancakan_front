@@ -14,6 +14,7 @@
 
 "use client";
 
+import { Button } from "@/components/ui/button";
 import type { Category } from "@/lib/api/types";
 import React, { useCallback } from "react";
 
@@ -100,20 +101,24 @@ export const CategoryTableRow = React.memo<CategoryTableRowProps>(
           className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
           role="gridcell">
           <div className="flex justify-end space-x-2">
-            <button
+            <Button
+              variant="link"
+              size="sm"
               onClick={handleEdit}
               disabled={isTempCategory}
-              className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="text-indigo-600 hover:text-indigo-900 h-auto p-0"
               title={
                 isTempCategory ? "Cannot edit while saving..." : "Edit category"
               }
               aria-label={`Edit ${category.name}`}>
               Edit
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="link"
+              size="sm"
               onClick={handleDelete}
               disabled={isTempCategory}
-              className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="text-red-600 hover:text-red-900 h-auto p-0"
               title={
                 isTempCategory
                   ? "Cannot delete while saving..."
@@ -121,7 +126,7 @@ export const CategoryTableRow = React.memo<CategoryTableRowProps>(
               }
               aria-label={`Delete ${category.name}`}>
               Delete
-            </button>
+            </Button>
           </div>
         </td>
       </tr>

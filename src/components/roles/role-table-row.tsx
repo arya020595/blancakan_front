@@ -29,6 +29,7 @@
 
 "use client";
 
+import { Button } from "@/components/ui/button";
 import type { Role } from "@/lib/api/types";
 import React, { useCallback } from "react";
 
@@ -108,24 +109,28 @@ export const RoleTableRow = React.memo<RoleTableRowProps>(
           className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
           role="gridcell">
           <div className="flex justify-end space-x-2">
-            <button
+            <Button
+              variant="link"
+              size="sm"
               onClick={handleEdit}
               disabled={isTempRole}
-              className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="text-indigo-600 hover:text-indigo-900 h-auto p-0"
               title={isTempRole ? "Cannot edit while saving..." : "Edit role"}
               aria-label={`Edit ${role.name}`}>
               Edit
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="link"
+              size="sm"
               onClick={handleDelete}
               disabled={isTempRole}
-              className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="text-red-600 hover:text-red-900 h-auto p-0"
               title={
                 isTempRole ? "Cannot delete while saving..." : "Delete role"
               }
               aria-label={`Delete ${role.name}`}>
               Delete
-            </button>
+            </Button>
           </div>
         </td>
       </tr>
