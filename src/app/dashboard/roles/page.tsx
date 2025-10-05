@@ -18,6 +18,7 @@ import { RolesTable } from "@/components/roles/roles-table";
 import { useOptimisticToasts } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import ErrorModal from "@/components/ui/error-modal";
+import { Input } from "@/components/ui/input";
 import Modal from "@/components/ui/modal";
 import Spinner from "@/components/ui/spinner";
 import {
@@ -177,12 +178,11 @@ export default function RolesPage() {
       </div>
 
       {/* Search */}
-      <input
+      <Input
         type="text"
         placeholder="Search roles..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
 
       {/* Table */}

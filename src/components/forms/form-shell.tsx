@@ -1,5 +1,7 @@
 "use client";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import Spinner from "@/components/ui/spinner";
 import React from "react";
 import {
@@ -49,27 +51,24 @@ export function FormShell<T extends FieldValues>({
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
         {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {children}
 
         <div className="mt-6 flex justify-end gap-3">
           {onCancel && (
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onCancel}
-              disabled={!!isSubmitting}
-              className="rounded-md border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50">
+              disabled={!!isSubmitting}>
               {cancelLabel}
-            </button>
+            </Button>
           )}
-          <button
-            type="submit"
-            disabled={!!isSubmitting}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50">
+          <Button type="submit" disabled={!!isSubmitting}>
             {isSubmitting ? (
               <span className="inline-flex items-center gap-2">
                 <Spinner
@@ -82,7 +81,7 @@ export function FormShell<T extends FieldValues>({
             ) : (
               submitLabel
             )}
-          </button>
+          </Button>
         </div>
       </form>
     </FormProvider>
