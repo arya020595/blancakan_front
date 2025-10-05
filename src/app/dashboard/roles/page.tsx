@@ -56,8 +56,7 @@ export default function RolesPage() {
     page: currentPage,
     per_page: 10,
     query: searchQuery || "*",
-    sort_by: "created_at",
-    sort_order: "desc", // Show newest first
+    sort: "created_at:desc",
   });
 
   // Mutations - TanStack Query handles cache invalidation automatically

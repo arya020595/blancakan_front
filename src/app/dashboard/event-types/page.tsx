@@ -1,5 +1,8 @@
 /**
- * Event Types Page - Simplified with Optimistic Updates
+ * Event Types Page - TanStack Query Implementation
+ *
+ * Following official TanStack Query pattern
+ * @see docs/guides/TANSTACK_QUERY_CRUD_GUIDE.md
  */
 
 "use client";
@@ -21,11 +24,7 @@ import {
   useUpdateEventType,
 } from "@/hooks/event-types-hooks";
 import { useErrorModal } from "@/hooks/use-error-modal";
-import type {
-  CreateEventTypeRequest,
-  EventType,
-  UpdateEventTypeRequest,
-} from "@/lib/api/types";
+import type { EventType } from "@/lib/api/types";
 import {
   eventTypeSchema,
   type EventTypeFormValues,
@@ -35,7 +34,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Suspense, useEffect, useState } from "react";
 
 export default function EventTypesPage() {
-  // State
+  // UI State
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -46,169 +45,118 @@ export default function EventTypesPage() {
     null
   );
 
-  // Hooks
+  // Toasts
   const toasts = useOptimisticToasts();
+
+  // Error modal
   const {
     error: modalError,
     isErrorModalOpen,
     showError,
     closeError,
   } = useErrorModal();
-  const {
-    eventTypes,
-    meta,
-    isLoading,
-    error,
-    fetchEventTypes,
-    addEventTypeOptimistic,
-    updateEventTypeOptimistic,
-    removeEventTypeOptimistic,
-    replaceTempEventTypeOptimistic,
-  } = useEventTypes();
 
-  const {
-    createEventType,
-    isLoading: isCreating,
-    clearError: clearCreateError,
-  } = useCreateEventType();
-  const {
-    updateEventType,
-    isLoading: isUpdating,
-    clearError: clearUpdateError,
-  } = useUpdateEventType();
-  const {
-    deleteEventType,
-    isLoading: isDeleting,
-    clearError: clearDeleteError,
-  } = useDeleteEventType();
+  // TanStack Query hooks
+  const { data, isLoading, error } = useEventTypes({
+    page: currentPage,
+    per_page: 10,
+    query: searchQuery || "*",
+    sort: "created_at:desc",
+  });
 
-  // Fetch data when params change
+  // Mutations
+  const createMutation = useCreateEventType();
+  const updateMutation = useUpdateEventType();
+  const deleteMutation = useDeleteEventType();
+
+  // Extract data
+  const eventTypes = data?.data ?? [];
+  const meta = data?.meta ?? null;
+
+  // Handle create mutation success/error
   useEffect(() => {
-    fetchEventTypes({
-      page: currentPage,
-      per_page: 10,
-      query: searchQuery || "*",
-    });
-  }, [fetchEventTypes, currentPage, searchQuery]);
-
-  // Create handler with optimistic updates
-  const handleCreate = async (data: EventTypeFormValues) => {
-    const eventTypeData: CreateEventTypeRequest = {
-      event_type: {
-        name: data.name,
-        description: (data.description || "").trim(),
-        icon_url: (data.icon_url || "").trim(),
-        sort_order: data.sort_order,
-        is_active: data.is_active,
-      },
-    };
-
-    const tempId = `temp-${Date.now()}`;
-    const optimisticEventType: EventType = {
-      _id: tempId,
-      name: eventTypeData.event_type.name,
-      description: eventTypeData.event_type.description,
-      icon_url: eventTypeData.event_type.icon_url,
-      is_active: eventTypeData.event_type.is_active,
-      slug: eventTypeData.event_type.name.toLowerCase().replace(/\s+/g, "-"),
-      sort_order: eventTypeData.event_type.sort_order,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    try {
-      addEventTypeOptimistic(optimisticEventType);
+    if (createMutation.isSuccess) {
       setShowCreateModal(false);
-
-      const response = await createEventType(eventTypeData);
-      replaceTempEventTypeOptimistic(tempId, response);
       toasts.createSuccess("Event Type");
-    } catch (error) {
-      removeEventTypeOptimistic(tempId);
-      setShowCreateModal(false);
-      showError(normalizeError(error, "Failed to create event type"));
-      clearCreateError();
+      createMutation.reset();
     }
+    if (createMutation.isError) {
+      showError(
+        normalizeError(createMutation.error, "Failed to create event type")
+      );
+      createMutation.reset();
+    }
+  }, [createMutation.isSuccess, createMutation.isError]);
+
+  // Handle update mutation success/error
+  useEffect(() => {
+    if (updateMutation.isSuccess) {
+      setEditingEventType(null);
+      toasts.updateSuccess("Event Type");
+      updateMutation.reset();
+    }
+    if (updateMutation.isError) {
+      showError(
+        normalizeError(updateMutation.error, "Failed to update event type")
+      );
+      updateMutation.reset();
+    }
+  }, [updateMutation.isSuccess, updateMutation.isError]);
+
+  // Handle delete mutation success/error
+  useEffect(() => {
+    if (deleteMutation.isSuccess) {
+      setDeletingEventType(null);
+      toasts.deleteSuccess("Event Type");
+      deleteMutation.reset();
+    }
+    if (deleteMutation.isError) {
+      showError(
+        normalizeError(deleteMutation.error, "Failed to delete event type")
+      );
+      deleteMutation.reset();
+    }
+  }, [deleteMutation.isSuccess, deleteMutation.isError]);
+
+  // Handlers - Simple, no async/await
+  const handleCreate = (formData: EventTypeFormValues) => {
+    createMutation.mutate({
+      event_type: {
+        name: formData.name,
+        description: formData.description?.trim() || "",
+        icon_url: formData.icon_url?.trim() || "",
+        sort_order: formData.sort_order,
+        is_active: formData.is_active,
+      },
+    });
   };
 
-  // Update handler with optimistic updates
-  const handleUpdate = async (data: EventTypeFormValues) => {
+  const handleUpdate = (formData: EventTypeFormValues) => {
     if (!editingEventType) return;
 
-    // Skip temp event types
-    if (editingEventType._id.startsWith("temp-")) {
-      setEditingEventType(null);
-      return;
-    }
-
-    const eventTypeData: UpdateEventTypeRequest = {
-      event_type: {
-        name: data.name,
-        description: (data.description || "").trim(),
-        icon_url: (data.icon_url || "").trim(),
-        sort_order: data.sort_order,
-        is_active: data.is_active,
+    updateMutation.mutate({
+      id: editingEventType._id,
+      data: {
+        event_type: {
+          name: formData.name,
+          description: formData.description?.trim() || "",
+          icon_url: formData.icon_url?.trim() || "",
+          sort_order: formData.sort_order,
+          is_active: formData.is_active,
+        },
       },
-    };
-
-    const optimisticEventType: EventType = {
-      ...editingEventType,
-      name: eventTypeData.event_type.name,
-      description: eventTypeData.event_type.description,
-      icon_url: eventTypeData.event_type.icon_url,
-      sort_order: eventTypeData.event_type.sort_order,
-      is_active: eventTypeData.event_type.is_active,
-      updated_at: new Date().toISOString(),
-    };
-
-    const originalEventType = editingEventType;
-
-    try {
-      updateEventTypeOptimistic(optimisticEventType);
-      setEditingEventType(null);
-
-      const response = await updateEventType(
-        editingEventType._id,
-        eventTypeData
-      );
-      updateEventTypeOptimistic(response);
-      toasts.updateSuccess("Event Type");
-    } catch (error) {
-      updateEventTypeOptimistic(originalEventType);
-      setEditingEventType(null);
-      showError(normalizeError(error, "Failed to update event type"));
-      clearUpdateError();
-    }
+    });
   };
 
-  // Delete handler with optimistic updates
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!deletingEventType) return;
-
-    // Skip temp event types
-    if (deletingEventType._id.startsWith("temp-")) return;
-
-    const eventTypeToDelete = deletingEventType;
-
-    try {
-      removeEventTypeOptimistic(deletingEventType._id);
-      setDeletingEventType(null);
-
-      await deleteEventType(deletingEventType._id);
-      toasts.deleteSuccess("Event Type");
-    } catch (error) {
-      addEventTypeOptimistic(eventTypeToDelete);
-      setDeletingEventType(null);
-      showError(normalizeError(error, "Failed to delete event type"));
-      clearDeleteError();
-    }
+    deleteMutation.mutate(deletingEventType._id);
   };
 
-  // Simple handlers
   const handleEdit = (eventType: EventType) => setEditingEventType(eventType);
 
   const handleDeleteConfirm = (id: string) => {
-    const eventType = eventTypes.find((eventType) => eventType._id === id);
+    const eventType = eventTypes.find((et) => et._id === id);
     if (eventType) setDeletingEventType(eventType);
   };
 
@@ -238,8 +186,7 @@ export default function EventTypesPage() {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Event Types</h1>
           <p className="text-sm text-gray-600">
-            Manage event type categories for your events. Configure icons,
-            display order, and availability.
+            Manage event type categories for your events
           </p>
         </div>
         <Button onClick={() => setShowCreateModal(true)}>Add Event Type</Button>
@@ -261,7 +208,7 @@ export default function EventTypesPage() {
         isLoading={isLoading}
       />
 
-      {/* Pagination with Suspense */}
+      {/* Pagination */}
       <Suspense fallback={<div>Loading pagination...</div>}>
         <EventTypePagination
           meta={meta}
@@ -271,8 +218,7 @@ export default function EventTypesPage() {
         />
       </Suspense>
 
-      {/* Modals */}
-      {/* Create Event Type Modal */}
+      {/* Create Modal */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
@@ -287,14 +233,17 @@ export default function EventTypesPage() {
           }}
           resolver={zodResolver(eventTypeSchema)}
           onSubmit={handleCreate}
-          isSubmitting={isCreating}
+          isSubmitting={createMutation.isPending}
           submitLabel="Create Event Type"
           onCancel={() => setShowCreateModal(false)}>
-          <EventTypeForm mode="create" isSubmitting={isCreating} />
+          <EventTypeForm
+            mode="create"
+            isSubmitting={createMutation.isPending}
+          />
         </FormShell>
       </Modal>
 
-      {/* Edit Event Type Modal */}
+      {/* Edit Modal */}
       <Modal
         isOpen={!!editingEventType}
         onClose={() => setEditingEventType(null)}
@@ -309,14 +258,14 @@ export default function EventTypesPage() {
           }}
           resolver={zodResolver(eventTypeSchema)}
           onSubmit={handleUpdate}
-          isSubmitting={isUpdating}
+          isSubmitting={updateMutation.isPending}
           submitLabel="Update Event Type"
           onCancel={() => setEditingEventType(null)}>
-          <EventTypeForm mode="edit" isSubmitting={isUpdating} />
+          <EventTypeForm mode="edit" isSubmitting={updateMutation.isPending} />
         </FormShell>
       </Modal>
 
-      {/* Delete Event Type Modal */}
+      {/* Delete Modal */}
       <Modal
         isOpen={!!deletingEventType}
         onClose={() => setDeletingEventType(null)}
@@ -325,23 +274,19 @@ export default function EventTypesPage() {
           <DeleteEventTypeContent eventTypeName={deletingEventType.name} />
         )}
         <div className="flex justify-end gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setDeletingEventType(null)}>
+          <Button variant="outline" onClick={() => setDeletingEventType(null)}>
             Cancel
           </Button>
           <Button
-            type="button"
             variant="destructive"
             onClick={handleDelete}
-            disabled={isDeleting}>
+            disabled={deleteMutation.isPending}>
             Delete Event Type
           </Button>
         </div>
       </Modal>
 
-      {/* Error Modal for Backend Validation Errors */}
+      {/* Error Modal */}
       <ErrorModal
         isOpen={isErrorModalOpen}
         onClose={closeError}

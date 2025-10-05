@@ -12,7 +12,11 @@
  * - Better maintainability
  */
 
-import type { RolesQueryParams } from "@/lib/api/types";
+import type {
+  CategoriesQueryParams,
+  EventTypesQueryParams,
+  RolesQueryParams,
+} from "@/lib/api/types";
 
 /**
  * Query Keys Factory for Roles
@@ -40,6 +44,30 @@ export const rolesKeys = {
 
   // Specific detail query
   detail: (id: string) => [...rolesKeys.details(), id] as const,
+};
+
+/**
+ * Query Keys Factory for Categories
+ */
+export const categoriesKeys = {
+  all: ["categories"] as const,
+  lists: () => [...categoriesKeys.all, "list"] as const,
+  list: (params?: CategoriesQueryParams) =>
+    [...categoriesKeys.lists(), params] as const,
+  details: () => [...categoriesKeys.all, "detail"] as const,
+  detail: (id: string) => [...categoriesKeys.details(), id] as const,
+};
+
+/**
+ * Query Keys Factory for Event Types
+ */
+export const eventTypesKeys = {
+  all: ["event-types"] as const,
+  lists: () => [...eventTypesKeys.all, "list"] as const,
+  list: (params?: EventTypesQueryParams) =>
+    [...eventTypesKeys.lists(), params] as const,
+  details: () => [...eventTypesKeys.all, "detail"] as const,
+  detail: (id: string) => [...eventTypesKeys.details(), id] as const,
 };
 
 /**
