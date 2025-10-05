@@ -1,5 +1,6 @@
 import { ToastProvider } from "@/components/toast/toast-provider";
 import { AuthProvider } from "@/providers/auth-provider";
+import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 
 export default function RootLayout({
@@ -10,9 +11,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ToastProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </ToastProvider>
+        <QueryProvider>
+          <ToastProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </ToastProvider>
+        </QueryProvider>
       </body>
     </html>
   );
