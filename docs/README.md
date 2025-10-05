@@ -4,11 +4,28 @@ This folder contains comprehensive documentation for the Event Management Dashbo
 
 ## 📁 Documentation Structure
 
+### 🔥 **ROOT CAUSE ANALYSIS** - Problem Investigation & Solutions
+
+**[`/rca/`](rca/)** - Root cause analysis for critical issues
+
+Complete investigation, analysis, action plans, and solutions for production issues.
+
+- **[elasticsearch-delay/](rca/elasticsearch-delay/)** - Admin dashboard delay issue
+  - [`01-PROBLEM.md`](rca/elasticsearch-delay/01-PROBLEM.md) - Issue discovery & evidence
+  - [`02-RCA.md`](rca/elasticsearch-delay/02-RCA.md) - Architecture comparison & analysis
+  - [`03-ACTION_PLAN.md`](rca/elasticsearch-delay/03-ACTION_PLAN.md) - Implementation tasks
+  - [`04-SOLUTION.md`](rca/elasticsearch-delay/04-SOLUTION.md) - Complete solution guide
+
+**Quick Access**: [`ELASTICSEARCH_INDEX.md`](ELASTICSEARCH_INDEX.md) - Navigation for Elasticsearch issue
+
+---
+
 ### [`/core/`](core/) - Essential System Documentation
 
 Core architecture and standards that every developer should know.
 
 - **[TEAM_STANDARDS.md](core/TEAM_STANDARDS.md)** - Official development standards and patterns
+- **[EXECUTIVE_SUMMARY.md](core/EXECUTIVE_SUMMARY.md)** - Architecture decision summary
 - **[AUTH_PROTECTION_GUIDE.md](core/AUTH_PROTECTION_GUIDE.md)** - Authentication system usage
 - **[HYDRATION_GUIDE.md](core/HYDRATION_GUIDE.md)** - SSR hydration patterns
 - **[API_ARCHITECTURE.md](core/API_ARCHITECTURE.md)** - API layer design
@@ -27,6 +44,7 @@ Detailed guides for specific development tasks.
 - **[QUICK_START.md](guides/QUICK_START.md)** - Get started quickly
 - **[DEVELOPMENT_FLOW.md](guides/DEVELOPMENT_FLOW.md)** - Complete development workflow
 - **[BEST_PRACTICES.md](guides/BEST_PRACTICES.md)** - Coding standards and practices
+- **[TANSTACK_QUERY_CRUD_GUIDE.md](guides/TANSTACK_QUERY_CRUD_GUIDE.md)** - ⭐ **Official TanStack Query CRUD pattern**
 - **[FORM_IMPLEMENTATION.md](guides/FORM_IMPLEMENTATION.md)** - Complete form development guide
 - **[METADATA_BLUEPRINT.md](guides/METADATA_BLUEPRINT.md)** - SEO metadata implementation
 
@@ -52,6 +70,12 @@ Quick lookups and examples for daily development.
 1. Check [TEAM_STANDARDS.md](core/TEAM_STANDARDS.md) for patterns
 2. Use [COMPONENT_EXAMPLES.md](reference/COMPONENT_EXAMPLES.md) for reference
 3. Follow [ENTERPRISE_COMPONENT_ARCHITECTURE.md](patterns/ENTERPRISE_COMPONENT_ARCHITECTURE.md)
+
+### For TanStack Query / CRUD Operations
+
+1. **[TANSTACK_QUERY_CRUD_GUIDE.md](guides/TANSTACK_QUERY_CRUD_GUIDE.md)** - Complete implementation guide
+2. Reference: `src/hooks/roles-hooks.ts` - Perfect example
+3. See: [BUG_FIX_DATA_NOT_UPDATING.md](BUG_FIX_DATA_NOT_UPDATING.md) - Important bug fix story
 
 ### For Form Development
 

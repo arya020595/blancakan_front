@@ -28,13 +28,20 @@ Step-by-step guides for specific development tasks.
 - React patterns
 - Performance considerations
 
-### [METADATA_BLUEPRINT.md](METADATA_BLUEPRINT.md)
+### [TANSTACK_QUERY_CRUD_GUIDE.md](TANSTACK_QUERY_CRUD_GUIDE.md) ⭐ **OFFICIAL PATTERN**
 
-**SEO metadata implementation** - Adding metadata to pages
+**TanStack Query CRUD Implementation Guide** - v3.0 Production Ready
 
-- Complete metadata setup
-- Server vs client components
-- SEO optimization
+- ✅ Simple callback-based pattern (NO optimistic updates)
+- ✅ Perfect for admin dashboards
+- ✅ Based on official TanStack Query v5 documentation
+- ✅ SOLID principles applied
+- ✅ Industry standards (GitHub, Stripe, Shopify)
+- ✅ 100% type-safe with TypeScript
+- ✅ Complete implementation templates
+- ✅ Reference: `src/hooks/roles-hooks.ts`
+
+**READ THIS FIRST for any CRUD operations!**
 
 ### [FORM_IMPLEMENTATION.md](FORM_IMPLEMENTATION.md)
 
@@ -45,14 +52,31 @@ Step-by-step guides for specific development tasks.
 - shadcn/ui integration
 - Best practices and troubleshooting
 
-## 🎯 Learning Path
+### [METADATA_BLUEPRINT.md](METADATA_BLUEPRINT.md)
 
-1. **QUICK_START.md** - Get running
-2. **DEVELOPMENT_FLOW.md** - Understand the process
-3. **BEST_PRACTICES.md** - Write quality code
-4. **FORM_IMPLEMENTATION.md** - Build forms correctly
-5. **METADATA_BLUEPRINT.md** - Add SEO support
+**SEO metadata implementation** - Adding metadata to pages
 
-## 🚀 Usage
+- Complete metadata setup
+- Server vs client components
+- SEO optimization
 
-These guides are designed to be followed in order for new developers, or used as reference for specific tasks by experienced team members.
+---
+
+## 🚀 Quick Start for New Developers
+
+1. **Setup**: Start with [QUICK_START.md](QUICK_START.md)
+2. **Workflow**: Follow [DEVELOPMENT_FLOW.md](DEVELOPMENT_FLOW.md)
+3. **Standards**: Review [BEST_PRACTICES.md](BEST_PRACTICES.md)
+4. **CRUD Operations**: Use [TANSTACK_QUERY_CRUD_GUIDE.md](TANSTACK_QUERY_CRUD_GUIDE.md)
+5. **Forms**: Implement with [FORM_IMPLEMENTATION.md](FORM_IMPLEMENTATION.md)
+
+## 📚 Additional Resources
+
+- **Bug Fix History**: See `../BUG_FIX_DATA_NOT_UPDATING.md` for important lessons learned
+- **Reference Implementation**: Check `src/hooks/roles-hooks.ts` for perfect example
+- **Core Standards**: Review `../core/TEAM_STANDARDS.md` for project-wide patterns
+
+---
+
+**Last Updated**: October 5, 2025  
+**Status**: Current and Production-Ready

@@ -1,7 +1,8 @@
 /**
- * Categories Hooks
- * Custom hooks for category-related operations
- * Follows SOLID principles with proper separation of concerns
+ * Categories Hooks - TanStack Query Implementation
+ *
+ * Following official TanStack Query v5 best practices
+ * @see docs/guides/TANSTACK_QUERY_CRUD_GUIDE.md
  */
 
 import { categoriesApiService } from "@/lib/api/services/categories-service";
@@ -11,319 +12,165 @@ import type {
   Category,
   CreateCategoryRequest,
   PaginatedResponse,
-  PaginationMeta,
   UpdateCategoryRequest,
 } from "@/lib/api/types";
+import { categoriesKeys } from "@/lib/query/query-keys";
 import { createLogger } from "@/lib/utils/logger";
-import { useCallback, useState } from "react";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationOptions,
+  type UseMutationResult,
+  type UseQueryOptions,
+  type UseQueryResult,
+} from "@tanstack/react-query";
 
-const logger = createLogger("CATEGORIES HOOKS");
+const logger = createLogger("CATEGORIES_HOOKS");
 
-// Simple in-flight request cache to prevent duplicate network calls
-const inFlightRequests = new Map<
-  string,
-  Promise<PaginatedResponse<Category>>
->();
+// TYPE DEFINITIONS
+type UseCategoriesOptions = Omit<
+  UseQueryOptions<PaginatedResponse<Category>, ApiError>,
+  "queryKey" | "queryFn"
+>;
 
-// Hook for fetching categories list with optimistic updates
-export const useCategories = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
+type UseCategoryOptions = Omit<
+  UseQueryOptions<Category, ApiError>,
+  "queryKey" | "queryFn"
+>;
 
-  const fetchCategories = useCallback(
-    async (params: CategoriesQueryParams = {}) => {
-      const cacheKey = JSON.stringify(params);
+type UseCreateCategoryOptions = Omit<
+  UseMutationOptions<Category, ApiError, CreateCategoryRequest>,
+  "mutationFn"
+>;
 
-      // Return existing promise if request is already in flight
-      if (inFlightRequests.has(cacheKey)) {
-        logger.info("Reusing in-flight categories fetch", { params });
-        return inFlightRequests.get(cacheKey);
-      }
+type UseUpdateCategoryOptions = Omit<
+  UseMutationOptions<Category, ApiError, { id: string; data: UpdateCategoryRequest }>,
+  "mutationFn"
+>;
 
-      // Create new request promise
-      const requestPromise: Promise<PaginatedResponse<Category>> =
-        (async () => {
-          try {
-            logger.info("Starting categories fetch", params);
-            setIsLoading(true);
-            setError(null);
+type UseDeleteCategoryOptions = Omit<
+  UseMutationOptions<Category, ApiError, string>,
+  "mutationFn"
+>;
 
-            const response = await categoriesApiService.getCategories(params);
-
-            logger.info("Categories fetch successful", {
-              count: response.data.length,
-              total: response.meta.total_count,
-            });
-
-            setCategories(response.data);
-            setMeta(response.meta);
-            return response;
-          } catch (err) {
-            const apiError = err as ApiError;
-            logger.error("Categories fetch failed", {
-              params,
-              error: apiError,
-            });
-            setError(apiError);
-            setCategories([]);
-            setMeta(null);
-            throw apiError;
-          } finally {
-            setIsLoading(false);
-            // Clean up cache entry when request completes
-            inFlightRequests.delete(cacheKey);
-          }
-        })();
-
-      // Cache the promise
-      inFlightRequests.set(cacheKey, requestPromise);
-      return requestPromise;
-    },
-    []
-  );
-
-  // Optimistic update functions
-  const addCategoryOptimistic = useCallback((category: Category) => {
-    setCategories((prev) => [category, ...prev]);
-    setMeta((prev) =>
-      prev ? { ...prev, total_count: prev.total_count + 1 } : null
-    );
-  }, []);
-
-  const updateCategoryOptimistic = useCallback((updatedCategory: Category) => {
-    setCategories((prev) =>
-      prev.map((cat) =>
-        cat._id === updatedCategory._id ? updatedCategory : cat
-      )
-    );
-  }, []);
-
-  const removeCategoryOptimistic = useCallback((categoryId: string) => {
-    setCategories((prev) => prev.filter((cat) => cat._id !== categoryId));
-    setMeta((prev) =>
-      prev ? { ...prev, total_count: prev.total_count - 1 } : null
-    );
-  }, []);
-
-  const replaceTempCategoryOptimistic = useCallback(
-    (tempId: string, realCategory: Category) => {
-      setCategories((prev) =>
-        prev.map((cat) => (cat._id === tempId ? realCategory : cat))
-      );
-    },
-    []
-  );
-
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  return {
-    categories,
-    meta,
-    isLoading,
-    error,
-    fetchCategories,
-    addCategoryOptimistic,
-    updateCategoryOptimistic,
-    removeCategoryOptimistic,
-    replaceTempCategoryOptimistic,
-    clearError,
-  };
-};
-
-// Hook for fetching a single category
-export const useCategory = () => {
-  const [category, setCategory] = useState<Category | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
-
-  const fetchCategory = useCallback(async (id: string) => {
-    try {
-      logger.info("Starting category fetch", { id });
-      setIsLoading(true);
-      setError(null);
-
-      const response = await categoriesApiService.getCategory(id);
-
-      logger.info("Category fetch successful", { id, name: response.name });
-      setCategory(response);
+// QUERY HOOKS
+export function useCategories(
+  params: CategoriesQueryParams = {},
+  options?: UseCategoriesOptions
+): UseQueryResult<PaginatedResponse<Category>, ApiError> {
+  return useQuery({
+    queryKey: categoriesKeys.list(params),
+    queryFn: async () => {
+      logger.info("Fetching categories", { params });
+      const response = await categoriesApiService.getCategories(params);
       return response;
-    } catch (err) {
-      const apiError = err as ApiError;
-      logger.error("Category fetch failed", { id, error: apiError });
-      setError(apiError);
-      setCategory(null);
-      throw apiError;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  return {
-    category,
-    isLoading,
-    error,
-    fetchCategory,
-    clearError,
-  };
-};
-
-// Hook for creating categories
-export const useCreateCategory = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
-
-  const createCategory = useCallback(
-    async (categoryData: CreateCategoryRequest): Promise<Category> => {
-      try {
-        logger.info("Starting category creation", {
-          name: categoryData.category.name,
-        });
-        setIsLoading(true);
-        setError(null);
-
-        const response = await categoriesApiService.createCategory(
-          categoryData
-        );
-
-        logger.info("Category creation successful", {
-          id: response._id,
-          name: response.name,
-        });
-
-        return response;
-      } catch (err) {
-        const apiError = err as ApiError;
-        logger.error("Category creation failed", {
-          categoryData,
-          error: apiError,
-        });
-        setError(apiError);
-        throw apiError;
-      } finally {
-        setIsLoading(false);
-      }
     },
-    []
-  );
+    ...options,
+  });
+}
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  return {
-    createCategory,
-    isLoading,
-    error,
-    clearError,
-  };
-};
-
-// Hook for updating categories
-export const useUpdateCategory = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
-
-  const updateCategory = useCallback(
-    async (
-      id: string,
-      categoryData: UpdateCategoryRequest
-    ): Promise<Category> => {
-      try {
-        logger.info("Starting category update", {
-          id,
-          name: categoryData.category.name,
-          requestData: categoryData,
-        });
-        setIsLoading(true);
-        setError(null);
-
-        const response = await categoriesApiService.updateCategory(
-          id,
-          categoryData
-        );
-
-        logger.info("Category update successful", {
-          id: response._id,
-          name: response.name,
-        });
-
-        return response;
-      } catch (err) {
-        const apiError = err as ApiError;
-        logger.error("Category update failed", {
-          id,
-          categoryData,
-          error: apiError,
-          errorMessage: apiError.message,
-          errorStatus: apiError.status,
-          errorDetails: apiError.errors,
-        });
-        setError(apiError);
-        throw apiError;
-      } finally {
-        setIsLoading(false);
-      }
+export function useCategory(
+  id: string | undefined,
+  options?: UseCategoryOptions
+): UseQueryResult<Category, ApiError> {
+  return useQuery({
+    queryKey: categoriesKeys.detail(id!),
+    queryFn: async () => {
+      const response = await categoriesApiService.getCategory(id!);
+      return response;
     },
-    []
-  );
+    enabled: !!id,
+    ...options,
+  });
+}
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+// MUTATION HOOKS
+export function useCreateCategory(
+  options?: UseCreateCategoryOptions
+): UseMutationResult<Category, ApiError, CreateCategoryRequest, unknown> {
+  const queryClient = useQueryClient();
 
-  return {
-    updateCategory,
-    isLoading,
-    error,
-    clearError,
-  };
-};
+  return useMutation({
+    mutationFn: async (data: CreateCategoryRequest) => {
+      logger.info("Creating category", { name: data.category.name });
+      const response = await categoriesApiService.createCategory(data);
+      return response;
+    },
 
-// Hook for deleting categories
-export const useDeleteCategory = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
-
-  const deleteCategory = useCallback(async (id: string): Promise<Category> => {
-    try {
-      logger.info("Starting category deletion", { id });
-      setIsLoading(true);
-      setError(null);
-
-      const response = await categoriesApiService.deleteCategory(id);
-
-      logger.info("Category deletion successful", {
-        id: response._id,
-        name: response.name,
+    onSuccess: async (data) => {
+      queryClient.setQueryData(categoriesKeys.detail(data._id), data);
+      await queryClient.invalidateQueries({
+        queryKey: categoriesKeys.lists(),
       });
+      logger.info("Cache invalidated");
+    },
 
+    onError: (error) => {
+      logger.error("Failed to create category", { error });
+    },
+  });
+}
+
+export function useUpdateCategory(
+  options?: UseUpdateCategoryOptions
+): UseMutationResult<Category, ApiError, { id: string; data: UpdateCategoryRequest }, unknown> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }) => {
+      logger.info("Updating category", { id });
+      const response = await categoriesApiService.updateCategory(id, data);
       return response;
-    } catch (err) {
-      const apiError = err as ApiError;
-      logger.error("Category deletion failed", { id, error: apiError });
-      setError(apiError);
-      throw apiError;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+    onSuccess: async (data, variables) => {
+      queryClient.setQueryData(categoriesKeys.detail(variables.id), data);
+      await queryClient.invalidateQueries({
+        queryKey: categoriesKeys.lists(),
+      });
+      logger.info("Cache invalidated");
+    },
 
-  return {
-    deleteCategory,
-    isLoading,
-    error,
-    clearError,
+    onError: (error, variables) => {
+      logger.error("Failed to update category", { id: variables.id, error });
+    },
+  });
+}
+
+export function useDeleteCategory(
+  options?: UseDeleteCategoryOptions
+): UseMutationResult<Category, ApiError, string, unknown> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      logger.info("Deleting category", { id });
+      const response = await categoriesApiService.deleteCategory(id);
+      return response;
+    },
+
+    onSuccess: async (_data, variables) => {
+      queryClient.removeQueries({ queryKey: categoriesKeys.detail(variables) });
+      await queryClient.invalidateQueries({
+        queryKey: categoriesKeys.lists(),
+      });
+      logger.info("Cache invalidated");
+    },
+
+    onError: (error, variables) => {
+      logger.error("Failed to delete category", { id: variables, error });
+    },
+  });
+}
+
+export function usePrefetchCategories() {
+  const queryClient = useQueryClient();
+
+  return (params: CategoriesQueryParams = {}) => {
+    return queryClient.prefetchQuery({
+      queryKey: categoriesKeys.list(params),
+      queryFn: () => categoriesApiService.getCategories(params),
+    });
   };
-};
+}

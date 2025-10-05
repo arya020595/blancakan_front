@@ -1,5 +1,8 @@
 /**
- * Categories Page - Simplified with Optimistic Updates
+ * Categories Page - TanStack Query Implementation
+ *
+ * Following official TanStack Query pattern
+ * @see docs/guides/TANSTACK_QUERY_CRUD_GUIDE.md
  */
 
 "use client";
@@ -12,17 +15,12 @@ import {
 import { CategoryTableRow } from "@/components/categories/category-table-row";
 import { CategoryForm } from "@/components/categories/forms/category-form";
 import { DeleteCategoryContent } from "@/components/categories/forms/delete-category-content";
-import {
-  categorySchema,
-  type CategoryFormValues,
-} from "@/lib/schemas/category-schema";
-import { zodResolver } from "@hookform/resolvers/zod";
-
 import { FormShell } from "@/components/forms/form-shell";
 import { useOptimisticToasts } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import ErrorModal from "@/components/ui/error-modal";
 import Modal from "@/components/ui/modal";
+import Spinner from "@/components/ui/spinner";
 import {
   useCategories,
   useCreateCategory,
@@ -30,16 +28,17 @@ import {
   useUpdateCategory,
 } from "@/hooks/categories-hooks";
 import { useErrorModal } from "@/hooks/use-error-modal";
-import type {
-  Category,
-  CreateCategoryRequest,
-  UpdateCategoryRequest,
-} from "@/lib/api/types";
+import type { Category } from "@/lib/api/types";
+import {
+  categorySchema,
+  type CategoryFormValues,
+} from "@/lib/schemas/category-schema";
 import { normalizeError } from "@/lib/utils/error-utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Suspense, useEffect, useState } from "react";
 
 export default function CategoriesPage() {
-  // State
+  // UI State
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -48,156 +47,112 @@ export default function CategoriesPage() {
     null
   );
 
-  // Hooks
+  // Toasts
   const toasts = useOptimisticToasts();
+
+  // Error modal
   const {
     error: modalError,
     isErrorModalOpen,
     showError,
     closeError,
   } = useErrorModal();
-  const {
-    categories,
-    meta,
-    isLoading,
-    error,
-    fetchCategories,
-    addCategoryOptimistic,
-    updateCategoryOptimistic,
-    removeCategoryOptimistic,
-    replaceTempCategoryOptimistic,
-  } = useCategories();
 
-  const {
-    createCategory,
-    isLoading: isCreating,
-    clearError: clearCreateError,
-  } = useCreateCategory();
-  const {
-    updateCategory,
-    isLoading: isUpdating,
-    clearError: clearUpdateError,
-  } = useUpdateCategory();
-  const {
-    deleteCategory,
-    isLoading: isDeleting,
-    clearError: clearDeleteError,
-  } = useDeleteCategory();
+  // TanStack Query hooks
+  const { data, isLoading, error } = useCategories({
+    page: currentPage,
+    per_page: 10,
+    query: searchQuery || "*",
+    sort: "created_at:desc",
+  });
 
-  // Fetch data when params change
+  // Mutations
+  const createMutation = useCreateCategory();
+  const updateMutation = useUpdateCategory();
+  const deleteMutation = useDeleteCategory();
+
+  // Extract data
+  const categories = data?.data ?? [];
+  const meta = data?.meta ?? null;
+
+  // Handle create mutation success/error
   useEffect(() => {
-    fetchCategories({
-      page: currentPage,
-      per_page: 10,
-      query: searchQuery || "*",
-    });
-  }, [fetchCategories, currentPage, searchQuery]);
+    if (createMutation.isSuccess) {
+      setShowCreateModal(false);
+      toasts.createSuccess("Category");
+      createMutation.reset();
+    }
+    if (createMutation.isError) {
+      showError(
+        normalizeError(createMutation.error, "Failed to create category")
+      );
+      createMutation.reset();
+    }
+  }, [createMutation.isSuccess, createMutation.isError]);
 
-  // Create handler with optimistic updates
-  const handleCreate = async (data: CategoryFormValues) => {
-    const categoryData: CreateCategoryRequest = {
+  // Handle update mutation success/error
+  useEffect(() => {
+    if (updateMutation.isSuccess) {
+      setEditingCategory(null);
+      toasts.updateSuccess("Category");
+      updateMutation.reset();
+    }
+    if (updateMutation.isError) {
+      showError(
+        normalizeError(updateMutation.error, "Failed to update category")
+      );
+      updateMutation.reset();
+    }
+  }, [updateMutation.isSuccess, updateMutation.isError]);
+
+  // Handle delete mutation success/error
+  useEffect(() => {
+    if (deleteMutation.isSuccess) {
+      setDeletingCategory(null);
+      toasts.deleteSuccess("Category");
+      deleteMutation.reset();
+    }
+    if (deleteMutation.isError) {
+      showError(
+        normalizeError(deleteMutation.error, "Failed to delete category")
+      );
+      deleteMutation.reset();
+    }
+  }, [deleteMutation.isSuccess, deleteMutation.isError]);
+
+  // Handlers - Simple, no async/await
+  const handleCreate = (formData: CategoryFormValues) => {
+    createMutation.mutate({
       category: {
-        name: data.name,
-        description: (data.description || "").trim(),
-        is_active: data.is_active,
+        name: formData.name,
+        description: formData.description?.trim() || "",
+        is_active: formData.is_active,
         parent_id: null,
       },
-    };
-
-    const tempId = `temp-${Date.now()}`;
-    const optimisticCategory: Category = {
-      _id: tempId,
-      name: categoryData.category.name,
-      description: categoryData.category.description,
-      is_active: categoryData.category.is_active,
-      parent_id: categoryData.category.parent_id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    try {
-      addCategoryOptimistic(optimisticCategory);
-      setShowCreateModal(false);
-
-      const response = await createCategory(categoryData);
-      replaceTempCategoryOptimistic(tempId, response);
-      toasts.createSuccess("Category");
-    } catch (error) {
-      removeCategoryOptimistic(tempId);
-      setShowCreateModal(false);
-      showError(normalizeError(error, "Failed to create category"));
-      clearCreateError();
-    }
+    });
   };
 
-  // Update handler with optimistic updates
-  const handleUpdate = async (data: CategoryFormValues) => {
+  const handleUpdate = (formData: CategoryFormValues) => {
     if (!editingCategory) return;
 
-    // Skip temp categories
-    if (editingCategory._id.startsWith("temp-")) {
-      setEditingCategory(null);
-      return;
-    }
-
-    const categoryData: UpdateCategoryRequest = {
-      category: {
-        name: data.name,
-        description: (data.description || "").trim(),
-        is_active: data.is_active,
-        parent_id: null,
+    updateMutation.mutate({
+      id: editingCategory._id,
+      data: {
+        category: {
+          name: formData.name,
+          description: formData.description?.trim() || "",
+          is_active: formData.is_active,
+          parent_id: null,
+        },
       },
-    };
-
-    const optimisticCategory: Category = {
-      ...editingCategory,
-      name: categoryData.category.name,
-      description: categoryData.category.description,
-      is_active: data.is_active,
-      updated_at: new Date().toISOString(),
-    };
-
-    const originalCategory = editingCategory;
-
-    try {
-      updateCategoryOptimistic(optimisticCategory);
-      setEditingCategory(null);
-
-      const response = await updateCategory(editingCategory._id, categoryData);
-      updateCategoryOptimistic(response);
-      toasts.updateSuccess("Category");
-    } catch (error) {
-      updateCategoryOptimistic(originalCategory);
-      setEditingCategory(null);
-      showError(normalizeError(error, "Failed to update category"));
-      clearUpdateError();
-    }
+    });
   };
 
-  // Delete handler with optimistic updates
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!deletingCategory) return;
-
-    // Skip temp categories
-    if (deletingCategory._id.startsWith("temp-")) return;
-
-    const categoryToDelete = deletingCategory;
-
-    try {
-      removeCategoryOptimistic(deletingCategory._id);
-      setDeletingCategory(null);
-
-      await deleteCategory(deletingCategory._id);
-      toasts.deleteSuccess("Category");
-    } catch (error) {
-      addCategoryOptimistic(categoryToDelete);
-      setDeletingCategory(null);
-      showError(normalizeError(error, "Failed to delete category"));
-      clearDeleteError();
-    }
+    deleteMutation.mutate(deletingCategory._id);
   };
 
-  // Simple handlers
   const handleEdit = (category: Category) => setEditingCategory(category);
 
   const handleDeleteConfirm = (id: string) => {
@@ -230,7 +185,7 @@ export default function CategoriesPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Categories</h1>
-          <p className="text-sm text-gray-600">Manage your event categories</p>
+          <p className="text-sm text-gray-600">Manage event categories</p>
         </div>
         <Button onClick={() => setShowCreateModal(true)}>Add Category</Button>
       </div>
@@ -251,7 +206,7 @@ export default function CategoriesPage() {
         isLoading={isLoading}
       />
 
-      {/* Pagination with Suspense */}
+      {/* Pagination */}
       <Suspense fallback={<CategoryPaginationSkeleton />}>
         <CategoryPagination
           meta={meta}
@@ -261,8 +216,7 @@ export default function CategoriesPage() {
         />
       </Suspense>
 
-      {/* Modals */}
-      {/* Create Category Modal */}
+      {/* Create Modal */}
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
@@ -271,14 +225,14 @@ export default function CategoriesPage() {
           defaultValues={{ name: "", description: "", is_active: true }}
           resolver={zodResolver(categorySchema)}
           onSubmit={handleCreate}
-          isSubmitting={isCreating}
+          isSubmitting={createMutation.isPending}
           submitLabel="Create Category"
           onCancel={() => setShowCreateModal(false)}>
-          <CategoryForm mode="create" isSubmitting={isCreating} />
+          <CategoryForm mode="create" isSubmitting={createMutation.isPending} />
         </FormShell>
       </Modal>
 
-      {/* Edit Category Modal */}
+      {/* Edit Modal */}
       <Modal
         isOpen={!!editingCategory}
         onClose={() => setEditingCategory(null)}
@@ -291,10 +245,10 @@ export default function CategoriesPage() {
           }}
           resolver={zodResolver(categorySchema)}
           onSubmit={handleUpdate}
-          isSubmitting={isUpdating}
+          isSubmitting={updateMutation.isPending}
           submitLabel="Update Category"
           onCancel={() => setEditingCategory(null)}>
-          <CategoryForm mode="edit" isSubmitting={isUpdating} />
+          <CategoryForm mode="edit" isSubmitting={updateMutation.isPending} />
         </FormShell>
       </Modal>
 
@@ -313,13 +267,24 @@ export default function CategoriesPage() {
           <Button
             variant="destructive"
             onClick={handleDelete}
-            disabled={isDeleting}>
-            Delete Category
+            disabled={deleteMutation.isPending}>
+            {deleteMutation.isPending ? (
+              <span className="inline-flex items-center gap-2">
+                <Spinner
+                  size={16}
+                  className="-ml-1 text-white"
+                  ariaLabel="Deleting"
+                />
+                Deleting...
+              </span>
+            ) : (
+              "Delete Category"
+            )}
           </Button>
         </div>
       </Modal>
 
-      {/* Error Modal for Backend Validation Errors */}
+      {/* Error Modal */}
       <ErrorModal
         isOpen={isErrorModalOpen}
         onClose={closeError}

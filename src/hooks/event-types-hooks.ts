@@ -1,7 +1,8 @@
 /**
- * Event Types Hooks
- * Custom hooks for event type-related operations
- * Follows SOLID principles with proper separation of concerns
+ * Event Types Hooks - TanStack Query Implementation
+ *
+ * Following official TanStack Query v5 best practices
+ * @see docs/guides/TANSTACK_QUERY_CRUD_GUIDE.md
  */
 
 import { eventTypesApiService } from "@/lib/api/services/event-types-service";
@@ -11,330 +12,174 @@ import type {
   EventType,
   EventTypesQueryParams,
   PaginatedResponse,
-  PaginationMeta,
   UpdateEventTypeRequest,
 } from "@/lib/api/types";
+import { eventTypesKeys } from "@/lib/query/query-keys";
 import { createLogger } from "@/lib/utils/logger";
-import { useCallback, useState } from "react";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationOptions,
+  type UseMutationResult,
+  type UseQueryOptions,
+  type UseQueryResult,
+} from "@tanstack/react-query";
 
-const logger = createLogger("EVENT_TYPES HOOKS");
+const logger = createLogger("EVENT_TYPES_HOOKS");
 
-// Simple in-flight request cache to prevent duplicate network calls
-const inFlightRequests = new Map<
-  string,
-  Promise<PaginatedResponse<EventType>>
->();
+// TYPE DEFINITIONS
+type UseEventTypesOptions = Omit<
+  UseQueryOptions<PaginatedResponse<EventType>, ApiError>,
+  "queryKey" | "queryFn"
+>;
 
-// Hook for fetching event types list with optimistic updates
-export const useEventTypes = () => {
-  const [eventTypes, setEventTypes] = useState<EventType[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
+type UseEventTypeOptions = Omit<
+  UseQueryOptions<EventType, ApiError>,
+  "queryKey" | "queryFn"
+>;
 
-  const fetchEventTypes = useCallback(
-    async (params: EventTypesQueryParams = {}) => {
-      const cacheKey = JSON.stringify(params);
+type UseCreateEventTypeOptions = Omit<
+  UseMutationOptions<EventType, ApiError, CreateEventTypeRequest>,
+  "mutationFn"
+>;
 
-      // Return existing promise if request is already in flight
-      if (inFlightRequests.has(cacheKey)) {
-        logger.info("Reusing in-flight event types fetch", { params });
-        return inFlightRequests.get(cacheKey);
-      }
+type UseUpdateEventTypeOptions = Omit<
+  UseMutationOptions<
+    EventType,
+    ApiError,
+    { id: string; data: UpdateEventTypeRequest }
+  >,
+  "mutationFn"
+>;
 
-      // Create new request promise
-      const requestPromise: Promise<PaginatedResponse<EventType>> =
-        (async () => {
-          try {
-            logger.info("Starting event types fetch", params);
-            setIsLoading(true);
-            setError(null);
+type UseDeleteEventTypeOptions = Omit<
+  UseMutationOptions<EventType, ApiError, string>,
+  "mutationFn"
+>;
 
-            const response = await eventTypesApiService.getEventTypes(params);
-
-            logger.info("Event types fetch successful", {
-              count: response.data.length,
-              total: response.meta.total_count,
-            });
-
-            setEventTypes(response.data);
-            setMeta(response.meta);
-            return response;
-          } catch (err) {
-            const apiError = err as ApiError;
-            logger.error("Event types fetch failed", {
-              params,
-              error: apiError,
-            });
-            setError(apiError);
-            setEventTypes([]);
-            setMeta(null);
-            throw apiError;
-          } finally {
-            setIsLoading(false);
-            // Clean up cache entry when request completes
-            inFlightRequests.delete(cacheKey);
-          }
-        })();
-
-      // Cache the promise
-      inFlightRequests.set(cacheKey, requestPromise);
-      return requestPromise;
+// QUERY HOOKS
+export function useEventTypes(
+  params: EventTypesQueryParams = {},
+  options?: UseEventTypesOptions
+): UseQueryResult<PaginatedResponse<EventType>, ApiError> {
+  return useQuery({
+    queryKey: eventTypesKeys.list(params),
+    queryFn: async () => {
+      logger.info("Fetching event types", { params });
+      const response = await eventTypesApiService.getEventTypes(params);
+      return response;
     },
-    []
-  );
+    ...options,
+  });
+}
 
-  // Optimistic update functions
-  const addEventTypeOptimistic = useCallback((eventType: EventType) => {
-    logger.info("Adding event type optimistically", { id: eventType._id });
-    setEventTypes((prev) => [eventType, ...prev]);
-  }, []);
-
-  const updateEventTypeOptimistic = useCallback(
-    (updatedEventType: EventType) => {
-      logger.info("Updating event type optimistically", {
-        id: updatedEventType._id,
-      });
-      setEventTypes((prev) =>
-        prev.map((eventType) =>
-          eventType._id === updatedEventType._id ? updatedEventType : eventType
-        )
-      );
+export function useEventType(
+  id: string | undefined,
+  options?: UseEventTypeOptions
+): UseQueryResult<EventType, ApiError> {
+  return useQuery({
+    queryKey: eventTypesKeys.detail(id!),
+    queryFn: async () => {
+      const response = await eventTypesApiService.getEventType(id!);
+      return response;
     },
-    []
-  );
+    enabled: !!id,
+    ...options,
+  });
+}
 
-  const removeEventTypeOptimistic = useCallback((id: string) => {
-    logger.info("Removing event type optimistically", { id });
-    setEventTypes((prev) => prev.filter((eventType) => eventType._id !== id));
-  }, []);
+// MUTATION HOOKS
+export function useCreateEventType(
+  options?: UseCreateEventTypeOptions
+): UseMutationResult<EventType, ApiError, CreateEventTypeRequest, unknown> {
+  const queryClient = useQueryClient();
 
-  const replaceTempEventTypeOptimistic = useCallback(
-    (tempId: string, realEventType: EventType) => {
-      logger.info("Replacing temporary event type", {
-        tempId,
-        realId: realEventType._id,
-      });
-      setEventTypes((prev) =>
-        prev.map((eventType) =>
-          eventType._id === tempId ? realEventType : eventType
-        )
-      );
-    },
-    []
-  );
-
-  return {
-    eventTypes,
-    meta,
-    isLoading,
-    error,
-    fetchEventTypes,
-    addEventTypeOptimistic,
-    updateEventTypeOptimistic,
-    removeEventTypeOptimistic,
-    replaceTempEventTypeOptimistic,
-  };
-};
-
-// Hook for creating event types
-export const useCreateEventType = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
-
-  const createEventType = useCallback(async (data: CreateEventTypeRequest) => {
-    try {
+  return useMutation({
+    mutationFn: async (data: CreateEventTypeRequest) => {
       logger.info("Creating event type", { name: data.event_type.name });
-      setIsLoading(true);
-      setError(null);
-
       const response = await eventTypesApiService.createEventType(data);
-
-      logger.info("Event type created successfully", {
-        id: response._id,
-        name: response.name,
-      });
-
       return response;
-    } catch (err) {
-      const apiError = err as ApiError;
-      logger.error("Failed to create event type", apiError);
-      setError(apiError);
-      throw apiError;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  return {
-    createEventType,
-    isLoading,
-    error,
-    clearError,
-  };
-};
-
-// Hook for updating event types
-export const useUpdateEventType = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
-
-  const updateEventType = useCallback(
-    async (id: string, data: UpdateEventTypeRequest) => {
-      try {
-        logger.info("Updating event type", { id, name: data.event_type.name });
-        setIsLoading(true);
-        setError(null);
-
-        const response = await eventTypesApiService.updateEventType(id, data);
-
-        logger.info("Event type updated successfully", {
-          id: response._id,
-          name: response.name,
-        });
-
-        return response;
-      } catch (err) {
-        const apiError = err as ApiError;
-        logger.error("Failed to update event type", apiError);
-        setError(apiError);
-        throw apiError;
-      } finally {
-        setIsLoading(false);
-      }
     },
-    []
-  );
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+    onSuccess: async (data) => {
+      queryClient.setQueryData(eventTypesKeys.detail(data._id), data);
+      await queryClient.invalidateQueries({
+        queryKey: eventTypesKeys.lists(),
+      });
+      logger.info("Cache invalidated");
+    },
 
-  return {
-    updateEventType,
-    isLoading,
-    error,
-    clearError,
-  };
-};
+    onError: (error) => {
+      logger.error("Failed to create event type", { error });
+    },
+  });
+}
 
-// Hook for deleting event types
-export const useDeleteEventType = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
+export function useUpdateEventType(
+  options?: UseUpdateEventTypeOptions
+): UseMutationResult<
+  EventType,
+  ApiError,
+  { id: string; data: UpdateEventTypeRequest },
+  unknown
+> {
+  const queryClient = useQueryClient();
 
-  const deleteEventType = useCallback(async (id: string) => {
-    try {
+  return useMutation({
+    mutationFn: async ({ id, data }) => {
+      logger.info("Updating event type", { id });
+      const response = await eventTypesApiService.updateEventType(id, data);
+      return response;
+    },
+
+    onSuccess: async (data, variables) => {
+      queryClient.setQueryData(eventTypesKeys.detail(variables.id), data);
+      await queryClient.invalidateQueries({
+        queryKey: eventTypesKeys.lists(),
+      });
+      logger.info("Cache invalidated");
+    },
+
+    onError: (error, variables) => {
+      logger.error("Failed to update event type", { id: variables.id, error });
+    },
+  });
+}
+
+export function useDeleteEventType(
+  options?: UseDeleteEventTypeOptions
+): UseMutationResult<EventType, ApiError, string, unknown> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
       logger.info("Deleting event type", { id });
-      setIsLoading(true);
-      setError(null);
-
       const response = await eventTypesApiService.deleteEventType(id);
-
-      logger.info("Event type deleted successfully", { id });
-
       return response;
-    } catch (err) {
-      const apiError = err as ApiError;
-      logger.error("Failed to delete event type", apiError);
-      setError(apiError);
-      throw apiError;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  return {
-    deleteEventType,
-    isLoading,
-    error,
-    clearError,
-  };
-};
-
-// Hook for getting a single event type
-export const useEventType = () => {
-  const [eventType, setEventType] = useState<EventType | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
-
-  const fetchEventType = useCallback(async (id: string) => {
-    try {
-      logger.info("Fetching event type", { id });
-      setIsLoading(true);
-      setError(null);
-
-      const response = await eventTypesApiService.getEventType(id);
-
-      logger.info("Event type fetched successfully", {
-        id: response._id,
-        name: response.name,
+    onSuccess: async (_data, variables) => {
+      queryClient.removeQueries({ queryKey: eventTypesKeys.detail(variables) });
+      await queryClient.invalidateQueries({
+        queryKey: eventTypesKeys.lists(),
       });
+      logger.info("Cache invalidated");
+    },
 
-      setEventType(response);
-      return response;
-    } catch (err) {
-      const apiError = err as ApiError;
-      logger.error("Failed to fetch event type", apiError);
-      setError(apiError);
-      setEventType(null);
-      throw apiError;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    onError: (error, variables) => {
+      logger.error("Failed to delete event type", { id: variables, error });
+    },
+  });
+}
 
-  return {
-    eventType,
-    isLoading,
-    error,
-    fetchEventType,
+export function usePrefetchEventTypes() {
+  const queryClient = useQueryClient();
+
+  return (params: EventTypesQueryParams = {}) => {
+    return queryClient.prefetchQuery({
+      queryKey: eventTypesKeys.list(params),
+      queryFn: () => eventTypesApiService.getEventTypes(params),
+    });
   };
-};
-
-// Hook for toggling event type status
-export const useToggleEventTypeStatus = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<ApiError | null>(null);
-
-  const toggleStatus = useCallback(async (id: string, isActive: boolean) => {
-    try {
-      logger.info("Toggling event type status", { id, isActive });
-      setIsLoading(true);
-      setError(null);
-
-      const response = await eventTypesApiService.toggleEventTypeStatus(
-        id,
-        isActive
-      );
-
-      logger.info("Event type status toggled successfully", {
-        id: response._id,
-        isActive: response.is_active,
-      });
-
-      return response;
-    } catch (err) {
-      const apiError = err as ApiError;
-      logger.error("Failed to toggle event type status", apiError);
-      setError(apiError);
-      throw apiError;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  return {
-    toggleStatus,
-    isLoading,
-    error,
-  };
-};
+}
