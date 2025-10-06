@@ -37,11 +37,11 @@ export default function SimpleFormWithErrorModal() {
   const { error, isErrorModalOpen, showError, closeError } = useErrorModal();
 
   // Mutation hook
-  const { createCategory, isLoading } = useCreateCategory();
+  const createMutation = useCreateCategory();
 
   // UPDATED: Create handler with error modal integration
   const handleCreate = useCallback(
-    async (data: CategoryFormValues) => {
+    (data: CategoryFormValues) => {
       const categoryData: CreateCategoryRequest = {
         category: {
           name: data.name,
@@ -51,26 +51,23 @@ export default function SimpleFormWithErrorModal() {
         },
       };
 
-      try {
-        await createCategory(categoryData);
-        setShowCreateModal(false); // Close form modal on success
-
-        // Optional: Show success message
-        console.log("Category created successfully!");
-        logger.info("Category created successfully");
-      } catch (error) {
-        // NEW: Instead of generic error handling, show detailed validation errors
-        const validationError = normalizeError(
-          error,
-          "Failed to create category"
-        );
-        showError(validationError);
-        logger.error("Failed to create category", error);
-
-        // Note: We DON'T close the form modal here, so user can fix errors and retry
-      }
+      createMutation.mutate(categoryData, {
+        onSuccess: () => {
+          setShowCreateModal(false);
+          console.log("Category created successfully!");
+          logger.info("Category created successfully");
+        },
+        onError: (error) => {
+          const validationError = normalizeError(
+            error,
+            "Failed to create category"
+          );
+          showError(validationError);
+          logger.error("Failed to create category", error);
+        },
+      });
     },
-    [createCategory, showError]
+    [createMutation, showError]
   );
 
   return (
@@ -98,11 +95,11 @@ export default function SimpleFormWithErrorModal() {
         <FormShell<CategoryFormValues>
           defaultValues={{ name: "", description: "" }}
           onSubmit={handleCreate}
-          isSubmitting={isLoading}
+          isSubmitting={createMutation.isPending}
           submitLabel="Create Category"
           onCancel={() => setShowCreateModal(false)}>
           {/* Form contains ONLY fields - no validation logic, no error handling */}
-          <CategoryForm mode="create" isSubmitting={isLoading} />
+          <CategoryForm mode="create" isSubmitting={createMutation.isPending} />
         </FormShell>
       </Modal>
 
@@ -126,7 +123,7 @@ export default function SimpleFormWithErrorModal() {
           </p>
           <p>
             <strong>2. Backend Error Display:</strong> When backend returns
-            validation errors, they're displayed in a clean modal with proper
+            validation errors, they&apos;re displayed in a clean modal with proper
             formatting.
           </p>
           <p>
