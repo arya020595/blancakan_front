@@ -17,6 +17,7 @@ import { useOptimisticToasts } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import ErrorModal from "@/components/ui/error-modal";
+import { Icons } from "@/components/ui/icons";
 import Modal from "@/components/ui/modal";
 import Spinner from "@/components/ui/spinner";
 import {
@@ -154,10 +155,13 @@ export default function RolesPage() {
             Manage user roles and permissions
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>Add Role</Button>
+        <Button onClick={() => setShowCreateModal(true)}>
+          <Icons.add size={16} className="mr-2" />
+          Add Role
+        </Button>
       </div>
 
-      {/* DataTable with search, sort, filter, pagination */}
+      {/* DataTable - Handles search, sort, filter, pagination */}
       <DataTable
         columns={rolesColumns}
         data={roles}
@@ -169,20 +173,20 @@ export default function RolesPage() {
         filters={rolesFilters}
         resourceName="role"
         actions={(role) => (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-end gap-2">
             <Button
-              variant="link"
+              variant="ghost"
               size="sm"
               onClick={() => handleEdit(role)}
-              className="text-indigo-600 hover:text-indigo-900 h-auto p-0">
-              Edit
+              className="h-8 px-2">
+              <Icons.edit size={16} className="text-gray-600 hover:text-indigo-600" />
             </Button>
             <Button
-              variant="link"
+              variant="ghost"
               size="sm"
               onClick={() => handleDeleteConfirm(role)}
-              className="text-red-600 hover:text-red-900 h-auto p-0">
-              Delete
+              className="h-8 px-2">
+              <Icons.delete size={16} className="text-gray-600 hover:text-red-600" />
             </Button>
           </div>
         )}
