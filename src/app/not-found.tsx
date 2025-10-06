@@ -23,7 +23,7 @@ export default function NotFound() {
             Page Not Found
           </h1>
           <p className="text-xl text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-            Oops! The page you're looking for seems to have wandered off into
+            Oops! The page you&apos;re looking for seems to have wandered off into
             the digital wilderness.
           </p>
         </div>
