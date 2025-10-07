@@ -3,8 +3,6 @@
  * Main content area with header and content wrapper
  */
 
-"use client";
-
 import { createLogger } from "@/lib/utils/logger";
 import React from "react";
 import { DashboardHeader } from "./dashboard-header";
@@ -34,10 +32,6 @@ export function DashboardMainContent({
   className = "",
   showHeader = true,
 }: DashboardMainContentProps) {
-  React.useEffect(() => {
-    logger.info("Main content rendered", { title, showHeader });
-  }, [title, showHeader]);
-
   return (
     <div className={`flex-1 flex flex-col ${className}`}>
       {/* Header Section */}

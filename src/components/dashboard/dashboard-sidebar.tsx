@@ -35,7 +35,7 @@ const defaultNavItems: NavItem[] = [
   { href: "/dashboard/roles", label: "Roles" },
 ];
 
-export function DashboardSidebar({
+function SidebarComponent({
   navItems = defaultNavItems,
   title = "Cari Acara",
   className = "",
@@ -81,3 +81,8 @@ export function DashboardSidebar({
     </div>
   );
 }
+
+/**
+ * Memoized Sidebar export
+ */
+export const DashboardSidebar = React.memo(SidebarComponent);
