@@ -198,6 +198,103 @@ export interface RolesQueryParams extends ListQueryParams {
   sort?: string;
 }
 
+// Event Types
+export interface Event {
+  _id: string;
+  _slugs: string[];
+  title: string;
+  slug: string;
+  description: string;
+  start_date: string;
+  start_time: string;
+  end_date: string;
+  end_time: string;
+  location_type: "online" | "offline" | "hybrid";
+  location?: {
+    venue_name?: string;
+    address?: string;
+    city?: string;
+    meeting_url?: string;
+  };
+  timezone: string;
+  organizer_id: string;
+  event_type_id: string;
+  category_ids: string[];
+  is_paid: boolean;
+  status: "draft" | "published" | "canceled";
+  cover_image?: {
+    url: string | null;
+    thumbnail: {
+      url: string | null;
+    };
+  };
+  cover_image_filename?: string | null;
+  published_at: string | null;
+  canceled_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateEventRequest {
+  event: {
+    title: string;
+    description: string;
+    start_date: string;
+    start_time: string;
+    end_date: string;
+    end_time: string;
+    location_type: "online" | "offline" | "hybrid";
+    location?: {
+      venue_name?: string;
+      address?: string;
+      city?: string;
+      meeting_url?: string;
+    };
+    timezone: string;
+    organizer_id: string;
+    event_type_id: string;
+    category_ids: string[];
+    is_paid: boolean;
+  };
+  cover_image?: File;
+}
+
+export interface UpdateEventRequest {
+  event: {
+    title: string;
+    description: string;
+    start_date: string;
+    start_time: string;
+    end_date: string;
+    end_time: string;
+    location_type: "online" | "offline" | "hybrid";
+    location?: {
+      venue_name?: string;
+      address?: string;
+      city?: string;
+      meeting_url?: string;
+    };
+    timezone: string;
+    organizer_id: string;
+    event_type_id: string;
+    category_ids: string[];
+    is_paid: boolean;
+  };
+  cover_image?: File;
+}
+
+export interface EventsQueryParams extends ListQueryParams {
+  query?: string;
+  filter?: {
+    status?: "draft" | "published" | "canceled";
+    location_type?: "online" | "offline" | "hybrid";
+    is_paid?: boolean;
+    event_type_id?: string;
+    category_ids?: string[];
+  };
+  sort?: string;
+}
+
 // Query Parameters
 export interface ListQueryParams {
   page?: number;

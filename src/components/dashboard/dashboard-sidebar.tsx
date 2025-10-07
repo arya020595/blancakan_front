@@ -31,6 +31,7 @@ const defaultNavItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", exact: true },
   { href: "/dashboard/categories", label: "Categories" },
   { href: "/dashboard/event-types", label: "Event Types" },
+  { href: "/dashboard/events", label: "Events" },
   { href: "/dashboard/roles", label: "Roles" },
 ];
 
