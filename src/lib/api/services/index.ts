@@ -8,29 +8,32 @@ export { categoriesApiService } from "./categories-service";
 export { dashboardApiService } from "./dashboard-service";
 export { eventTypesApiService } from "./event-types-service";
 export { eventsApiService } from "./events-service";
+export { organizersApiService } from "./organizers-service";
 
 // Re-export types for convenience
 export type {
-    ApiError,
-    ApiResponse,
-    CategoriesQueryParams,
-    Category,
-    CreateCategoryRequest,
-    CreateEventRequest,
-    CreateEventTypeRequest,
-    // Dashboard types
-    DashboardStats,
-    Event, EventType,
-    EventTypesQueryParams, EventsQueryParams, ListQueryParams,
-    // Auth types
-    LoginRequest,
-    LoginResponse,
-    PaginatedResponse,
-    RegisterRequest,
-    RegisterResponse,
-    UpdateCategoryRequest,
-    UpdateEventRequest,
-    UpdateEventTypeRequest,
-    User
+  ApiError,
+  ApiResponse,
+  CategoriesQueryParams,
+  Category,
+  CreateCategoryRequest,
+  CreateEventRequest,
+  CreateEventTypeRequest,
+  // Dashboard types
+  DashboardStats,
+  Event,
+  EventsQueryParams,
+  EventType,
+  EventTypesQueryParams,
+  ListQueryParams,
+  // Auth types
+  LoginRequest,
+  LoginResponse,
+  PaginatedResponse,
+  RegisterRequest,
+  RegisterResponse,
+  UpdateCategoryRequest,
+  UpdateEventRequest,
+  UpdateEventTypeRequest,
+  User,
 } from "../types";
-

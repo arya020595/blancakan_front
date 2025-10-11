@@ -23,22 +23,23 @@ export const eventsColumns: ColumnDef<Event>[] = [
     ),
   },
   {
-    key: "start_date",
+    key: "starts_at_local",
     header: "Start Date",
     sortable: true,
-    render: (event) => (
-      <div>
-        <div className="text-gray-900">
-          {new Date(event.start_date).toLocaleDateString()}
+    render: (event) => {
+      const startDate = new Date(event.starts_at_local);
+      return (
+        <div>
+          <div className="text-gray-900">{startDate.toLocaleDateString()}</div>
+          <div className="text-sm text-gray-500">
+            {startDate.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
         </div>
-        <div className="text-sm text-gray-500">
-          {new Date(`2000-01-01T${event.start_time}`).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </div>
-      </div>
-    ),
+      );
+    },
   },
   {
     key: "location_type",
@@ -53,18 +54,24 @@ export const eventsColumns: ColumnDef<Event>[] = [
               : event.location_type === "offline"
               ? "bg-green-100 text-green-800"
               : "bg-purple-100 text-purple-800"
-          }`}
-        >
-          {event.location_type.charAt(0).toUpperCase() + event.location_type.slice(1)}
+          }`}>
+          {event.location_type.charAt(0).toUpperCase() +
+            event.location_type.slice(1)}
         </span>
-        {event.location?.venue_name && (
-          <div className="text-sm text-gray-500 mt-1">
-            {event.location.venue_name}
-          </div>
-        )}
-        {event.location?.city && (
-          <div className="text-xs text-gray-400">{event.location.city}</div>
-        )}
+        {/* Show platform for online events */}
+        {(event.location_type === "online" ||
+          event.location_type === "hybrid") &&
+          event.location?.platform && (
+            <div className="text-sm text-gray-500 mt-1">
+              {event.location.platform}
+            </div>
+          )}
+        {/* Show city for offline events */}
+        {(event.location_type === "offline" ||
+          event.location_type === "hybrid") &&
+          event.location?.city && (
+            <div className="text-xs text-gray-400">{event.location.city}</div>
+          )}
       </div>
     ),
   },
@@ -80,8 +87,7 @@ export const eventsColumns: ColumnDef<Event>[] = [
             : event.status === "draft"
             ? "bg-gray-100 text-gray-800"
             : "bg-red-100 text-red-800"
-        }`}
-      >
+        }`}>
         {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
       </span>
     ),
@@ -96,8 +102,7 @@ export const eventsColumns: ColumnDef<Event>[] = [
           event.is_paid
             ? "bg-yellow-100 text-yellow-800"
             : "bg-gray-100 text-gray-800"
-        }`}
-      >
+        }`}>
         {event.is_paid ? "Paid" : "Free"}
       </span>
     ),

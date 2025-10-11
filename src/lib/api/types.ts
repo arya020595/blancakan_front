@@ -198,6 +198,25 @@ export interface RolesQueryParams extends ListQueryParams {
   sort?: string;
 }
 
+// Organizer Types
+export interface Organizer {
+  _id: string;
+  name: string;
+  email?: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrganizersQueryParams extends ListQueryParams {
+  query?: string;
+  sort?: string;
+  filters?: {
+    is_active?: boolean;
+  };
+}
+
 // Event Types
 export interface Event {
   _id: string;
@@ -205,16 +224,19 @@ export interface Event {
   title: string;
   slug: string;
   description: string;
-  start_date: string;
-  start_time: string;
-  end_date: string;
-  end_time: string;
+  starts_at_local: string; // Combined datetime in local timezone (ISO 8601)
+  ends_at_local: string; // Combined datetime in local timezone (ISO 8601)
+  starts_at_utc: string; // Combined datetime in UTC (ISO 8601)
+  ends_at_utc: string; // Combined datetime in UTC (ISO 8601)
   location_type: "online" | "offline" | "hybrid";
   location?: {
-    venue_name?: string;
+    // For online events
+    platform?: string;
+    link?: string;
+    // For offline events
     address?: string;
     city?: string;
-    meeting_url?: string;
+    state?: string;
   };
   timezone: string;
   organizer_id: string;
@@ -239,22 +261,24 @@ export interface CreateEventRequest {
   event: {
     title: string;
     description: string;
-    start_date: string;
-    start_time: string;
-    end_date: string;
-    end_time: string;
+    starts_at_local: string; // Combined datetime ISO 8601 format
+    ends_at_local: string; // Combined datetime ISO 8601 format
     location_type: "online" | "offline" | "hybrid";
     location?: {
-      venue_name?: string;
+      // For online events
+      platform?: string;
+      link?: string;
+      // For offline events
       address?: string;
       city?: string;
-      meeting_url?: string;
+      state?: string;
     };
     timezone: string;
     organizer_id: string;
     event_type_id: string;
     category_ids: string[];
     is_paid: boolean;
+    status?: "draft" | "published" | "cancelled" | "rejected";
   };
   cover_image?: File;
 }
@@ -263,22 +287,24 @@ export interface UpdateEventRequest {
   event: {
     title: string;
     description: string;
-    start_date: string;
-    start_time: string;
-    end_date: string;
-    end_time: string;
+    starts_at_local: string; // Combined datetime ISO 8601 format
+    ends_at_local: string; // Combined datetime ISO 8601 format
     location_type: "online" | "offline" | "hybrid";
     location?: {
-      venue_name?: string;
+      // For online events
+      platform?: string;
+      link?: string;
+      // For offline events
       address?: string;
       city?: string;
-      meeting_url?: string;
+      state?: string;
     };
     timezone: string;
     organizer_id: string;
     event_type_id: string;
     category_ids: string[];
     is_paid: boolean;
+    status?: "draft" | "published" | "cancelled" | "rejected";
   };
   cover_image?: File;
 }

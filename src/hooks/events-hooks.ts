@@ -5,19 +5,19 @@
 
 import { eventsApiService } from "@/lib/api/services";
 import type {
-    ApiError,
-    CreateEventRequest,
-    Event,
-    EventsQueryParams,
-    PaginatedResponse,
-    UpdateEventRequest,
+  ApiError,
+  CreateEventRequest,
+  Event,
+  EventsQueryParams,
+  PaginatedResponse,
+  UpdateEventRequest,
 } from "@/lib/api/types";
 import {
-    useMutation,
-    useQuery,
-    useQueryClient,
-    type UseMutationResult,
-    type UseQueryResult,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationResult,
+  type UseQueryResult,
 } from "@tanstack/react-query";
 
 /**
@@ -26,8 +26,7 @@ import {
 export const eventsKeys = {
   all: ["events"] as const,
   lists: () => [...eventsKeys.all, "list"] as const,
-  list: (params: EventsQueryParams) =>
-    [...eventsKeys.lists(), params] as const,
+  list: (params: EventsQueryParams) => [...eventsKeys.lists(), params] as const,
   details: () => [...eventsKeys.all, "detail"] as const,
   detail: (id: string) => [...eventsKeys.details(), id] as const,
 };
@@ -49,9 +48,7 @@ export function useEvents(
 /**
  * Hook to fetch a single event
  */
-export function useEvent(
-  id: string
-): UseQueryResult<Event, ApiError> {
+export function useEvent(id: string): UseQueryResult<Event, ApiError> {
   return useQuery({
     queryKey: eventsKeys.detail(id),
     queryFn: () => eventsApiService.getEvent(id),
@@ -73,11 +70,17 @@ export function useCreateEvent(): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateEventRequest) =>
-      eventsApiService.createEvent(data),
-    onSuccess: () => {
+    mutationFn: (data: CreateEventRequest) => {
+      console.log("🔄 Events Hook: Mutation called with:", data);
+      return eventsApiService.createEvent(data);
+    },
+    onSuccess: (result) => {
+      console.log("✅ Events Hook: Mutation successful:", result);
       // Invalidate all event lists to refetch
       queryClient.invalidateQueries({ queryKey: eventsKeys.lists() });
+    },
+    onError: (error) => {
+      console.error("❌ Events Hook: Mutation failed:", error);
     },
   });
 }
@@ -98,7 +101,9 @@ export function useUpdateEvent(): UseMutationResult<
       eventsApiService.updateEvent(id, data),
     onSuccess: (_, variables) => {
       // Invalidate the specific event and all lists
-      queryClient.invalidateQueries({ queryKey: eventsKeys.detail(variables.id) });
+      queryClient.invalidateQueries({
+        queryKey: eventsKeys.detail(variables.id),
+      });
       queryClient.invalidateQueries({ queryKey: eventsKeys.lists() });
     },
   });

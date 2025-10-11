@@ -82,6 +82,16 @@ export abstract class BaseApiService {
     return httpClient.post<T>(url, data);
   }
 
+  protected async createWithFormData<T>(
+    endpoint: string,
+    formData: FormData,
+    pathParams?: Record<string, string | number>
+  ): Promise<ApiResponse<T>> {
+    const url = this.buildUrl(endpoint, pathParams);
+    // Don't set Content-Type manually - let the browser set it with boundary
+    return httpClient.post<T>(url, formData);
+  }
+
   protected async update<T, K = any>(
     endpoint: string,
     id: string | number,
@@ -90,6 +100,17 @@ export abstract class BaseApiService {
   ): Promise<ApiResponse<T>> {
     const url = this.buildUrl(endpoint, { id: String(id), ...pathParams });
     return httpClient.put<T>(url, data);
+  }
+
+  protected async updateWithFormData<T>(
+    endpoint: string,
+    id: string | number,
+    formData: FormData,
+    pathParams?: Record<string, string | number>
+  ): Promise<ApiResponse<T>> {
+    const url = this.buildUrl(endpoint, { id: String(id), ...pathParams });
+    // Don't set Content-Type manually - let the browser set it with boundary
+    return httpClient.put<T>(url, formData);
   }
 
   protected async partialUpdate<T, K = any>(

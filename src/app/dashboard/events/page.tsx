@@ -7,6 +7,8 @@
 
 "use client";
 
+import { EventForm } from "@/components/events/forms/event-form";
+import { FormShell } from "@/components/forms/form-shell";
 import { useOptimisticToasts } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
@@ -15,17 +17,19 @@ import { Icons } from "@/components/ui/icons";
 import Modal from "@/components/ui/modal";
 import Spinner from "@/components/ui/spinner";
 import {
-    useCancelEvent,
-    useCreateEvent,
-    useDeleteEvent,
-    useEvents,
-    usePublishEvent,
-    useUpdateEvent,
+  useCancelEvent,
+  useCreateEvent,
+  useDeleteEvent,
+  useEvents,
+  usePublishEvent,
+  useUpdateEvent,
 } from "@/hooks/events-hooks";
 import { useErrorModal } from "@/hooks/use-error-modal";
 import { useTableParams } from "@/hooks/use-table-params";
 import type { Event } from "@/lib/api/types";
+import { eventSchema, type EventFormValues } from "@/lib/schemas/event-schema";
 import { normalizeError } from "@/lib/utils/error-utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { eventsColumns, eventsFilters } from "./events-table-config";
 
@@ -79,9 +83,7 @@ export default function EventsPage() {
       createMutation.reset();
     }
     if (createMutation.isError) {
-      showError(
-        normalizeError(createMutation.error, "Failed to create event")
-      );
+      showError(normalizeError(createMutation.error, "Failed to create event"));
       createMutation.reset();
     }
   }, [createMutation.isSuccess, createMutation.isError]);
@@ -94,9 +96,7 @@ export default function EventsPage() {
       updateMutation.reset();
     }
     if (updateMutation.isError) {
-      showError(
-        normalizeError(updateMutation.error, "Failed to update event")
-      );
+      showError(normalizeError(updateMutation.error, "Failed to update event"));
       updateMutation.reset();
     }
   }, [updateMutation.isSuccess, updateMutation.isError]);
@@ -109,9 +109,7 @@ export default function EventsPage() {
       deleteMutation.reset();
     }
     if (deleteMutation.isError) {
-      showError(
-        normalizeError(deleteMutation.error, "Failed to delete event")
-      );
+      showError(normalizeError(deleteMutation.error, "Failed to delete event"));
       deleteMutation.reset();
     }
   }, [deleteMutation.isSuccess, deleteMutation.isError]);
@@ -139,9 +137,7 @@ export default function EventsPage() {
       cancelMutation.reset();
     }
     if (cancelMutation.isError) {
-      showError(
-        normalizeError(cancelMutation.error, "Failed to cancel event")
-      );
+      showError(normalizeError(cancelMutation.error, "Failed to cancel event"));
       cancelMutation.reset();
     }
   }, [cancelMutation.isSuccess, cancelMutation.isError]);
@@ -162,9 +158,71 @@ export default function EventsPage() {
     cancelMutation.mutate(cancelingEvent._id);
   };
 
-  const handleEdit = (event: Event) => {
-    // For now, just show a message - full edit form would be complex
-    alert("Edit functionality coming soon! This requires a comprehensive form with date/time pickers, location fields, category selection, and image upload.");
+  const handleEdit = (event: Event) => setEditingEvent(event);
+
+  const handleCreate = (formData: EventFormValues) => {
+    console.log("✅ handleCreate called with:", formData);
+
+    try {
+      // Extract cover_image and date/time fields from formData
+      const {
+        cover_image,
+        start_date,
+        start_time,
+        end_date,
+        end_time,
+        ...eventData
+      } = formData;
+
+      // Combine date + time into ISO 8601 datetime strings
+      const starts_at_local = `${start_date}T${start_time}:00`;
+      const ends_at_local = `${end_date}T${end_time}:00`;
+
+      const requestData = {
+        event: {
+          ...eventData,
+          starts_at_local,
+          ends_at_local,
+        },
+        cover_image: cover_image instanceof File ? cover_image : undefined,
+      };
+
+      console.log("📤 Sending to API:", requestData);
+
+      createMutation.mutate(requestData);
+    } catch (error) {
+      console.error("❌ Error in handleCreate:", error);
+    }
+  };
+
+  const handleUpdate = (formData: EventFormValues) => {
+    if (!editingEvent) return;
+
+    // Extract cover_image and date/time fields from formData
+    const {
+      cover_image,
+      start_date,
+      start_time,
+      end_date,
+      end_time,
+      ...eventData
+    } = formData;
+
+    // Combine date + time into ISO 8601 datetime strings
+    const starts_at_local = `${start_date}T${start_time}:00`;
+    const ends_at_local = `${end_date}T${end_time}:00`;
+
+    updateMutation.mutate({
+      id: editingEvent._id,
+      data: {
+        event: {
+          ...eventData,
+          starts_at_local,
+          ends_at_local,
+        },
+        cover_image: cover_image instanceof File ? cover_image : undefined,
+      },
+    });
   };
 
   const handleDeleteConfirm = (event: Event) => setDeletingEvent(event);
@@ -181,7 +239,7 @@ export default function EventsPage() {
             Manage your events and their details
           </p>
         </div>
-        <Button onClick={() => alert("Create event form coming soon!")}>
+        <Button onClick={() => setShowCreateModal(true)}>
           <Icons.add size={16} className="mr-2" />
           Add Event
         </Button>
@@ -207,7 +265,10 @@ export default function EventsPage() {
                 onClick={() => handlePublishConfirm(event)}
                 className="h-8 px-2"
                 title="Publish Event">
-                <Icons.upload size={16} className="text-gray-600 hover:text-green-600" />
+                <Icons.upload
+                  size={16}
+                  className="text-gray-600 hover:text-green-600"
+                />
               </Button>
             )}
             {event.status === "published" && (
@@ -217,7 +278,10 @@ export default function EventsPage() {
                 onClick={() => handleCancelConfirm(event)}
                 className="h-8 px-2"
                 title="Cancel Event">
-                <Icons.close size={16} className="text-gray-600 hover:text-orange-600" />
+                <Icons.close
+                  size={16}
+                  className="text-gray-600 hover:text-orange-600"
+                />
               </Button>
             )}
             <Button
@@ -226,7 +290,10 @@ export default function EventsPage() {
               onClick={() => handleEdit(event)}
               className="h-8 px-2"
               title="Edit Event">
-              <Icons.edit size={16} className="text-gray-600 hover:text-indigo-600" />
+              <Icons.edit
+                size={16}
+                className="text-gray-600 hover:text-indigo-600"
+              />
             </Button>
             <Button
               variant="ghost"
@@ -234,7 +301,10 @@ export default function EventsPage() {
               onClick={() => handleDeleteConfirm(event)}
               className="h-8 px-2"
               title="Delete Event">
-              <Icons.delete size={16} className="text-gray-600 hover:text-red-600" />
+              <Icons.delete
+                size={16}
+                className="text-gray-600 hover:text-red-600"
+              />
             </Button>
           </div>
         )}
@@ -248,8 +318,9 @@ export default function EventsPage() {
         {publishingEvent && (
           <div className="space-y-4">
             <p className="text-gray-700">
-              Are you sure you want to publish <strong>{publishingEvent.title}</strong>?
-              This will make the event visible to the public.
+              Are you sure you want to publish{" "}
+              <strong>{publishingEvent.title}</strong>? This will make the event
+              visible to the public.
             </p>
           </div>
         )}
@@ -286,8 +357,9 @@ export default function EventsPage() {
         {cancelingEvent && (
           <div className="space-y-4">
             <p className="text-gray-700">
-              Are you sure you want to cancel <strong>{cancelingEvent.title}</strong>?
-              This action cannot be undone.
+              Are you sure you want to cancel{" "}
+              <strong>{cancelingEvent.title}</strong>? This action cannot be
+              undone.
             </p>
           </div>
         )}
@@ -323,8 +395,9 @@ export default function EventsPage() {
         {deletingEvent && (
           <div className="space-y-4">
             <p className="text-gray-700">
-              Are you sure you want to delete <strong>{deletingEvent.title}</strong>?
-              This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <strong>{deletingEvent.title}</strong>? This action cannot be
+              undone.
             </p>
           </div>
         )}
@@ -350,6 +423,95 @@ export default function EventsPage() {
             )}
           </Button>
         </div>
+      </Modal>
+
+      {/* Create Modal */}
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create New Event"
+        size="lg">
+        <FormShell<EventFormValues>
+          defaultValues={{
+            title: "",
+            description: "",
+            start_date: "",
+            start_time: "",
+            end_date: "",
+            end_time: "",
+            location_type: "online" as const,
+            timezone: "Asia/Jakarta",
+            event_type_id: "",
+            organizer_id: "",
+            category_ids: [],
+            is_paid: false,
+            status: "draft" as const,
+            location: {
+              platform: "",
+              link: "",
+              address: "",
+              city: "",
+              state: "",
+            },
+          }}
+          resolver={zodResolver(eventSchema)}
+          onSubmit={handleCreate}
+          isSubmitting={createMutation.isPending}
+          submitLabel="Create Event"
+          onCancel={() => setShowCreateModal(false)}>
+          <EventForm mode="create" isSubmitting={createMutation.isPending} />
+        </FormShell>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={!!editingEvent}
+        onClose={() => setEditingEvent(null)}
+        title="Edit Event"
+        size="lg">
+        <FormShell<EventFormValues>
+          defaultValues={{
+            title: editingEvent?.title || "",
+            description: editingEvent?.description || "",
+            // Split starts_at_local into date and time
+            start_date: editingEvent?.starts_at_local
+              ? editingEvent.starts_at_local.split("T")[0]
+              : "",
+            start_time: editingEvent?.starts_at_local
+              ? editingEvent.starts_at_local.split("T")[1]?.substring(0, 5)
+              : "",
+            // Split ends_at_local into date and time
+            end_date: editingEvent?.ends_at_local
+              ? editingEvent.ends_at_local.split("T")[0]
+              : "",
+            end_time: editingEvent?.ends_at_local
+              ? editingEvent.ends_at_local.split("T")[1]?.substring(0, 5)
+              : "",
+            location_type: editingEvent?.location_type || "online",
+            timezone: editingEvent?.timezone || "Asia/Jakarta",
+            event_type_id: editingEvent?.event_type_id || "",
+            organizer_id: editingEvent?.organizer_id || "",
+            category_ids: editingEvent?.category_ids || [],
+            is_paid: editingEvent?.is_paid || false,
+            status:
+              (editingEvent?.status === "canceled"
+                ? "cancelled"
+                : editingEvent?.status) || "draft",
+            location: {
+              platform: editingEvent?.location?.platform || "",
+              link: editingEvent?.location?.link || "",
+              address: editingEvent?.location?.address || "",
+              city: editingEvent?.location?.city || "",
+              state: editingEvent?.location?.state || "",
+            },
+          }}
+          resolver={zodResolver(eventSchema)}
+          onSubmit={handleUpdate}
+          isSubmitting={updateMutation.isPending}
+          submitLabel="Update Event"
+          onCancel={() => setEditingEvent(null)}>
+          <EventForm mode="edit" isSubmitting={updateMutation.isPending} />
+        </FormShell>
       </Modal>
 
       {/* Error Modal */}
