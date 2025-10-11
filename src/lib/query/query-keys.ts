@@ -14,7 +14,9 @@
 
 import type {
   CategoriesQueryParams,
+  EventsQueryParams,
   EventTypesQueryParams,
+  OrganizersQueryParams,
   RolesQueryParams,
 } from "@/lib/api/types";
 
@@ -76,10 +78,22 @@ export const eventTypesKeys = {
 export const eventsKeys = {
   all: ["events"] as const,
   lists: () => [...eventsKeys.all, "list"] as const,
-  list: (params?: Record<string, unknown>) =>
+  list: (params?: EventsQueryParams) =>
     [...eventsKeys.lists(), params] as const,
   details: () => [...eventsKeys.all, "detail"] as const,
   detail: (id: string) => [...eventsKeys.details(), id] as const,
+};
+
+/**
+ * Query Keys Factory for Organizers
+ */
+export const organizersKeys = {
+  all: ["organizers"] as const,
+  lists: () => [...organizersKeys.all, "list"] as const,
+  list: (params?: OrganizersQueryParams) =>
+    [...organizersKeys.lists(), params] as const,
+  details: () => [...organizersKeys.all, "detail"] as const,
+  detail: (id: string) => [...organizersKeys.details(), id] as const,
 };
 
 /**

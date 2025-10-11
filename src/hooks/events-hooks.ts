@@ -12,6 +12,7 @@ import type {
   PaginatedResponse,
   UpdateEventRequest,
 } from "@/lib/api/types";
+import { eventsKeys } from "@/lib/query/query-keys";
 import {
   useMutation,
   useQuery,
@@ -19,17 +20,6 @@ import {
   type UseMutationResult,
   type UseQueryResult,
 } from "@tanstack/react-query";
-
-/**
- * Query key factory for events
- */
-export const eventsKeys = {
-  all: ["events"] as const,
-  lists: () => [...eventsKeys.all, "list"] as const,
-  list: (params: EventsQueryParams) => [...eventsKeys.lists(), params] as const,
-  details: () => [...eventsKeys.all, "detail"] as const,
-  detail: (id: string) => [...eventsKeys.details(), id] as const,
-};
 
 /**
  * Hook to fetch events with pagination
@@ -70,17 +60,11 @@ export function useCreateEvent(): UseMutationResult<
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateEventRequest) => {
-      console.log("🔄 Events Hook: Mutation called with:", data);
-      return eventsApiService.createEvent(data);
-    },
-    onSuccess: (result) => {
-      console.log("✅ Events Hook: Mutation successful:", result);
+    mutationFn: (data: CreateEventRequest) =>
+      eventsApiService.createEvent(data),
+    onSuccess: () => {
       // Invalidate all event lists to refetch
       queryClient.invalidateQueries({ queryKey: eventsKeys.lists() });
-    },
-    onError: (error) => {
-      console.error("❌ Events Hook: Mutation failed:", error);
     },
   });
 }

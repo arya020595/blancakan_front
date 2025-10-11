@@ -10,19 +10,8 @@ import type {
   OrganizersQueryParams,
   PaginatedResponse,
 } from "@/lib/api/types";
+import { organizersKeys } from "@/lib/query/query-keys";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
-
-/**
- * Query key factory for organizers
- */
-export const organizersKeys = {
-  all: ["organizers"] as const,
-  lists: () => [...organizersKeys.all, "list"] as const,
-  list: (params: OrganizersQueryParams) =>
-    [...organizersKeys.lists(), params] as const,
-  details: () => [...organizersKeys.all, "detail"] as const,
-  detail: (id: string) => [...organizersKeys.details(), id] as const,
-};
 
 /**
  * Hook to fetch organizers with pagination

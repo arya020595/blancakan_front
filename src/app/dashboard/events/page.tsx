@@ -161,8 +161,6 @@ export default function EventsPage() {
   const handleEdit = (event: Event) => setEditingEvent(event);
 
   const handleCreate = (formData: EventFormValues) => {
-    console.log("✅ handleCreate called with:", formData);
-
     try {
       // Extract cover_image and date/time fields from formData
       const {
@@ -187,11 +185,9 @@ export default function EventsPage() {
         cover_image: cover_image instanceof File ? cover_image : undefined,
       };
 
-      console.log("📤 Sending to API:", requestData);
-
       createMutation.mutate(requestData);
     } catch (error) {
-      console.error("❌ Error in handleCreate:", error);
+      console.error("Error in handleCreate:", error);
     }
   };
 

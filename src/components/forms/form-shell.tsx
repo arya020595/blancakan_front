@@ -47,15 +47,7 @@ export function FormShell<T extends FieldValues>({
     mode: "onSubmit",
   });
 
-  const handleFormSubmit = methods.handleSubmit(
-    (data) => {
-      console.log("✅ Form validation passed, calling onSubmit with:", data);
-      onSubmit(data);
-    },
-    (errors) => {
-      console.error("❌ Form validation failed:", errors);
-    }
-  );
+  const handleFormSubmit = methods.handleSubmit(onSubmit);
 
   return (
     <FormProvider {...methods}>

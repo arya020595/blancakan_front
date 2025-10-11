@@ -170,23 +170,3 @@ export const eventSchema = z
  * Infer TypeScript type from schema
  */
 export type EventFormValues = z.infer<typeof eventSchema>;
-
-// Schema for create request (removes past date validation for editing)
-export const createEventSchema = eventSchema;
-
-// Schema for update request (allows past dates for existing events)
-export const updateEventSchema = eventSchema.omit({}).refine(
-  (data) => {
-    // Only validate end datetime is after start datetime for updates
-    const startDateTime = new Date(`${data.start_date}T${data.start_time}`);
-    const endDateTime = new Date(`${data.end_date}T${data.end_time}`);
-    return endDateTime > startDateTime;
-  },
-  {
-    message: "End date and time must be after start date and time",
-    path: ["end_date"],
-  }
-);
-
-export type CreateEventFormValues = z.infer<typeof createEventSchema>;
-export type UpdateEventFormValues = z.infer<typeof updateEventSchema>;

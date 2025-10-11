@@ -70,19 +70,13 @@ export class EventsApiService extends BaseApiService {
    */
   async createEvent(eventData: CreateEventRequest): Promise<Event> {
     try {
-      console.log("📤 Events Service: Creating event", {
-        title: eventData.event.title,
-      });
       logger.info("Creating event", { title: eventData.event.title });
 
       // Convert to FormData for file upload support
       const formData = this.createEventFormData(eventData);
 
-      console.log("📤 Events Service: FormData created", formData);
-
       const response = await this.createWithFormData<Event>("", formData);
 
-      console.log("✅ Events Service: Event created successfully", response);
       logger.info("Event created successfully", {
         id: response.data._id,
         title: response.data.title,
@@ -90,7 +84,6 @@ export class EventsApiService extends BaseApiService {
 
       return response.data;
     } catch (error) {
-      console.error("❌ Events Service: Failed to create event", error);
       logger.error("Failed to create event", { eventData, error });
       throw error;
     }
