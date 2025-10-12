@@ -1,140 +1,79 @@
 /**
  * Authentication Middleware
  * Protects dashboard routes and handles token validation
- * Follows SOLID principles with clear separation of concerns
+ *
+ * Best Practices (Next.js 15.x):
+ * - Uses NextRequest.cookies API instead of manual header parsing
+ * - Minimal logging for production performance
+ * - Lean implementation optimized for edge runtime
+ * - Constants statically analyzable at build time
  */
 
-import { getTokenFromCookies, isTokenExpired } from "@/lib/auth/token-manager";
+import { isTokenExpired } from "@/lib/auth/token-manager";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// Route configuration - Single Responsibility
-interface RouteConfig {
-  protectedRoutes: string[];
-  authRoutes: string[];
-  publicRoutes: string[];
-  defaultRedirectAfterLogin: string;
-  defaultRedirectAfterLogout: string;
+// Route configuration (constants for static analysis)
+const PROTECTED_ROUTES = ["/dashboard"];
+const AUTH_ROUTES = ["/login", "/register"];
+const DEFAULT_REDIRECT_AFTER_LOGIN = "/dashboard";
+const DEFAULT_REDIRECT_AFTER_LOGOUT = "/login";
+
+/**
+ * Check if user has valid authentication token
+ * Uses Next.js built-in cookies API for better performance
+ */
+function isAuthenticated(request: NextRequest): boolean {
+  // Use Next.js cookies API (best practice)
+  const token = request.cookies.get("token")?.value || null;
+
+  if (!token) return false;
+
+  return !isTokenExpired(token);
 }
 
-const ROUTE_CONFIG: RouteConfig = {
-  protectedRoutes: ["/dashboard"],
-  authRoutes: ["/login", "/register"],
-  publicRoutes: ["/", "/about", "/contact"],
-  defaultRedirectAfterLogin: "/dashboard",
-  defaultRedirectAfterLogout: "/login",
-};
-
-// Authentication service - Single Responsibility
-class MiddlewareAuthService {
-  static isValidToken(token: string | null): boolean {
-    return token ? !isTokenExpired(token) : false;
-  }
-
-  static getTokenFromRequest(request: NextRequest): string | null {
-    const cookieHeader = request.headers.get("cookie") || "";
-    return getTokenFromCookies(cookieHeader);
-  }
-
-  static isAuthenticated(request: NextRequest): boolean {
-    const token = this.getTokenFromRequest(request);
-    return this.isValidToken(token);
-  }
+/**
+ * Check if pathname matches protected routes
+ */
+function isProtectedRoute(pathname: string): boolean {
+  return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 }
 
-// Route matcher service - Single Responsibility
-class RouteMatcherService {
-  static isProtectedRoute(pathname: string): boolean {
-    return ROUTE_CONFIG.protectedRoutes.some((route) =>
-      pathname.startsWith(route)
-    );
-  }
-
-  static isAuthRoute(pathname: string): boolean {
-    return ROUTE_CONFIG.authRoutes.some((route) => pathname.startsWith(route));
-  }
-
-  static isPublicRoute(pathname: string): boolean {
-    return ROUTE_CONFIG.publicRoutes.some(
-      (route) => pathname === route || pathname.startsWith(route + "/")
-    );
-  }
+/**
+ * Check if pathname matches auth routes (login/register)
+ */
+function isAuthRoute(pathname: string): boolean {
+  return AUTH_ROUTES.some((route) => pathname.startsWith(route));
 }
 
-// Redirect service - Single Responsibility
-class RedirectService {
-  static createLoginRedirect(
-    request: NextRequest,
-    pathname: string
-  ): NextResponse {
-    const loginUrl = new URL(
-      ROUTE_CONFIG.defaultRedirectAfterLogout,
-      request.url
-    );
-    loginUrl.searchParams.set("redirect", pathname);
-    loginUrl.searchParams.set("reason", "authentication_required");
-
-    console.log(
-      `🔒 [MIDDLEWARE] Redirecting unauthenticated user from ${pathname} to login`
-    );
-    return NextResponse.redirect(loginUrl);
-  }
-
-  static createDashboardRedirect(request: NextRequest): NextResponse {
-    const redirectPath =
-      request.nextUrl.searchParams.get("redirect") ||
-      ROUTE_CONFIG.defaultRedirectAfterLogin;
-    const dashboardUrl = new URL(redirectPath, request.url);
-
-    console.log(
-      `✅ [MIDDLEWARE] Redirecting authenticated user from auth page to ${redirectPath}`
-    );
-    return NextResponse.redirect(dashboardUrl);
-  }
-
-  static createUnauthorizedResponse(): NextResponse {
-    console.log(`❌ [MIDDLEWARE] Access denied - insufficient permissions`);
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
-}
-
-// Main middleware function - Orchestrates the flow
+/**
+ * Main middleware function
+ * Runs on every request matching the config matcher
+ */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  console.log(`🔍 [MIDDLEWARE] Processing request for: ${pathname}`);
+  // Check authentication
+  const authenticated = isAuthenticated(request);
 
-  // Check authentication status
-  const isAuthenticated = MiddlewareAuthService.isAuthenticated(request);
-  console.log(
-    `🔐 [MIDDLEWARE] Authentication status: ${
-      isAuthenticated ? "authenticated" : "not authenticated"
-    }`
-  );
-
-  // Determine route type
-  const isProtectedRoute = RouteMatcherService.isProtectedRoute(pathname);
-  const isAuthRoute = RouteMatcherService.isAuthRoute(pathname);
-  const isPublicRoute = RouteMatcherService.isPublicRoute(pathname);
-
-  console.log(`📍 [MIDDLEWARE] Route classification:`, {
-    isProtectedRoute,
-    isAuthRoute,
-    isPublicRoute,
-  });
-
-  // Handle protected routes
-  if (isProtectedRoute && !isAuthenticated) {
-    return RedirectService.createLoginRedirect(request, pathname);
+  // Protected route without authentication → redirect to login
+  if (isProtectedRoute(pathname) && !authenticated) {
+    const loginUrl = new URL(DEFAULT_REDIRECT_AFTER_LOGOUT, request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    loginUrl.searchParams.set("reason", "authentication_required");
+    return NextResponse.redirect(loginUrl);
   }
 
-  // Handle auth routes - redirect authenticated users away from login/register
-  if (isAuthRoute && isAuthenticated) {
-    return RedirectService.createDashboardRedirect(request);
+  // Auth route with authentication → redirect to dashboard
+  if (isAuthRoute(pathname) && authenticated) {
+    const redirectPath =
+      request.nextUrl.searchParams.get("redirect") ||
+      DEFAULT_REDIRECT_AFTER_LOGIN;
+    const dashboardUrl = new URL(redirectPath, request.url);
+    return NextResponse.redirect(dashboardUrl);
   }
 
-  // Allow access to public routes and authenticated access to protected routes
-  console.log(`✅ [MIDDLEWARE] Access granted for: ${pathname}`);
+  // Allow request to continue
   return NextResponse.next();
 }
 
