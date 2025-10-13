@@ -66,7 +66,7 @@ export default function CategoriesPage() {
     per_page: params.per_page,
     query: params.query || "*",
     sort: params.sort || "created_at:desc",
-    filters: params.filter,
+    filter: params.filter,
   });
 
   // Mutations - TanStack Query handles cache invalidation automatically

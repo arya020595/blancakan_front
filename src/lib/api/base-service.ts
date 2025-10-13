@@ -37,11 +37,11 @@ export abstract class BaseApiService {
 
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        if (typeof value === "object") {
-          // Handle filters object
+        if (key === "filter" && typeof value === "object") {
+          // Handle filters object - use filter[key] format, not filters[key]
           Object.entries(value).forEach(([filterKey, filterValue]) => {
             if (filterValue !== undefined && filterValue !== null) {
-              searchParams.append(`filters[${filterKey}]`, String(filterValue));
+              searchParams.append(`filter[${filterKey}]`, String(filterValue));
             }
           });
         } else {

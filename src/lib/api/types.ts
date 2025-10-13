@@ -328,7 +328,7 @@ export interface ListQueryParams {
   search?: string;
   sort_by?: string;
   sort_order?: "asc" | "desc";
-  filters?: Record<string, any>;
+  filter?: Record<string, any>;
 }
 
 // Error Types
