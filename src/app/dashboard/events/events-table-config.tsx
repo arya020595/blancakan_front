@@ -110,16 +110,39 @@ export const eventsColumns: ColumnDef<Event>[] = [
     key: "created_at",
     header: "Created",
     sortable: true,
-    render: (event) => (
-      <div>
-        <span className="text-gray-900">
-          {DateTime.fromISO(event.created_at, { zone: 'utc' }).toFormat('M/d/yyyy')}
-        </span>
-        <div className="text-sm text-gray-500">
-          {DateTime.fromISO(event.created_at, { zone: 'utc' }).toFormat('h:mm a')}
+    render: (event) => {
+      const createdAt = new Date(event.created_at);
+      return (
+        <div>
+          <div className="text-gray-900">{createdAt.toLocaleDateString()}</div>
+          <div className="text-sm text-gray-500">
+            {createdAt.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
         </div>
-      </div>
-    ),
+      );
+    },
+  },
+  {
+    key: "updated_at",
+    header: "Updated At",
+    sortable: true,
+    render: (event) => {
+      const updatedAt = new Date(event.updated_at);
+      return (
+        <div>
+          <div className="text-gray-900">{updatedAt.toLocaleDateString()}</div>
+          <div className="text-sm text-gray-500">
+            {updatedAt.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
+        </div>
+      );
+    },
   },
 ];
 
