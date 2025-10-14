@@ -127,7 +127,7 @@ export const eventsColumns: ColumnDef<Event>[] = [
   },
   {
     key: "updated_at",
-    header: "Updated At",
+    header: "Updated",
     sortable: true,
     render: (event) => {
       const updatedAt = new Date(event.updated_at);
