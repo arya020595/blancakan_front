@@ -23,6 +23,7 @@
     "clsx": "^2.1.1",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.544.0",
+    "luxon": "^3.7.2",
     "next": "15.5.0",
     "nuqs": "^2.7.0",
     "react": "19.1.0",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/luxon": "^3.7.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

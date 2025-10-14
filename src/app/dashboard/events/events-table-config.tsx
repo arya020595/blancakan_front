@@ -6,6 +6,7 @@
 
 import type { ColumnDef, FilterDef } from "@/components/ui/data-table";
 import type { Event } from "@/lib/api/types";
+import { DateTime } from "luxon";
 
 /**
  * Column definitions for events table
@@ -27,15 +28,13 @@ export const eventsColumns: ColumnDef<Event>[] = [
     header: "Start Date",
     sortable: true,
     render: (event) => {
-      const startDate = new Date(event.starts_at_local);
+      // Parse as UTC and format with same style as toLocaleTimeString
+      const dt = DateTime.fromISO(event.starts_at_local, { zone: 'utc' });
       return (
         <div>
-          <div className="text-gray-900">{startDate.toLocaleDateString()}</div>
+          <div className="text-gray-900">{dt.toFormat('M/d/yyyy')}</div>
           <div className="text-sm text-gray-500">
-            {startDate.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {dt.toFormat('h:mm a')}
           </div>
         </div>
       );
@@ -112,9 +111,14 @@ export const eventsColumns: ColumnDef<Event>[] = [
     header: "Created",
     sortable: true,
     render: (event) => (
-      <span className="text-gray-900">
-        {new Date(event.created_at).toLocaleDateString()}
-      </span>
+      <div>
+        <span className="text-gray-900">
+          {DateTime.fromISO(event.created_at, { zone: 'utc' }).toFormat('M/d/yyyy')}
+        </span>
+        <div className="text-sm text-gray-500">
+          {DateTime.fromISO(event.created_at, { zone: 'utc' }).toFormat('h:mm a')}
+        </div>
+      </div>
     ),
   },
 ];
