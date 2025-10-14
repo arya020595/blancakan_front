@@ -38,9 +38,12 @@ export const rolesColumns: ColumnDef<Role>[] = [
     header: "Created",
     sortable: true,
     render: (role) => (
-      <span className="text-gray-900">
-        {new Date(role.created_at).toLocaleDateString()}
-      </span>
+      <div>
+        <div className="text-gray-900">{new Date(role.created_at).toLocaleDateString()}</div>
+        <div className="text-sm text-gray-500">
+          {new Date(role.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </div>
+      </div>
     ),
   },
   {
@@ -48,9 +51,12 @@ export const rolesColumns: ColumnDef<Role>[] = [
     header: "Updated",
     sortable: true,
     render: (role) => (
-      <span className="text-gray-900">
-        {new Date(role.updated_at).toLocaleDateString()}
-      </span>
+      <div>
+        <div className="text-gray-900">{new Date(role.updated_at).toLocaleDateString()}</div>
+        <div className="text-sm text-gray-500">
+          {new Date(role.updated_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </div>
+      </div>
     ),
   },
 ];

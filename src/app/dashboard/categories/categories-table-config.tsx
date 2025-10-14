@@ -54,9 +54,12 @@ export const categoriesColumns: ColumnDef<Category>[] = [
     header: "Created",
     sortable: true,
     render: (category) => (
-      <span className="text-gray-900">
-        {new Date(category.created_at).toLocaleDateString()}
-      </span>
+      <div>
+        <div className="text-gray-900">{new Date(category.created_at).toLocaleDateString()}</div>
+        <div className="text-sm text-gray-500">
+          {new Date(category.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </div>
+      </div>
     ),
   },
   {
@@ -64,9 +67,12 @@ export const categoriesColumns: ColumnDef<Category>[] = [
     header: "Updated",
     sortable: true,
     render: (category) => (
-      <span className="text-gray-900">
-        {new Date(category.updated_at).toLocaleDateString()}
-      </span>
+      <div>
+        <div className="text-gray-900">{new Date(category.updated_at).toLocaleDateString()}</div>
+        <div className="text-sm text-gray-500">
+          {new Date(category.updated_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </div>
+      </div>
     ),
   },
 ];

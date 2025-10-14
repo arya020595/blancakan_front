@@ -78,11 +78,33 @@ export const eventTypesColumns: ColumnDef<EventType>[] = [
     key: "created_at",
     header: "Created",
     sortable: true,
-    render: (eventType) => (
-      <span className="text-gray-900">
-        {new Date(eventType.created_at).toLocaleDateString()}
-      </span>
-    ),
+    render: (eventType) => {
+      const d = new Date(eventType.created_at);
+      return (
+        <div>
+          <div className="text-gray-900">{d.toLocaleDateString()}</div>
+          <div className="text-sm text-gray-500">
+            {d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </div>
+        </div>
+      );
+    },
+  },
+  {
+    key: "updated_at",
+    header: "Updated",
+    sortable: true,
+    render: (eventType) => {
+      const d = new Date(eventType.updated_at);
+      return (
+        <div>
+          <div className="text-gray-900">{d.toLocaleDateString()}</div>
+          <div className="text-sm text-gray-500">
+            {d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </div>
+        </div>
+      );
+    },
   },
 ];
 
