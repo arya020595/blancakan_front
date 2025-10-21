@@ -13,11 +13,12 @@
  */
 
 import type {
-  CategoriesQueryParams,
-  EventsQueryParams,
-  EventTypesQueryParams,
-  OrganizersQueryParams,
-  RolesQueryParams,
+    CategoriesQueryParams,
+    EventsQueryParams,
+    EventTypesQueryParams,
+    OrganizersQueryParams,
+    PermissionsQueryParams,
+    RolesQueryParams,
 } from "@/lib/api/types";
 
 /**
@@ -46,6 +47,19 @@ export const rolesKeys = {
 
   // Specific detail query
   detail: (id: string) => [...rolesKeys.details(), id] as const,
+};
+
+/**
+ * Query Keys Factory for Permissions
+ */
+export const permissionsKeys = {
+  all: ["permissions"] as const,
+  lists: () => [...permissionsKeys.all, "list"] as const,
+  list: (params?: PermissionsQueryParams) =>
+    [...permissionsKeys.lists(), params] as const,
+  details: () => [...permissionsKeys.all, "detail"] as const,
+  detail: (id: string) => [...permissionsKeys.details(), id] as const,
+  options: () => [...permissionsKeys.all, "options"] as const,
 };
 
 /**

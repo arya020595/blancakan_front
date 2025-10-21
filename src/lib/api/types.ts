@@ -198,6 +198,49 @@ export interface RolesQueryParams extends ListQueryParams {
   sort?: string;
 }
 
+// Permission Types
+export interface Permission {
+  _id: string;
+  action: string;
+  subject_class: string;
+  conditions: Record<string, any>;
+  role_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePermissionRequest {
+  permission: {
+    action: string;
+    subject_class: string;
+    conditions?: Record<string, any> | string;
+    role_id: string;
+  };
+}
+
+export interface UpdatePermissionRequest {
+  permission: {
+    action: string;
+    subject_class: string;
+    conditions?: Record<string, any> | string;
+    role_id: string;
+  };
+}
+
+export interface PermissionsQueryParams extends ListQueryParams {
+  query?: string;
+  sort?: string;
+  filter?: {
+    role_id?: string;
+    action?: string;
+    subject_class?: string;
+  };
+}
+
+export interface PermissionOptions {
+  subject_class: string[];
+}
+
 // Organizer Types
 export interface Organizer {
   _id: string;

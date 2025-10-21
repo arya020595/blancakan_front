@@ -33,6 +33,7 @@ const defaultNavItems: NavItem[] = [
   { href: "/dashboard/event-types", label: "Event Types" },
   { href: "/dashboard/events", label: "Events" },
   { href: "/dashboard/roles", label: "Roles" },
+  { href: "/dashboard/permissions", label: "Permissions" },
 ];
 
 function SidebarComponent({
