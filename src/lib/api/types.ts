@@ -205,6 +205,7 @@ export interface Permission {
   subject_class: string;
   conditions: Record<string, any>;
   role_id: string;
+  role_name?: string;
   created_at: string;
   updated_at: string;
 }

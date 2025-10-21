@@ -12,16 +12,14 @@ import type { Permission } from "@/lib/api/types";
  */
 export const permissionsColumns: ColumnDef<Permission>[] = [
   {
-    key: "action",
-    header: "Action",
-    sortable: true,
+    key: "role_id",
+    header: "Role",
     render: (permission) => (
-      <div>
-        <div className="font-medium text-gray-900 capitalize">
-          {permission.action}
-        </div>
-        <div className="text-sm text-gray-500">{permission._id}</div>
-      </div>
+      <span className="text-sm text-gray-600 font-medium">
+        {permission.role_name ?? permission.role_id ?? (
+          <span className="text-sm text-gray-400 italic">No role</span>
+        )}
+      </span>
     ),
   },
   {
@@ -35,14 +33,19 @@ export const permissionsColumns: ColumnDef<Permission>[] = [
     ),
   },
   {
-    key: "role_id",
-    header: "Role ID",
+    key: "action",
+    header: "Action",
+    sortable: true,
     render: (permission) => (
-      <span className="text-sm text-gray-600 font-mono">
-        {permission.role_id}
-      </span>
+      <div>
+        <div className="font-medium text-gray-900 capitalize">
+          {permission.action}
+        </div>
+        <div className="text-sm text-gray-500">{permission._id}</div>
+      </div>
     ),
   },
+  
   {
     key: "conditions",
     header: "Conditions",
