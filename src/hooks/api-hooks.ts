@@ -148,7 +148,7 @@ export const usePaginatedFetch = <T>(
 
   const filter = useCallback(
     (filters: Record<string, any>) => {
-      updateParams({ filters, page: 1 });
+      updateParams({ filter: filters, page: 1 });
     },
     [updateParams]
   );

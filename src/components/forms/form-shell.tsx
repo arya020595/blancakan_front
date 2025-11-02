@@ -47,9 +47,11 @@ export function FormShell<T extends FieldValues>({
     mode: "onSubmit",
   });
 
+  const handleFormSubmit = methods.handleSubmit(onSubmit);
+
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleFormSubmit} className="space-y-4">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
