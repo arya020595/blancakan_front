@@ -71,13 +71,11 @@ export function ErrorModal({
             <Icons.warning size={24} />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-semibold text-gray-900 mb-1">{title}</h3>
-            {error.message && (
-              <p className="text-sm text-gray-600 leading-relaxed">{error.message}</p>
-            )}
+            <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
           </div>
         </div>
       }
+      description={error.message}
       size="lg"
       footer={
         showCloseButton ? (
