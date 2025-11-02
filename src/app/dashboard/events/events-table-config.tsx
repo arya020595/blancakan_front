@@ -28,8 +28,8 @@ export const eventsColumns: ColumnDef<Event>[] = [
     header: "Start Date",
     sortable: true,
     render: (event) => {
-      // Parse as UTC and format with same style as toLocaleTimeString
-      const dt = DateTime.fromISO(event.starts_at_local, { zone: 'utc' });
+      // Parse as local time and format with same style as toLocaleTimeString
+      const dt = DateTime.fromISO(event.starts_at_local);
       return (
         <div>
           <div className="text-gray-900">{dt.toFormat('M/d/yyyy')}</div>
