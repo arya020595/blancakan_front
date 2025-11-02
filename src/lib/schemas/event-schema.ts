@@ -17,11 +17,10 @@ const locationSchema = z.object({
 });
 
 /**
- * Event form validation schema
- * Note: Form still uses separate date/time fields for better UX,
- * but they are combined into starts_at_local/ends_at_local before sending to API
+ * Base event form validation schema
+ * Shared validation rules for both create and edit modes
  */
-export const eventSchema = z
+const baseEventSchema = z
   .object({
     title: z
       .string()
@@ -78,10 +77,97 @@ export const eventSchema = z
       message: "End date and time must be after start date and time",
       path: ["end_date"],
     }
-  )
-  .refine(
+  );
+
+/**
+ * Apply location validations to a schema
+ */
+const withLocationValidations = <T extends z.ZodTypeAny>(schema: T) => {
+  return schema
+    .refine(
+      (data) => {
+        // Validate online event location
+        if (data.location_type === "online" || data.location_type === "hybrid") {
+          if (!data.location?.platform || data.location.platform.trim() === "") {
+            return false;
+          }
+        }
+        return true;
+      },
+      {
+        message: "Platform is required for online/hybrid events",
+        path: ["location", "platform"],
+      }
+    )
+    .refine(
+      (data) => {
+        // Validate online event link
+        if (data.location_type === "online" || data.location_type === "hybrid") {
+          if (!data.location?.link || data.location.link.trim() === "") {
+            return false;
+          }
+        }
+        return true;
+      },
+      {
+        message: "Meeting link is required for online/hybrid events",
+        path: ["location", "link"],
+      }
+    )
+    .refine(
+      (data) => {
+        // Validate offline event address
+        if (data.location_type === "offline" || data.location_type === "hybrid") {
+          if (!data.location?.address || data.location.address.trim() === "") {
+            return false;
+          }
+        }
+        return true;
+      },
+      {
+        message: "Address is required for offline/hybrid events",
+        path: ["location", "address"],
+      }
+    )
+    .refine(
+      (data) => {
+        // Validate offline event city
+        if (data.location_type === "offline" || data.location_type === "hybrid") {
+          if (!data.location?.city || data.location.city.trim() === "") {
+            return false;
+          }
+        }
+        return true;
+      },
+      {
+        message: "City is required for offline/hybrid events",
+        path: ["location", "city"],
+      }
+    )
+    .refine(
+      (data) => {
+        // Validate offline event state
+        if (data.location_type === "offline" || data.location_type === "hybrid") {
+          if (!data.location?.state || data.location.state.trim() === "") {
+            return false;
+          }
+        }
+        return true;
+      },
+      {
+        message: "State is required for offline/hybrid events",
+        path: ["location", "state"],
+      }
+    );
+};
+
+/**
+ * Event creation schema - includes past date validation
+ */
+export const eventCreateSchema = withLocationValidations(
+  baseEventSchema.refine(
     (data) => {
-      // Validate that start datetime is not in the past (only for create)
+      // Validate that start datetime is not in the past for new events
       const startDateTime = new Date(`${data.start_date}T${data.start_time}`);
       return startDateTime > new Date();
     },
@@ -90,83 +176,20 @@ export const eventSchema = z
       path: ["start_date"],
     }
   )
-  .refine(
-    (data) => {
-      // Validate online event location
-      if (data.location_type === "online" || data.location_type === "hybrid") {
-        if (!data.location?.platform || data.location.platform.trim() === "") {
-          return false;
-        }
-      }
-      return true;
-    },
-    {
-      message: "Platform is required for online/hybrid events",
-      path: ["location", "platform"],
-    }
-  )
-  .refine(
-    (data) => {
-      // Validate online event link
-      if (data.location_type === "online" || data.location_type === "hybrid") {
-        if (!data.location?.link || data.location.link.trim() === "") {
-          return false;
-        }
-      }
-      return true;
-    },
-    {
-      message: "Meeting link is required for online/hybrid events",
-      path: ["location", "link"],
-    }
-  )
-  .refine(
-    (data) => {
-      // Validate offline event address
-      if (data.location_type === "offline" || data.location_type === "hybrid") {
-        if (!data.location?.address || data.location.address.trim() === "") {
-          return false;
-        }
-      }
-      return true;
-    },
-    {
-      message: "Address is required for offline/hybrid events",
-      path: ["location", "address"],
-    }
-  )
-  .refine(
-    (data) => {
-      // Validate offline event city
-      if (data.location_type === "offline" || data.location_type === "hybrid") {
-        if (!data.location?.city || data.location.city.trim() === "") {
-          return false;
-        }
-      }
-      return true;
-    },
-    {
-      message: "City is required for offline/hybrid events",
-      path: ["location", "city"],
-    }
-  )
-  .refine(
-    (data) => {
-      // Validate offline event state
-      if (data.location_type === "offline" || data.location_type === "hybrid") {
-        if (!data.location?.state || data.location.state.trim() === "") {
-          return false;
-        }
-      }
-      return true;
-    },
-    {
-      message: "State is required for offline/hybrid events",
-      path: ["location", "state"],
-    }
-  );
+);
+
+/**
+ * Event edit schema - allows past dates for existing events
+ */
+export const eventEditSchema = withLocationValidations(baseEventSchema);
+
+/**
+ * Default export - uses create schema with past date validation
+ * For editing existing events with past dates, use eventEditSchema instead
+ */
+export const eventSchema = eventCreateSchema;
 
 /**
  * Infer TypeScript type from schema
  */
-export type EventFormValues = z.infer<typeof eventSchema>;
+export type EventFormValues = z.infer<typeof baseEventSchema>;

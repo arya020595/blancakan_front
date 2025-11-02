@@ -27,7 +27,7 @@ import {
 import { useErrorModal } from "@/hooks/use-error-modal";
 import { useTableParams } from "@/hooks/use-table-params";
 import type { Event } from "@/lib/api/types";
-import { eventSchema, type EventFormValues } from "@/lib/schemas/event-schema";
+import { eventCreateSchema, eventEditSchema, type EventFormValues } from "@/lib/schemas/event-schema";
 import { normalizeError } from "@/lib/utils/error-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
@@ -450,7 +450,7 @@ export default function EventsPage() {
               state: "",
             },
           }}
-          resolver={zodResolver(eventSchema)}
+          resolver={zodResolver(eventCreateSchema)}
           onSubmit={handleCreate}
           isSubmitting={createMutation.isPending}
           submitLabel="Create Event"
@@ -501,7 +501,7 @@ export default function EventsPage() {
               state: editingEvent?.location?.state || "",
             },
           }}
-          resolver={zodResolver(eventSchema)}
+          resolver={zodResolver(eventEditSchema)}
           onSubmit={handleUpdate}
           isSubmitting={updateMutation.isPending}
           submitLabel="Update Event"
