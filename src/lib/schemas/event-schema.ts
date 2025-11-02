@@ -56,7 +56,7 @@ const baseEventSchema = z
       ])
       .optional(),
 
-    status: z.enum(["draft", "published", "canceled"]),
+    status: z.enum(["draft", "published", "canceled", "rejected"]),
     location: locationSchema.optional(),
 
     is_paid: z.boolean(),

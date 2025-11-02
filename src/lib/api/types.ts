@@ -322,7 +322,7 @@ export interface CreateEventRequest {
     event_type_id: string;
     category_ids: string[];
     is_paid: boolean;
-    status?: "draft" | "published" | "canceled";
+    status?: "draft" | "published" | "canceled" | "rejected";
   };
   cover_image?: File;
 }
@@ -348,7 +348,7 @@ export interface UpdateEventRequest {
     event_type_id: string;
     category_ids: string[];
     is_paid: boolean;
-    status?: "draft" | "published" | "canceled";
+    status?: "draft" | "published" | "canceled" | "rejected";
   };
   cover_image?: File;
 }
