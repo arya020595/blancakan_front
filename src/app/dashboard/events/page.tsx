@@ -489,10 +489,7 @@ export default function EventsPage() {
             organizer_id: editingEvent?.organizer_id || "",
             category_ids: editingEvent?.category_ids || [],
             is_paid: editingEvent?.is_paid || false,
-            status:
-              (editingEvent?.status === "canceled"
-                ? "cancelled"
-                : editingEvent?.status) || "draft",
+            status: editingEvent?.status || "draft",
             location: {
               platform: editingEvent?.location?.platform || "",
               link: editingEvent?.location?.link || "",
