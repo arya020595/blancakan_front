@@ -14,7 +14,7 @@ import type {
   TableParams,
 } from "@/components/ui/data-table/types";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
  * Default pagination values
@@ -49,13 +49,40 @@ export function useTableParams() {
   );
 
   /**
+   * Track URL search params to trigger filter re-computation
+   * This ensures filters update when URL changes via setFilter/setFilters/resetFilters
+   */
+  const [urlSearch, setUrlSearch] = useState(
+    typeof window !== "undefined" ? window.location.search : ""
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Update state when URL changes (e.g., browser back/forward)
+    const handleUrlChange = () => {
+      setUrlSearch(window.location.search);
+    };
+
+    // Listen for popstate events (back/forward navigation)
+    window.addEventListener("popstate", handleUrlChange);
+
+    // Also update when state changes (nuqs triggers re-renders)
+    setUrlSearch(window.location.search);
+
+    return () => {
+      window.removeEventListener("popstate", handleUrlChange);
+    };
+  }, [state.page, state.per_page, state.query, state.sort]);
+
+  /**
    * Parse filter parameters from URL
    * Format: ?filter[status]=active&filter[tags]=web,mobile
    */
   const filters = useMemo(() => {
     if (typeof window === "undefined") return {};
 
-    const urlParams = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(urlSearch);
     const filterState: FilterState = {};
 
     // Extract all filter[*] parameters
@@ -69,7 +96,7 @@ export function useTableParams() {
     });
 
     return filterState;
-  }, [typeof window !== "undefined" && window.location.search]);
+  }, [urlSearch]);
 
   /**
    * Parse sort state into field and direction
