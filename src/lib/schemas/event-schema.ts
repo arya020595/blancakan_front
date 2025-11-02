@@ -82,7 +82,7 @@ const baseEventSchema = z
 /**
  * Apply location validations to a schema
  */
-const withLocationValidations = (schema: z.ZodObject<any> | z.ZodEffects<any>) => {
+const withLocationValidations = <T extends z.ZodTypeAny>(schema: T) => {
   return schema
     .refine(
       (data) => {
@@ -184,8 +184,8 @@ export const eventCreateSchema = withLocationValidations(
 export const eventEditSchema = withLocationValidations(baseEventSchema);
 
 /**
- * Default export for backward compatibility
- * Use eventCreateSchema or eventEditSchema for specific use cases
+ * Default export - uses create schema with past date validation
+ * For editing existing events with past dates, use eventEditSchema instead
  */
 export const eventSchema = eventCreateSchema;
 
