@@ -54,7 +54,7 @@ export function DataTableToolbar({
     if (params.query !== searchValue) {
       setSearchValue(params.query || "");
     }
-  }, [params.query]);
+  }, [params.query, searchValue]);
 
   // Count active filters
   const activeFilterCount = Object.keys(activeFilters).length;
