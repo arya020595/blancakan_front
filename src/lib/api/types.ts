@@ -198,6 +198,173 @@ export interface RolesQueryParams extends ListQueryParams {
   sort?: string;
 }
 
+// Permission Types
+export interface Permission {
+  _id: string;
+  action: string;
+  subject_class: string;
+  conditions: Record<string, any>;
+  role_id: string;
+  role_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePermissionRequest {
+  permission: {
+    action: string;
+    subject_class: string;
+    conditions?: Record<string, any> | string;
+    role_id: string;
+  };
+}
+
+export interface UpdatePermissionRequest {
+  permission: {
+    action: string;
+    subject_class: string;
+    conditions?: Record<string, any> | string;
+    role_id: string;
+  };
+}
+
+export interface PermissionsQueryParams extends ListQueryParams {
+  query?: string;
+  sort?: string;
+  filter?: {
+    role_id?: string;
+    action?: string;
+    subject_class?: string;
+  };
+}
+
+export interface PermissionOptions {
+  subject_class: string[];
+}
+
+// Organizer Types
+export interface Organizer {
+  _id: string;
+  name: string;
+  email?: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrganizersQueryParams extends ListQueryParams {
+  query?: string;
+  sort?: string;
+  filters?: {
+    is_active?: boolean;
+  };
+}
+
+// Event Types
+export interface Event {
+  _id: string;
+  _slugs: string[];
+  title: string;
+  slug: string;
+  description: string;
+  starts_at_local: string; // Combined datetime in local timezone (ISO 8601)
+  ends_at_local: string; // Combined datetime in local timezone (ISO 8601)
+  starts_at_utc: string; // Combined datetime in UTC (ISO 8601)
+  ends_at_utc: string; // Combined datetime in UTC (ISO 8601)
+  location_type: "online" | "offline" | "hybrid";
+  location?: {
+    // For online events
+    platform?: string;
+    link?: string;
+    // For offline events
+    address?: string;
+    city?: string;
+    state?: string;
+  };
+  timezone: string;
+  organizer_id: string;
+  event_type_id: string;
+  category_ids: string[];
+  is_paid: boolean;
+  status: "draft" | "published" | "canceled";
+  cover_image?: {
+    url: string | null;
+    thumbnail: {
+      url: string | null;
+    };
+  };
+  cover_image_filename?: string | null;
+  published_at: string | null;
+  canceled_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateEventRequest {
+  event: {
+    title: string;
+    description: string;
+    starts_at_local: string; // Combined datetime ISO 8601 format
+    ends_at_local: string; // Combined datetime ISO 8601 format
+    location_type: "online" | "offline" | "hybrid";
+    location?: {
+      // For online events
+      platform?: string;
+      link?: string;
+      // For offline events
+      address?: string;
+      city?: string;
+      state?: string;
+    };
+    timezone: string;
+    organizer_id: string;
+    event_type_id: string;
+    category_ids: string[];
+    is_paid: boolean;
+    status?: "draft" | "published" | "canceled" | "rejected";
+  };
+  cover_image?: File;
+}
+
+export interface UpdateEventRequest {
+  event: {
+    title: string;
+    description: string;
+    starts_at_local: string; // Combined datetime ISO 8601 format
+    ends_at_local: string; // Combined datetime ISO 8601 format
+    location_type: "online" | "offline" | "hybrid";
+    location?: {
+      // For online events
+      platform?: string;
+      link?: string;
+      // For offline events
+      address?: string;
+      city?: string;
+      state?: string;
+    };
+    timezone: string;
+    organizer_id: string;
+    event_type_id: string;
+    category_ids: string[];
+    is_paid: boolean;
+    status?: "draft" | "published" | "canceled" | "rejected";
+  };
+  cover_image?: File;
+}
+
+export interface EventsQueryParams extends ListQueryParams {
+  query?: string;
+  filter?: {
+    status?: "draft" | "published" | "canceled";
+    location_type?: "online" | "offline" | "hybrid";
+    is_paid?: boolean;
+    event_type_id?: string;
+    category_ids?: string[];
+  };
+  sort?: string;
+}
+
 // Query Parameters
 export interface ListQueryParams {
   page?: number;
@@ -205,7 +372,7 @@ export interface ListQueryParams {
   search?: string;
   sort_by?: string;
   sort_order?: "asc" | "desc";
-  filters?: Record<string, any>;
+  filter?: Record<string, any>;
 }
 
 // Error Types

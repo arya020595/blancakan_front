@@ -1,25 +1,20 @@
 /**
- * Categories Page - TanStack Query Implementation
+ * Categories Page - DataTable Implementation
  *
- * Following official TanStack Query pattern
- * @see docs/guides/TANSTACK_QUERY_CRUD_GUIDE.md
+ * Refactored using reusable DataTable component with URL-based state management
+ * Features: Search, sort, filter, pagination with shareable URLs
  */
 
 "use client";
 
-import { CategoriesTable } from "@/components/categories/categories-table";
-import {
-  CategoryPagination,
-  CategoryPaginationSkeleton,
-} from "@/components/categories/category-pagination";
-import { CategoryTableRow } from "@/components/categories/category-table-row";
 import { CategoryForm } from "@/components/categories/forms/category-form";
 import { DeleteCategoryContent } from "@/components/categories/forms/delete-category-content";
 import { FormShell } from "@/components/forms/form-shell";
 import { useOptimisticToasts } from "@/components/toast";
 import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
 import ErrorModal from "@/components/ui/error-modal";
-import { Input } from "@/components/ui/input";
+import { Icons } from "@/components/ui/icons";
 import Modal from "@/components/ui/modal";
 import Spinner from "@/components/ui/spinner";
 import {
@@ -29,6 +24,7 @@ import {
   useUpdateCategory,
 } from "@/hooks/categories-hooks";
 import { useErrorModal } from "@/hooks/use-error-modal";
+import { useTableParams } from "@/hooks/use-table-params";
 import type { Category } from "@/lib/api/types";
 import {
   categorySchema,
@@ -36,12 +32,17 @@ import {
 } from "@/lib/schemas/category-schema";
 import { normalizeError } from "@/lib/utils/error-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  categoriesColumns,
+  categoriesFilters,
+} from "./categories-table-config";
 
 export default function CategoriesPage() {
+  // URL-based state management (search, sort, filters, pagination)
+  const { params } = useTableParams();
+
   // UI State
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<Category | null>(
@@ -59,20 +60,21 @@ export default function CategoriesPage() {
     closeError,
   } = useErrorModal();
 
-  // TanStack Query hooks
+  // React Query Hooks - params come from URL
   const { data, isLoading, error } = useCategories({
-    page: currentPage,
-    per_page: 10,
-    query: searchQuery || "*",
-    sort: "created_at:desc",
+    page: params.page,
+    per_page: params.per_page,
+    query: params.query || "*",
+    sort: params.sort || "created_at:desc",
+    filter: params.filter,
   });
 
-  // Mutations
+  // Mutations - TanStack Query handles cache invalidation automatically
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const deleteMutation = useDeleteCategory();
 
-  // Extract data
+  // Extract data from React Query response
   const categories = data?.data ?? [];
   const meta = data?.meta ?? null;
 
@@ -156,29 +158,8 @@ export default function CategoriesPage() {
 
   const handleEdit = (category: Category) => setEditingCategory(category);
 
-  const handleDeleteConfirm = (id: string) => {
-    const category = categories.find((cat) => cat._id === id);
-    if (category) setDeletingCategory(category);
-  };
-
-  // Table content
-  const tableContent =
-    categories.length === 0 ? (
-      <tr>
-        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-          No categories found
-        </td>
-      </tr>
-    ) : (
-      categories.map((category) => (
-        <CategoryTableRow
-          key={category._id}
-          category={category}
-          onEdit={handleEdit}
-          onDelete={handleDeleteConfirm}
-        />
-      ))
-    );
+  const handleDeleteConfirm = (category: Category) =>
+    setDeletingCategory(category);
 
   return (
     <div className="space-y-6">
@@ -188,33 +169,42 @@ export default function CategoriesPage() {
           <h1 className="text-2xl font-semibold text-gray-900">Categories</h1>
           <p className="text-sm text-gray-600">Manage event categories</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>Add Category</Button>
+        <Button onClick={() => setShowCreateModal(true)}>
+          <Icons.add size={16} className="mr-2" />
+          Add Category
+        </Button>
       </div>
 
-      {/* Search */}
-      <Input
-        type="text"
-        placeholder="Search categories..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
-
-      {/* Table */}
-      <CategoriesTable
-        tableContent={tableContent}
-        error={error ? new Error(error.message) : null}
+      {/* DataTable - Handles search, sort, filter, pagination */}
+      <DataTable
+        columns={categoriesColumns}
+        data={categories}
+        meta={meta}
         isLoading={isLoading}
+        error={error ? new Error(error.message) : null}
+        searchable
+        searchPlaceholder="Search categories..."
+        filters={categoriesFilters}
+        resourceName="category"
+        actions={(category) => (
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEdit(category)}
+              className="h-8 px-2">
+              <Icons.edit size={16} className="text-gray-600 hover:text-indigo-600" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDeleteConfirm(category)}
+              className="h-8 px-2">
+              <Icons.delete size={16} className="text-gray-600 hover:text-red-600" />
+            </Button>
+          </div>
+        )}
       />
-
-      {/* Pagination */}
-      <Suspense fallback={<CategoryPaginationSkeleton />}>
-        <CategoryPagination
-          meta={meta}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          isLoading={isLoading}
-        />
-      </Suspense>
 
       {/* Create Modal */}
       <Modal
