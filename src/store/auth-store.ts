@@ -84,7 +84,9 @@ const authCreator: StateCreator<AuthStore> = (set, get) => ({
     logger.info("Token validation result", { isValid });
 
     if (!isValid) {
-      logger.warn("Token invalid/expired, clearing auth");
+      if (token) {
+        logger.warn("Token invalid/expired, clearing auth");
+      }
       // Directly clear state instead of calling get().clearAuth() to avoid circular dependency
       removeAuthToken();
       set({
@@ -92,7 +94,7 @@ const authCreator: StateCreator<AuthStore> = (set, get) => ({
         isAuthenticated: false,
         isLoading: false,
       });
-      logger.info("Authentication state cleared");
+      logger.debug("Authentication state cleared");
       return;
     } else {
       logger.info("Token valid, setting authenticated to true");
