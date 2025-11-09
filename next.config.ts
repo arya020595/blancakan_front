@@ -4,13 +4,13 @@ const nextConfig: NextConfig = {
   // Enable standalone output for optimized Docker builds
   output: "standalone",
 
-  // Skip linting and type checking during build (for Docker)
-  // Run these checks in CI/CD pipeline instead
+  // Skip linting during builds - run in CI/CD pipeline instead
   eslint: {
-    // Linting is enabled during builds to catch issues early
+    ignoreDuringBuilds: true,
   },
+  // Skip type checking during builds - run in CI/CD pipeline instead
   typescript: {
-    // Type checking is enforced during builds for safety
+    ignoreBuildErrors: true,
   },
 
   images: {
