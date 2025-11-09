@@ -20,24 +20,24 @@ import { Icons } from "@/components/ui/icons";
 import Modal from "@/components/ui/modal";
 import Spinner from "@/components/ui/spinner";
 import {
-    useCreatePermission,
-    useDeletePermission,
-    usePermissions,
-    useUpdatePermission,
+  useCreatePermission,
+  useDeletePermission,
+  usePermissions,
+  useUpdatePermission,
 } from "@/hooks/permissions-hooks";
 import { useErrorModal } from "@/hooks/use-error-modal";
 import { useTableParams } from "@/hooks/use-table-params";
 import type { Permission } from "@/lib/api/types";
 import {
-    permissionSchema,
-    type PermissionFormValues,
+  permissionSchema,
+  type PermissionFormValues,
 } from "@/lib/schemas/permission-schema";
 import { normalizeError } from "@/lib/utils/error-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import {
-    permissionsColumns,
-    permissionsFilters,
+  permissionsColumns,
+  permissionsFilters,
 } from "./permissions-table-config";
 
 export default function PermissionsPage() {
@@ -129,11 +129,11 @@ export default function PermissionsPage() {
   // Handlers - Simplified with mutation callbacks!
   const handleCreate = (formData: PermissionFormValues) => {
     // Parse conditions if it's a string
-    let parsedConditions: Record<string, any> = {};
+    let parsedConditions: Record<string, unknown> = {};
     if (formData.conditions) {
       try {
         parsedConditions = JSON.parse(formData.conditions);
-      } catch (e) {
+      } catch {
         parsedConditions = {};
       }
     }
@@ -152,11 +152,11 @@ export default function PermissionsPage() {
     if (!editingPermission) return;
 
     // Parse conditions if it's a string
-    let parsedConditions: Record<string, any> = {};
+    let parsedConditions: Record<string, unknown> = {};
     if (formData.conditions) {
       try {
         parsedConditions = JSON.parse(formData.conditions);
-      } catch (e) {
+      } catch {
         parsedConditions = {};
       }
     }
@@ -281,10 +281,7 @@ export default function PermissionsPage() {
           isSubmitting={updateMutation.isPending}
           submitLabel="Update Permission"
           onCancel={() => setEditingPermission(null)}>
-          <PermissionForm
-            mode="edit"
-            isSubmitting={updateMutation.isPending}
-          />
+          <PermissionForm mode="edit" isSubmitting={updateMutation.isPending} />
         </FormShell>
       </Modal>
 

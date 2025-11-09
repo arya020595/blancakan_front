@@ -85,10 +85,16 @@ const baseEventSchema = z
 const withLocationValidations = <T extends z.ZodTypeAny>(schema: T) => {
   return schema
     .refine(
-      (data) => {
+      (data: any) => {
         // Validate online event location
-        if (data.location_type === "online" || data.location_type === "hybrid") {
-          if (!data.location?.platform || data.location.platform.trim() === "") {
+        if (
+          data.location_type === "online" ||
+          data.location_type === "hybrid"
+        ) {
+          if (
+            !data.location?.platform ||
+            data.location.platform.trim() === ""
+          ) {
             return false;
           }
         }
@@ -100,9 +106,12 @@ const withLocationValidations = <T extends z.ZodTypeAny>(schema: T) => {
       }
     )
     .refine(
-      (data) => {
+      (data: any) => {
         // Validate online event link
-        if (data.location_type === "online" || data.location_type === "hybrid") {
+        if (
+          data.location_type === "online" ||
+          data.location_type === "hybrid"
+        ) {
           if (!data.location?.link || data.location.link.trim() === "") {
             return false;
           }
@@ -115,9 +124,12 @@ const withLocationValidations = <T extends z.ZodTypeAny>(schema: T) => {
       }
     )
     .refine(
-      (data) => {
+      (data: any) => {
         // Validate offline event address
-        if (data.location_type === "offline" || data.location_type === "hybrid") {
+        if (
+          data.location_type === "offline" ||
+          data.location_type === "hybrid"
+        ) {
           if (!data.location?.address || data.location.address.trim() === "") {
             return false;
           }
@@ -130,9 +142,12 @@ const withLocationValidations = <T extends z.ZodTypeAny>(schema: T) => {
       }
     )
     .refine(
-      (data) => {
+      (data: any) => {
         // Validate offline event city
-        if (data.location_type === "offline" || data.location_type === "hybrid") {
+        if (
+          data.location_type === "offline" ||
+          data.location_type === "hybrid"
+        ) {
           if (!data.location?.city || data.location.city.trim() === "") {
             return false;
           }
@@ -145,9 +160,12 @@ const withLocationValidations = <T extends z.ZodTypeAny>(schema: T) => {
       }
     )
     .refine(
-      (data) => {
+      (data: any) => {
         // Validate offline event state
-        if (data.location_type === "offline" || data.location_type === "hybrid") {
+        if (
+          data.location_type === "offline" ||
+          data.location_type === "hybrid"
+        ) {
           if (!data.location?.state || data.location.state.trim() === "") {
             return false;
           }

@@ -4,8 +4,8 @@ const nextConfig: NextConfig = {
   // Enable standalone output for optimized Docker builds
   output: "standalone",
 
-  // Skip linting and type checking during build (for Docker)
-  // Run these checks in CI/CD pipeline instead
+  // Enable linting and type checking during build
+  // This ensures code quality and catches issues early
   eslint: {
     // Linting is enabled during builds to catch issues early
   },
