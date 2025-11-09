@@ -67,7 +67,7 @@ const baseEventSchema = z
       .max(5, "Cannot have more than 5 categories"),
   })
   .refine(
-    (data) => {
+    (data: any) => {
       // Validate that end datetime is after start datetime
       const startDateTime = new Date(`${data.start_date}T${data.start_time}`);
       const endDateTime = new Date(`${data.end_date}T${data.end_time}`);
@@ -184,7 +184,7 @@ const withLocationValidations = <T extends z.ZodTypeAny>(schema: T) => {
  */
 export const eventCreateSchema = withLocationValidations(
   baseEventSchema.refine(
-    (data) => {
+    (data: any) => {
       // Validate that start datetime is not in the past for new events
       const startDateTime = new Date(`${data.start_date}T${data.start_time}`);
       return startDateTime > new Date();
