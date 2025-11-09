@@ -21,7 +21,6 @@ build
 dist
 
 # Production
-*.tsbuildinfo
 
 # Environment files
 .env
