@@ -132,13 +132,24 @@ export const useLogout = () => {
     try {
       logger.info("Starting logout process");
       setIsLoading(true);
-      await authApiService.logout();
-      logger.info("Logout successful");
-    } catch (error) {
-      logger.error("Logout error (clearing local state anyway)", error);
-    } finally {
+
+      // Clear auth state FIRST to prevent token validation attempts
       clearAuth();
+
+      try {
+        await authApiService.logout();
+        logger.info("Logout API call successful");
+      } catch (apiError) {
+        // Ignore API errors - user is already logged out locally
+        logger.debug("Logout API error (ignoring)", apiError);
+      }
+
+      logger.info("Logout complete");
+    } catch (error) {
+      logger.error("Unexpected logout error", error);
+    } finally {
       setIsLoading(false);
+      // Redirect to login page
       window.location.href = "/login";
     }
   }, [clearAuth]);
